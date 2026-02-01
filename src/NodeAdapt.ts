@@ -107,7 +107,7 @@ export class NodeAdapt {
 					}
 				};
 			}
-			return setSelectOptionsOrig(id as any, options);
+return setSelectOptionsOrig(id as ViewID, options);
 		};
 
 		const setAreaValueOrig = view.prototype.setAreaValue;
