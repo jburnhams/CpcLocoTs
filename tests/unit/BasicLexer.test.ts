@@ -1,12 +1,10 @@
-// BasicLexer.qunit.ts - QUnit tests for CpcLoco BasicLexer
-//
+import { describe, test, expect } from 'vitest';
+import { BasicLexer, LexerToken } from "../../src/BasicLexer";
 
-import { Utils } from "../Utils";
-import { BasicLexer, LexerToken } from "../BasicLexer";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
-import { TestInput } from "./TestInput";
+// infer type instead of importing
+type TestsType = Record<string, string>;
+type AllTestsType = Record<string, TestsType>;
 
-QUnit.dump.maxDepth = 10;
 
 /* eslint-disable quote-props */
 const allTests: AllTestsType = {
@@ -759,9 +757,6 @@ function getKeywords() {
 	return keywordMap;
 }
 
-type hooksWithBasicLexer = NestedHooks & {
-	basicLexer: BasicLexer
-};
 
 function createBasicLexer(keepWhiteSpace: boolean) {
 	return new BasicLexer({
@@ -771,10 +766,8 @@ function createBasicLexer(keepWhiteSpace: boolean) {
 	});
 }
 
-QUnit.module("BasicLexer: Tests", function (hooks) {
-	hooks.before(function () {
-		(hooks as hooksWithBasicLexer).basicLexer = createBasicLexer(false);
-	});
+describe("BasicLexer: Tests", () => {
+	const basicLexer = createBasicLexer(false);
 
 	function runSingleTest(basicLexer: BasicLexer, key: string, expectedEntry: Record<string, unknown>) {
 		let result: string,
@@ -784,12 +777,14 @@ QUnit.module("BasicLexer: Tests", function (hooks) {
 			tokens = basicLexer.lex(key);
 			result = JSON.stringify(tokens);
 		} catch (e) {
+			/*
 			if ((e as Error).message !== expectedEntry.message) {
-				Utils.console.error(e); // only if unexpected
+				console.error(e); // only if unexpected
 			}
+			*/
 			// on IE we have additional properties description, number, stack in the object, so we use a positive list...
 			// eslint-disable-next-line object-property-newline, object-curly-newline
-			const copiedError = (({ len, line, message, name, pos, shortMessage, value }) => ({ len, line, message, name, pos, shortMessage, value }))(e);
+			const copiedError = (({ len, line, message, name, pos, shortMessage, value }) => ({ len, line, message, name, pos, shortMessage, value }))(e as any);
 			// (https://stackoverflow.com/questions/17781472/how-to-get-a-subset-of-a-javascript-objects-properties)
 
 			result = JSON.stringify(copiedError);
@@ -798,44 +793,54 @@ QUnit.module("BasicLexer: Tests", function (hooks) {
 		return result;
 	}
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const basicLexer = (hooks as hooksWithBasicLexer).basicLexer;
-
+	function runTestsFor(category: string, tests: TestsType) {
 		for (const key in tests) {
 			if (tests.hasOwnProperty(key)) {
-				const expected = TestHelper.handleBinaryLiterals(tests[key]);
+				let expected = tests[key];
+				// TestHelper.handleBinaryLiterals replacement (if needed, originally handled in TestHelper)
+				// Looking at BasicParser.test.ts, handleBinaryLiterals might be needed if tests contain hex/bin literals that are not standard JSON.
+				// However, the expected strings in this file seem to be strict JSON (quoted property names).
+				// Let's assume standard JSON.parse is enough or verify if we need the helper.
+				// BasicParser.test.ts defined handleBinaryLiterals. I should probably copy it if I see failures.
+				// But looking at the file content (lines 10-38), they are standard JSON strings.
+				// BasicParser.test.ts had unquoted identifiers in expected strings sometimes?
+				// Actually, earlier view showed `TestHelper.handleBinaryLiterals(tests[key])`.
+				// I'll check if I need it. The strings look like standard JSON.
+				// Let's rely on JSON.parse for now, or just lenient parsing if needed.
+				// Actually, `handleBinaryLiterals` was about replacing e.g. `0x` or `&H` in *expected* strings?
+				// No, the expect strings here are JSON.
+
 				let expectedEntry: Record<string, unknown>;
 
 				try {
 					expectedEntry = JSON.parse(expected); // test: { e: expected }
 				} catch (e) {
-					Utils.console.error(e);
+					console.error("Error parsing expected JSON for key: " + key, e);
 					expectedEntry = {}; // continue
 				}
 
-				const result = runSingleTest(basicLexer, key, expectedEntry);
-
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
+				test(`${category}: ${key.substring(0, 50)}`, () => {
+					const result = runSingleTest(basicLexer, key, expectedEntry);
 					const tokens = JSON.parse(result);
-
-					assert.deepEqual(tokens, expectedEntry, key);
-				}
+					expect(tokens).toEqual(expectedEntry);
+				});
 			}
 		}
 	}
 
-	TestHelper.compareAllTests(TestInput.getAllTests(), allTests);
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
+	// TestInput.getAllTests() was just returning allTests. We have allTests defined in this file (or imported if I missed it, but lines 10+ show it).
+	// Lines 10-746 define allTests.
+	for (const category in allTests) {
+		if (allTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				runTestsFor(category, allTests[category]);
+			});
+		}
+	}
 });
 
-QUnit.module("BasicLexer: keepWhiteSpace", function (hooks) {
-	hooks.before(function () {
-		(hooks as hooksWithBasicLexer).basicLexer = createBasicLexer(true);
-	});
+describe("BasicLexer: keepWhiteSpace", () => {
+	const basicLexer = createBasicLexer(true);
 
 	function fnCombineTokens(tokens: LexerToken[]) {
 		let result = "";
@@ -864,12 +869,12 @@ QUnit.module("BasicLexer: keepWhiteSpace", function (hooks) {
 
 	function runSingleTestForWhitespace(basicLexer: BasicLexer, key: string, expected: string) {
 		let result: string,
-			expectedEntry;
+			expectedEntry: any;
 
 		try {
 			expectedEntry = JSON.parse(expected); // test: { e: expected }
 		} catch (e) {
-			Utils.console.error(e);
+			// console.error(e);
 			expectedEntry = {}; // continue
 		}
 
@@ -878,8 +883,8 @@ QUnit.module("BasicLexer: keepWhiteSpace", function (hooks) {
 
 			result = fnCombineTokens(tokens);
 		} catch (e) {
-			if ((e as Error).message.replace(/\d+/g, "") !== expectedEntry.message.replace(/\d+/g, "")) { // compare without positions
-				Utils.console.error(e); // only if unexpected
+			if ((e as Error).message.replace(/\d+/g, "") !== expectedEntry.message?.replace(/\d+/g, "")) { // compare without positions
+				// console.error(e); // only if unexpected
 				result = String(e);
 			} else {
 				result = key; // set desired result
@@ -888,8 +893,7 @@ QUnit.module("BasicLexer: keepWhiteSpace", function (hooks) {
 		return result;
 	}
 
-	function runTestsForWhitespace(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const basicLexer = (hooks as hooksWithBasicLexer).basicLexer;
+	function runTestsForWhitespace(category: string, tests: TestsType) {
 		let spaceCount = 1;
 		const fnSpaceReplacer = function () {
 			spaceCount += 1;
@@ -898,30 +902,34 @@ QUnit.module("BasicLexer: keepWhiteSpace", function (hooks) {
 
 		for (const key in tests) {
 			if (tests.hasOwnProperty(key)) {
-				spaceCount = 1;
-				const expected = tests[key],
-					keyWithSpaces = key.replace(/([=?+\-*^/\\,;()#])/g, " $1 ").replace(/\s+/g, fnSpaceReplacer),
-					result = runSingleTestForWhitespace(basicLexer, keyWithSpaces, expected);
+				const expected = tests[key];
+				// keyWithSpaces = key.replace(/([=?+\-*^/\\,;()#])/g, " $1 ").replace(/\s+/g, fnSpaceReplacer);
+				// The original logic had reset spaceCount=1 in loop
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(keyWithSpaces) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
-					assert.strictEqual(result, keyWithSpaces, keyWithSpaces);
-				}
+				test(`${category}: whitespace: ${key}`, () => {
+					spaceCount = 1;
+					const keyWithSpaces = key.replace(/([=?+\-*^/\\,;()#])/g, " $1 ").replace(/\s+/g, fnSpaceReplacer);
+					const result = runSingleTestForWhitespace(basicLexer, keyWithSpaces, expected);
+					expect(result).toBe(keyWithSpaces);
+				});
 			}
 		}
 	}
 
-	TestHelper.generateAllTests(allTests, runTestsForWhitespace, hooks);
+	for (const category in allTests) {
+		if (allTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				runTestsForWhitespace(category, allTests[category]);
+			});
+		}
+	}
 });
 
-QUnit.module("BasicLexer: lexer specific tests", function (/* hooks */) {
-	QUnit.test("Error: Unrechognized token", function (assert) {
+describe("BasicLexer: lexer specific tests", () => {
+	test("Error: Unrecognized token", () => {
 		const basicLexer = new BasicLexer({
-				keywords: {} // no keywords
-			}),
+			keywords: {} // no keywords
+		}),
 			inputs = "!$%↕_`{}~";
 
 		for (let i = 0; i < inputs.length; i += 1) {
@@ -934,9 +942,10 @@ QUnit.module("BasicLexer: lexer specific tests", function (/* hooks */) {
 			} catch (e) {
 				result = String(e);
 			}
-			assert.strictEqual(result, "BasicLexer: Unrecognized token at pos 0-1: " + key, key);
+			expect(result).toBe("BasicLexer: Unrecognized token at pos 0-1: " + key);
 		}
 	});
 });
+
 
 

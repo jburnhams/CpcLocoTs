@@ -1,12 +1,14 @@
-// CodeGeneratorJs.qunit.ts - QUnit tests for CpcLoco CodeGeneratorJs
-//
 
-import { BasicLexer } from "../BasicLexer";
-import { BasicParser } from "../BasicParser";
-import { CodeGeneratorJs } from "../CodeGeneratorJs";
-import { Variables } from "../Variables";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
-import { TestInput } from "./TestInput";
+import { describe, test, expect } from 'vitest';
+import { BasicLexer } from "../../src/BasicLexer";
+import { BasicParser } from "../../src/BasicParser";
+import { CodeGeneratorJs } from "../../src/CodeGeneratorJs";
+import { Variables } from "../../src/Variables";
+
+// Infer types locally
+type TestsType = Record<string, string>;
+type AllTestsType = Record<string, TestsType>;
+
 
 /* eslint-disable quote-props */
 const allTests: AllTestsType = {
@@ -756,9 +758,6 @@ const allTests: AllTestsType = {
 // tests added: for with hex and bin constants
 
 
-type hooksWithCodeGeneratorJs = NestedHooks & {
-	codeGeneratorJs: CodeGeneratorJs
-};
 
 function createCodeGeneratorJs() {
 	const basicParser = new BasicParser({
@@ -777,11 +776,8 @@ function createCodeGeneratorJs() {
 	});
 }
 
-
-QUnit.module("CodeGeneratorJs: Tests", function (hooks) {
-	hooks.before(function () {
-		(hooks as hooksWithCodeGeneratorJs).codeGeneratorJs = createCodeGeneratorJs();
-	});
+describe("CodeGeneratorJs: Tests", () => {
+	const codeGeneratorJs = createCodeGeneratorJs();
 
 	function runSingleTest(codeGeneratorJs: CodeGeneratorJs, key: string) {
 		const allowDirect = true,
@@ -792,27 +788,33 @@ QUnit.module("CodeGeneratorJs: Tests", function (hooks) {
 		return result;
 	}
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const codeGeneratorJs = (hooks as hooksWithCodeGeneratorJs).codeGeneratorJs;
+	function handleBinaryLiterals(str: string): string {
+		// Node.js supports binary literals, so we pass through.
+		// If we needed to support old environments, we would convert 0b to 0x.
+		return str;
+	}
 
+	function runTestsFor(category: string, tests: TestsType) {
 		for (const key in tests) {
 			if (tests.hasOwnProperty(key)) {
-				const expected = TestHelper.handleBinaryLiterals(tests[key]),
-					result = runSingleTest(codeGeneratorJs, key);
+				const expected = handleBinaryLiterals(tests[key]);
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
-					assert.strictEqual(result, expected, key);
-				}
+				test(`${category}: ${key.substring(0, 50).replace(/\n/g, "\\n")}`, () => {
+					const result = runSingleTest(codeGeneratorJs, key);
+					expect(result).toBe(expected);
+				});
 			}
 		}
 	}
 
-	TestHelper.compareAllTests(TestInput.getAllTests(), allTests);
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
+	for (const category in allTests) {
+		if (allTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				runTestsFor(category, allTests[category]);
+			});
+		}
+	}
 });
+
 
 

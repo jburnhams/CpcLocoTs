@@ -1,13 +1,12 @@
-// BasicFormatter.qunit.ts - QUnit tests for CpcLoco BasicFormatter
-//
-// qunit dist/test/BasicFormatter.qunit.js debug=1 generateAll=true
+import { describe, test, expect } from 'vitest';
+import { BasicLexer } from "../../src/BasicLexer";
+import { BasicParser } from "../../src/BasicParser";
+import { BasicFormatter } from "../../src/BasicFormatter";
 
-import { BasicLexer } from "../BasicLexer"; // we use BasicLexer here just for convenient input
-import { BasicParser } from "../BasicParser";
-import { BasicFormatter } from "../BasicFormatter";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
+// Infer types locally
+type TestsType = Record<string, string>;
+type AllTestsType = Record<string, TestsType>;
 
-QUnit.dump.maxDepth = 10;
 
 const allTests: AllTestsType = {
 	"after gosub, auto": {
@@ -87,9 +86,7 @@ const allTests: AllTestsType = {
 	}
 };
 
-type hooksWithBasicFormatter = NestedHooks & {
-	basicFormatter: BasicFormatter
-};
+
 
 function createBasicFormatter() {
 	const basicParser = new BasicParser({
@@ -104,12 +101,8 @@ function createBasicFormatter() {
 	});
 }
 
-QUnit.module("BasicFormatter:renumber: Tests", function (hooks) {
-	hooks.before(function () {
-		const thisHooks = hooks as hooksWithBasicFormatter;
-
-		thisHooks.basicFormatter = createBasicFormatter();
-	});
+describe("BasicFormatter:renumber: Tests", () => {
+	const basicFormatter = createBasicFormatter();
 
 	function runSingleTest(basicFormatter: BasicFormatter, key: string) {
 		const newLine = 10,
@@ -122,34 +115,26 @@ QUnit.module("BasicFormatter:renumber: Tests", function (hooks) {
 		return result;
 	}
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const basicParser = new BasicParser({
-				quiet: true
-			}),
-			basicFormatter = new BasicFormatter({
-				lexer: new BasicLexer({
-					keywords: basicParser.getKeywords()
-				}),
-				parser: basicParser
-			});
-
+	function runTestsFor(category: string, tests: TestsType) {
 		for (const key in tests) {
 			if (tests.hasOwnProperty(key)) {
-				const expected = TestHelper.handleBinaryLiterals(tests[key]),
-					result = runSingleTest(basicFormatter, key);
+				const expected = tests[key];
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
-					assert.strictEqual(result, expected, key);
-				}
+				test(`${category}: ${key.substring(0, 50).replace(/\n/g, "\\n")}`, () => {
+					const result = runSingleTest(basicFormatter, key);
+					expect(result).toBe(expected);
+				});
 			}
 		}
 	}
 
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
+	for (const category in allTests) {
+		if (allTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				runTestsFor(category, allTests[category]);
+			});
+		}
+	}
 });
 
 

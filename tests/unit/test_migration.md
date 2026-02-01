@@ -44,12 +44,12 @@ Edit the new `.test.ts` file:
 
 - [x] DiskImage
 - [x] BasicTokenizer
-- [ ] BasicParser
-- [ ] BasicLexer
-- [ ] BasicFormatter
-- [ ] CodeGeneratorBasic
-- [ ] CodeGeneratorJs
-- [ ] CodeGeneratorToken
+- [x] BasicParser
+- [x] BasicLexer
+- [x] BasicFormatter
+- [x] CodeGeneratorBasic
+- [x] CodeGeneratorJs
+- [x] CodeGeneratorToken
 - [ ] CpcVm
 - [ ] Diff
 - [ ] Model

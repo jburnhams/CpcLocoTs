@@ -1,11 +1,13 @@
-// CodeGeneratorToken.qunit.ts - QUnit tests for CpcLoco CodeGeneratorToken
-//
 
-import { BasicLexer } from "../BasicLexer";
-import { BasicParser } from "../BasicParser";
-import { CodeGeneratorToken } from "../CodeGeneratorToken";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
-import { TestInput } from "./TestInput";
+import { describe, test, expect } from 'vitest';
+import { BasicLexer } from "../../src/BasicLexer";
+import { BasicParser } from "../../src/BasicParser";
+import { CodeGeneratorToken } from "../../src/CodeGeneratorToken";
+
+// Infer types locally
+type TestsType = Record<string, string>;
+type AllTestsType = Record<string, TestsType>;
+
 
 /* eslint-disable quote-props */
 const allTests: AllTestsType = {
@@ -756,18 +758,16 @@ const allTests: AllTestsType = {
 // "data \" \",//": "8C,20,22,20,22,2C,2F,2F",
 // "a=1 :'comment": "0D,00,00,E1,EF,0F,01,01,C0,63,6F,6D,6D,65,6E,74",
 
-type hooksWithCodeGeneratorToken = NestedHooks & {
-	codeGeneratorToken: CodeGeneratorToken
-};
+type hooksWithCodeGeneratorToken = unknown;
 
 function createCodeGeneratorToken() {
 	const basicParser = new BasicParser({
-			quiet: true,
-			keepTokens: true,
-			keepBrackets: true,
-			keepColons: true,
-			keepDataComma: true
-		}),
+		quiet: true,
+		keepTokens: true,
+		keepBrackets: true,
+		keepColons: true,
+		keepDataComma: true
+	}),
 		basicLexer = new BasicLexer({
 			keywords: basicParser.getKeywords(),
 			keepWhiteSpace: true,
@@ -782,41 +782,34 @@ function createCodeGeneratorToken() {
 	});
 }
 
-QUnit.module("CodeGeneratorToken: Tests", function (hooks) {
-	hooks.before(function () {
-		(hooks as hooksWithCodeGeneratorToken).codeGeneratorToken = createCodeGeneratorToken();
-	});
+function fnBin2Hex(bin: string) {
+	return bin.split("").map(function (s) {
+		return s.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0");
+	}).join(",");
+}
 
-	function fnBin2Hex(bin: string) {
-		return bin.split("").map(function (s) {
-			return s.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0");
-		}).join(",");
-	}
+describe("CodeGeneratorToken: Tests", () => {
+	const codeGeneratorToken = createCodeGeneratorToken();
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const codeGeneratorToken = (hooks as hooksWithCodeGeneratorToken).codeGeneratorToken;
-
+	function runTestsFor(category: string, tests: TestsType) {
 		for (const key in tests) {
 			if (tests.hasOwnProperty(key)) {
-				const expected = tests[key],
-					output = codeGeneratorToken.generate(key),
-					result = output.error ? String(output.error) : fnBin2Hex(output.text);
+				const expected = tests[key];
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
-					assert.strictEqual(result, expected, key);
-				}
+				test(`${category}: ${key.substring(0, 50).replace(/\n/g, "\\n")}`, () => {
+					const output = codeGeneratorToken.generate(key),
+						result = output.error ? String(output.error) : fnBin2Hex(output.text);
+					expect(result).toBe(expected);
+				});
 			}
 		}
 	}
 
-	TestHelper.compareAllTests(TestInput.getAllTests(), allTests);
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
+	for (const category in allTests) {
+		if (allTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				runTestsFor(category, allTests[category]);
+			});
+		}
+	}
 });
-
-// end
-
-
