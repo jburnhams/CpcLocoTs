@@ -40,7 +40,7 @@
 							<br>
 							<select id="basicVersionSelect" title="Select BASIC">
 								<option value="1.0" title="BASIC 1.0">1.0</option>
-								<option value="1.1" title="BASIC 1.1" default>1.1</option>
+								<option value="1.1" title="BASIC 1.1" selected>1.1</option>
 							</select>
 							<label for="basicVersionSelect" title="BASIC version">BASIC</label>
 						</fieldset>
@@ -363,7 +363,7 @@
 
 	<a id="screenshotLink"></a>
 	<script>
-		var cpcConfig = { // it is possible to override the config in cpcconfig here:
+		const cpcConfig = { // it is possible to override the config in cpcconfig here:
 			//databaseDirs: "./examples,https://benchmarko.github.io/CpcLocoApps/apps,storage"
 			//databaseDirs: "./examples,../../CpcLocoApps/apps,storage" // local test
 		};
