@@ -50,7 +50,7 @@ Edit the new `.test.ts` file:
 - [x] CodeGeneratorBasic
 - [x] CodeGeneratorJs
 - [x] CodeGeneratorToken
-- [ ] CpcVm
+- [x] CpcVm
 - [ ] Diff
 - [ ] Model
 - [ ] Sound
@@ -58,3 +58,7 @@ Edit the new `.test.ts` file:
 - [ ] Z80Disass
 - [ ] ZipFile
 - [ ] testParseExamples
+
+## Migration Notes
+
+- **CpcVm**: Replaced `TestHelper.generateAllTests` with a local loop to generate tests from `allTests` object. Replaced `QUnit.module` with `describe`. Updated imports to point to `../../src/`.

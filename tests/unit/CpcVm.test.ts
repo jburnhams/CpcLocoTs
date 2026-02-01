@@ -1,15 +1,18 @@
 // CpcVm.qunit.ts - QUnit tests for CpcLoco CpcVm
 //
 
-import { Utils } from "../Utils";
-import { CpcVm, CpcVmOptions, FileMeta } from "../CpcVm";
-import { ICanvas, VmInputParas } from "../Interfaces";
-import { Keyboard } from "../Keyboard";
-import { Sound } from "../Sound";
-import { Variables } from "../Variables";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
+import { describe, test, expect, beforeAll, beforeEach } from 'vitest';
+import { Utils } from "../../src/Utils";
+import { CpcVm, CpcVmOptions, FileMeta } from "../../src/CpcVm";
+import { ICanvas, VmInputParas } from "../../src/Interfaces";
+import { Keyboard } from "../../src/Keyboard";
+import { Sound } from "../../src/Sound";
+import { Variables } from "../../src/Variables";
 
 type TestFunctionInputType = string | number | undefined;
+
+type TestsType = Record<string, string>;
+type AllTestsType = Record<string, TestsType>;
 
 // https://www.cpcwiki.eu/index.php/Locomotive_BASIC
 
@@ -2401,10 +2404,6 @@ const lastTestFunctions: Record<string, TestFunctionInputType[]>[] = [], // esli
 	} as Variables;
 
 
-type hooksWithCpcVm = NestedHooks & {
-	cpcVm: CpcVm
-};
-
 function createCpcVm() {
 	const options: CpcVmOptions = {
 		canvas: mockCanvas,
@@ -2418,9 +2417,11 @@ function createCpcVm() {
 }
 
 
-QUnit.module("CpcVm: Tests", function (hooks) {
-	hooks.before(function () {
-		(hooks as hooksWithCpcVm).cpcVm = createCpcVm();
+describe("CpcVm: Tests", function () {
+	let cpcVm: CpcVm;
+
+	beforeAll(function () {
+		cpcVm = createCpcVm();
 	});
 
 	function deleteObjectContents(obj: Record<string, unknown>) {
@@ -3374,32 +3375,31 @@ QUnit.module("CpcVm: Tests", function (hooks) {
 		return result;
 	}
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const cpcVm = (hooks as hooksWithCpcVm).cpcVm,
-			testFunction = allTestFunctions[category];
+	for (const category in allTests) {
+		if (allTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				const tests = allTests[category];
+				const testFunction = allTestFunctions[category];
 
-		for (const key in tests) {
-			if (tests.hasOwnProperty(key)) {
-				const expected = tests[key],
-					result = runSingleTest(testFunction, cpcVm, cpcVm.getOptions(), key, expected, category);
+				for (const key in tests) {
+					if (tests.hasOwnProperty(key)) {
+						test(key || "<empty>", () => {
+							const expected = tests[key],
+								result = runSingleTest(testFunction, cpcVm, cpcVm.getOptions(), key, expected, category);
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
+							expect(result).toBe(expected);
+						});
+					}
 				}
-				if (assert) {
-					assert.strictEqual(result, expected, key);
-				}
-			}
+			});
 		}
 	}
-
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
 });
 
-QUnit.module("CpcVm: vm functions", function (hooks) {
-	const that = {} as { cpcVm: CpcVm }; // eslint-disable-line consistent-this
+describe("CpcVm: vm functions", function () {
+	let cpcVm: CpcVm;
 
-	hooks.beforeEach(function () {
+	beforeEach(function () {
 		const config: CpcVmOptions = {
 			canvas: mockCanvas,
 			keyboard: mockKeyboard,
@@ -3408,10 +3408,10 @@ QUnit.module("CpcVm: vm functions", function (hooks) {
 			quiet: true
 		};
 
-		that.cpcVm = new CpcVm(config);
+		cpcVm = new CpcVm(config);
 	});
 
-	QUnit.test("init without options", function (assert) {
+	test("init without options", function () {
 		const minimalCanvas = {
 			reset: () => undefined,
 			setOptions: (..._args) => undefined
@@ -3430,14 +3430,12 @@ QUnit.module("CpcVm: vm functions", function (hooks) {
 				variables: minimalVariables
 			});
 
-		assert.ok(cpcVm, "defined");
+		expect(cpcVm).toBeTruthy();
 	});
 
-	QUnit.test("vmReset", function (assert) {
-		const cpcVm = that.cpcVm;
-
+	test("vmReset", function () {
 		cpcVm.vmReset();
-		assert.ok(cpcVm, "defined");
+		expect(cpcVm).toBeTruthy();
 	});
 });
 
