@@ -38,95 +38,62 @@ describe('Browser Bundle Tests', () => {
     expect(fs.existsSync(iifeBundlePath), 'Minified bundle should exist. Run `npm run build` first.').toBeTruthy();
 
     const bundleCode = fs.readFileSync(iifeBundlePath, 'utf8');
-    const context: Record<string, any> = { window: {}, globalThis: {} };
+    const context: Record<string, any> = { window: {}, globalThis: {}, Polyfills: { isNodeAvailable: false, console: console } };
     vm.createContext(context);
 
     expect(() => {
       vm.runInContext(bundleCode, context);
     }).not.toThrow();
 
-    const globalApi = context.window[globalName] ?? context.globalThis[globalName];
+    const globalApi = context.window['CpcLoco'] ?? context.globalThis['CpcLoco'];
     expect(globalApi).toBeTruthy();
-    expect(typeof globalApi.hello).toBe('function');
-    expect(typeof globalApi.goodbye).toBe('function');
-    expect(typeof globalApi.Greeter).toBe('function');
+    expect(typeof globalApi.addIndex).toBe('function');
+    expect(typeof globalApi.addItem).toBe('function');
   });
 
   test('ESM bundle can be imported directly', async () => {
     expect(fs.existsSync(esmBundlePath), 'ESM bundle should exist. Run `npm run build` first.').toBeTruthy();
 
+    // We need to mock global window/Polyfills for the ESM import side-effects
+    (global as any).window = (global as any).window || {};
+    (global as any).Polyfills = (global as any).Polyfills || { console: console, isNodeAvailable: true };
+    (global as any).window.Polyfills = (global as any).Polyfills;
+
     const moduleUrl = pathToFileURL(esmBundlePath).href;
     const mod = await import(moduleUrl);
 
-    expect(typeof mod.hello).toBe('function');
-    expect(typeof mod.goodbye).toBe('function');
-    expect(typeof mod.Greeter).toBe('function');
+    expect(mod.CpcLoco).toBeTruthy();
+    expect(typeof mod.CpcLoco.addIndex).toBe('function');
   });
 
   test('bundle size is reasonable', () => {
     const stats = fs.statSync(iifeBundlePath);
     const sizeKB = stats.size / 1024;
 
-    // Bundle should be less than 100KB
-    expect(sizeKB).toBeLessThan(100);
+    // Bundle should be less than 500KB (increased for real app)
+    expect(sizeKB).toBeLessThan(500);
 
-    // Bundle should be more than 0.1KB (sanity check)
-    expect(sizeKB).toBeGreaterThan(0.1);
+    // Bundle should be more than 10KB (sanity check)
+    expect(sizeKB).toBeGreaterThan(10);
   });
 });
 
 describe('Functional Tests - Verify Bundle Works Correctly', () => {
-  // Helper to load the bundle and get its exports exactly as the browser does
+  // Helper to load the bundle and get its imports
   async function loadBundleModule() {
+    // We need to mock global window/Polyfills for the ESM import side-effects
+    (global as any).window = (global as any).window || {};
+    (global as any).Polyfills = (global as any).Polyfills || { console: console, isNodeAvailable: true };
+    (global as any).window.Polyfills = (global as any).Polyfills;
+
     const moduleUrl = pathToFileURL(esmBundlePath);
     return await import(moduleUrl.href);
   }
 
-  test('hello function works in browser bundle', async () => {
+  test('CpcLoco class is exported in browser bundle', async () => {
     const bundle = await loadBundleModule();
-
-    expect(bundle.hello()).toBe('Hello, World!');
-    expect(bundle.hello('Browser')).toBe('Hello, Browser!');
-  });
-
-  test('goodbye function works in browser bundle', async () => {
-    const bundle = await loadBundleModule();
-
-    expect(bundle.goodbye()).toBe('Goodbye, World!');
-    expect(bundle.goodbye('Browser')).toBe('Goodbye, Browser!');
-  });
-
-  test('Greeter class works in browser bundle', async () => {
-    const bundle = await loadBundleModule();
-
-    const greeter = new bundle.Greeter('Test');
-    expect(greeter.greet()).toBe('Hello, Test!');
-    expect(greeter.farewell()).toBe('Goodbye, Test!');
-  });
-
-  test('IIFE bundle exports work correctly', () => {
-    const bundleCode = fs.readFileSync(iifeBundlePath, 'utf8');
-    const context: Record<string, any> = {
-      window: {},
-      globalThis: {},
-      console: console // Allow console for debugging
-    };
-    vm.createContext(context);
-    vm.runInContext(bundleCode, context);
-
-    const api = context.window[globalName] ?? context.globalThis[globalName];
-
-    // Test hello function
-    expect(api.hello()).toBe('Hello, World!');
-    expect(api.hello('IIFE')).toBe('Hello, IIFE!');
-
-    // Test goodbye function
-    expect(api.goodbye()).toBe('Goodbye, World!');
-    expect(api.goodbye('IIFE')).toBe('Goodbye, IIFE!');
-
-    // Test Greeter class
-    const greeter = new api.Greeter('VM');
-    expect(greeter.greet()).toBe('Hello, VM!');
-    expect(greeter.farewell()).toBe('Goodbye, VM!');
+    expect(bundle.CpcLoco).toBeDefined();
+    expect(typeof bundle.CpcLoco.fnOnLoad).toBe('function');
   });
 });
+

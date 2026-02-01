@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="title">index2 page moved</title>
+    <script>
+       function loadNewDoc() {
+            window.location.href = window.location.href.replace("index2.html", "index.html");
+            window.document.getElementsByTagName("a")[0].href = window.location.href; // not really needed if JS is activated
+       };
+    </script>
+ </head>
+ <body onLoad="loadNewDoc()">
+<p>Page moved to <a href="index.html">index.html</a></p>
+</body>
+</html>
+
+

@@ -25,3 +25,4 @@ describe('App', () => {
     expect(screen.getByTestId('greeting-result').textContent).toBe('Hello, World!');
   });
 });
+

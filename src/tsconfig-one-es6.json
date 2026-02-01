@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig-one.json",
+  "compilerOptions": {
+    "target": "es6",
+    "outFile": "../dist/cpclocots_es6.js",
+    "types": ["node"]
+  }
+}
+
+
+
