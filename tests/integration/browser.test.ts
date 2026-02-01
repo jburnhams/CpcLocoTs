@@ -33,6 +33,15 @@ const distDir = path.join(projectRoot, 'dist');
 const iifeBundlePath = path.join(distDir, 'browser', `${libraryName}.min.js`);
 const esmBundlePath = path.join(distDir, 'bundles', `${libraryName}.esm.js`);
 
+const localStorageMock = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+  clear: () => {},
+  length: 0,
+  key: () => null
+};
+
 describe('Browser Bundle Tests', () => {
   test('IIFE bundle attaches global namespace', () => {
     expect(fs.existsSync(iifeBundlePath), 'Minified bundle should exist. Run `npm run build` first.').toBeTruthy();
@@ -58,6 +67,9 @@ describe('Browser Bundle Tests', () => {
     (global as any).window = (global as any).window || {};
     (global as any).Polyfills = (global as any).Polyfills || { console: console, isNodeAvailable: true };
     (global as any).window.Polyfills = (global as any).Polyfills;
+    (global as any).window.localStorage = localStorageMock;
+    (global as any).Polyfills.localStorage = localStorageMock;
+
 
     const moduleUrl = pathToFileURL(esmBundlePath).href;
     const mod = await import(moduleUrl);
@@ -85,6 +97,8 @@ describe('Functional Tests - Verify Bundle Works Correctly', () => {
     (global as any).window = (global as any).window || {};
     (global as any).Polyfills = (global as any).Polyfills || { console: console, isNodeAvailable: true };
     (global as any).window.Polyfills = (global as any).Polyfills;
+    (global as any).window.localStorage = localStorageMock;
+    (global as any).Polyfills.localStorage = localStorageMock;
 
     const moduleUrl = pathToFileURL(esmBundlePath);
     return await import(moduleUrl.href);
@@ -96,4 +110,3 @@ describe('Functional Tests - Verify Bundle Works Correctly', () => {
     expect(typeof bundle.CpcLoco.fnOnLoad).toBe('function');
   });
 });
-
