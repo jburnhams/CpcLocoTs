@@ -5,10 +5,9 @@ import assert from 'node:assert';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const esmPath = path.join(__dirname, '..', 'dist', 'esm', 'index.js');
+const esmPath = path.join(__dirname, '..', 'dist', 'bundles', 'cpclocots.esm.js');
 const mod = await import(pathToFileURL(esmPath).href);
 
-// Update these assertions to match your library's exports
-assert.strictEqual(typeof mod.hello, 'function', 'ESM build should export hello');
+assert.strictEqual(typeof mod.CpcLoco, 'function', 'ESM build should export CpcLoco class');
 
 console.log('esm smoke test passed');

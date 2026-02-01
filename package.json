@@ -7,7 +7,7 @@
     "url": "https://github.com/benchmarko/CPCBasicTS.git"
   },
   "main": "dist/cjs/index.cjs",
-  "module": "dist/esm/index.js",
+  "module": "dist/bundles/cpclocots.esm.js",
   "types": "dist/types/index.d.ts",
   "type": "module",
   "exports": {
@@ -16,9 +16,9 @@
       "browser": {
         "default": "./dist/bundles/cpclocots.esm.js"
       },
-      "import": "./dist/esm/index.js",
+      "import": "./dist/bundles/cpclocots.esm.js",
       "require": "./dist/cjs/index.cjs",
-      "default": "./dist/esm/index.js"
+      "default": "./dist/bundles/cpclocots.esm.js"
     },
     "./bundle": {
       "types": "./dist/types/index.d.ts",
@@ -33,7 +33,6 @@
   "unpkg": "dist/browser/cpclocots.min.js",
   "jsdelivr": "dist/browser/cpclocots.min.js",
   "files": [
-    "dist/esm",
     "dist/cjs",
     "dist/bundles",
     "dist/browser",
@@ -42,10 +41,10 @@
   ],
   "scripts": {
     "clean": "node scripts/clean.mjs",
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:bundles": "node scripts/build-bundles.mjs",
-    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:bundles",
+    "build:lib": "cross-env APP_BUILD_TARGET=lib vite build",
+    "build:browser": "cross-env APP_BUILD_TARGET=browser vite build",
+    "build:browser:min": "cross-env APP_BUILD_TARGET=browser-min vite build",
+    "build": "npm run clean && npm run build:lib && npm run build:browser && npm run build:browser:min",
     "build:docs": "npm run build -w docs",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
@@ -68,12 +67,15 @@
     "docs"
   ],
   "devDependencies": {
+    "@napi-rs/canvas": "^0.1.44",
     "@types/node": "^24.10.4",
     "@vitest/coverage-v8": "^4.0.16",
+    "cross-env": "^10.1.0",
     "gh-pages": "^4.0.0",
-    "@napi-rs/canvas": "^0.1.44",
     "jsdom": "^24.0.0",
     "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.16"
   },
   "engines": {
