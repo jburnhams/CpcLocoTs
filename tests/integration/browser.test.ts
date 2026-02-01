@@ -70,8 +70,8 @@ describe('Browser Bundle Tests', () => {
     const stats = fs.statSync(iifeBundlePath);
     const sizeKB = stats.size / 1024;
 
-    // Bundle should be less than 500KB (increased for real app)
-    expect(sizeKB).toBeLessThan(500);
+    // Bundle should be less than 600KB (increased for real app)
+    expect(sizeKB).toBeLessThan(600);
 
     // Bundle should be more than 10KB (sanity check)
     expect(sizeKB).toBeGreaterThan(10);

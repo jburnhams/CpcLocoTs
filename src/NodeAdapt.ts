@@ -3,6 +3,8 @@
 
 import { ViewID } from "./Constants";
 import { Utils } from "./Utils";
+import { View } from "./View";
+import { Controller } from "./Controller";
 
 // examples:
 // npm run build:one
@@ -88,9 +90,7 @@ export class NodeAdapt {
 			AudioContext: audioContext
 		});
 
-		// eslint-disable-next-line no-eval
-		const nodeExports = eval("exports"),
-			view = nodeExports.View,
+		const view = View,
 			setSelectOptionsOrig = view.prototype.setSelectOptions;
 
 		// fast hacks...
@@ -107,6 +107,7 @@ export class NodeAdapt {
 					}
 				};
 			}
+			// @ts-ignore
 			return setSelectOptionsOrig(id, options);
 		};
 
@@ -118,14 +119,15 @@ export class NodeAdapt {
 					Utils.console.log(value);
 				}
 			}
+			// @ts-ignore
 			return setAreaValueOrig(id, value);
 		};
 
 		// https://nodejs.dev/learn/accept-input-from-the-command-line-in-nodejs
 		// readline?
-		const controller = nodeExports.Controller;
+		const controller = Controller;
 
-		controller.prototype.startWithDirectInput = function () {
+		(controller.prototype as any).startWithDirectInput = function () {
 			this.stopUpdateCanvas();
 			Utils.console.log("We are ready.");
 		};
@@ -178,7 +180,7 @@ export class NodeAdapt {
 			fs.readFile(name2, "utf8", fnDataLoaded);
 		}
 
-		const utils = nodeExports.Utils;
+		const utils = Utils;
 
 		utils.loadScript = (fileOrUrl: string, fnSuccess: ((url2: string, key: string) => void), _fnError: ((url2: string, key: string) => void), key: string) => {
 			const fnLoaded = (error: Error | undefined, data?: string) => {

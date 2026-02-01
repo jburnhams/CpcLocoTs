@@ -98,6 +98,14 @@ function resolveSpecifier(fromPath, spec) {
     const moduleEntry = require.resolve(spec, { paths: [path.dirname(fromPath)] });
     return moduleEntry;
   } catch {
+    // try to resolve local import without extension (e.g. "./Z80Disass" -> "./Z80Disass.js")
+    if (spec.startsWith('.')) {
+      const resolved = path.resolve(path.dirname(fromPath), spec);
+      const withJs = `${resolved}.js`;
+      if (fs.existsSync(withJs)) {
+        return withJs;
+      }
+    }
     return null;
   }
 }
@@ -114,7 +122,7 @@ function parseModule(modulePath) {
   const exportFrom = [];
   const exportAll = [];
 
-  const importRegex = /^import\s+(.+?)\s+from\s+['\"](.+?)['\"];?\s*$/gm;
+  const importRegex = /^import\s+(.+?)\s+from\s+['\"](.+?)['\"];?.*$/gm;
   code = code.replace(importRegex, (match, clause, spec) => {
     const resolved = resolveSpecifier(absolute, spec);
     if (resolved) {
@@ -123,7 +131,7 @@ function parseModule(modulePath) {
     return '';
   });
 
-  const exportFromRegex = /^export\s+{([^}]+)}\s+from\s+['\"](.+?)['\"];?\s*$/gm;
+  const exportFromRegex = /^export\s+{([^}]+)}\s+from\s+['\"](.+?)['\"];?.*$/gm;
   code = code.replace(exportFromRegex, (match, names, spec) => {
     const resolved = resolveSpecifier(absolute, spec);
     if (resolved) {
@@ -133,7 +141,7 @@ function parseModule(modulePath) {
     return '';
   });
 
-  const exportAllRegex = /^export\s+\*\s+from\s+['\"](.+?)['\"];?\s*$/gm;
+  const exportAllRegex = /^export\s+\*\s+from\s+['\"](.+?)['\"];?.*$/gm;
   code = code.replace(exportAllRegex, (match, spec) => {
     const resolved = resolveSpecifier(absolute, spec);
     if (resolved) {
