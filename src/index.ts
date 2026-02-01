@@ -228,7 +228,7 @@ export class CpcLoco {
 
 	private static fnDoStart() {
 		const startConfig = CpcLoco.config,
-			winCpcConfig = window.cpcConfig || {};
+			winCpcConfig = (typeof window !== "undefined" && window.cpcConfig) || {};
 
 		Object.assign(startConfig, cpcconfig, winCpcConfig);
 
@@ -289,11 +289,13 @@ declare global {
 	}
 }
 
-window.CpcLoco = CpcLoco;
+if (typeof window !== "undefined") {
+	window.CpcLoco = CpcLoco;
 
-window.onload = () => {
-	CpcLoco.fnOnLoad();
-};
+	window.onload = () => {
+		CpcLoco.fnOnLoad();
+	};
+}
 
 const MyPolyfills = (typeof window !== "undefined" && window.Polyfills) ? window.Polyfills : (globalThis as any).Polyfills;
 if (MyPolyfills && MyPolyfills.isNodeAvailable) {
