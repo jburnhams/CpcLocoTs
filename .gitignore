@@ -1,6 +1,6 @@
 node_modules
 dist
 docs-dist
-coverage
 .DS_Store
 *.log
+docs/public/cpclocots.*
