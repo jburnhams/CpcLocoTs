@@ -34,7 +34,7 @@ import { View, SelectOptionElement, AreaInputElement } from "./View";
 import { DragElement, DragElementOptions } from "./DragElement";
 import { RsxAmsdos } from "./RsxAmsdos";
 import { RsxCpcLoco } from "./RsxCpcLoco";
-import { Z80Disass } from "./Z80Disass"; // test
+import { Z80Disass } from "./Z80Disass";
 
 
 interface FileMetaAndData {

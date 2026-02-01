@@ -44,7 +44,7 @@
     "clean": "node scripts/clean.mjs",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:bundles": "node scripts/build-bundles.mjs",
+    "build:bundles": "vite build",
     "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:bundles",
     "build:docs": "npm run build -w docs",
     "test": "vitest run",
@@ -74,6 +74,7 @@
     "@napi-rs/canvas": "^0.1.44",
     "jsdom": "^24.0.0",
     "typescript": "^5.9.3",
+    "vite": "^4.0.16",
     "vitest": "^4.0.16"
   },
   "engines": {
