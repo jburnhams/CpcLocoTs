@@ -2417,7 +2417,7 @@ function createCpcVm() {
 }
 
 
-describe("CpcVm: Tests", function () {
+describe("CpcVm: Tests", () => {
 	let cpcVm: CpcVm;
 
 	beforeAll(function () {
