@@ -118,7 +118,7 @@ return setSelectOptionsOrig(id as ViewID, options);
 					Utils.console.log(value);
 				}
 			}
-			return setAreaValueOrig(id as any, value);
+return setAreaValueOrig(id as ViewID, value);
 		};
 
 		// https://nodejs.dev/learn/accept-input-from-the-command-line-in-nodejs
