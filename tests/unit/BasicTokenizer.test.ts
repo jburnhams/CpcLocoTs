@@ -1,12 +1,11 @@
-// BasicTokenizer.qunit.ts - QUnit tests for CpcLoco BasicTokenizer
-//
+import { describe, test, expect } from 'vitest';
+import { BasicTokenizer } from "../../src/BasicTokenizer";
 
-import { BasicTokenizer } from "../BasicTokenizer";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
+// TestHelper types are not needed if we infer or inline them, or we can mock them.
+// For now, let's define the types locally if needed to avoid importing the legacy helper.
+type TestsType = Record<string, string>;
+type AllTestsType = Record<string, TestsType>;
 
-QUnit.dump.maxDepth = 10;
-
-// tests marked with "L" are full programs with line numbers
 
 const allTests: AllTestsType = {
 	numbers: {
@@ -758,10 +757,6 @@ const moreTests: AllTestsType = { // eslint-disable-line one-var
 };
 
 
-type hooksWithBasicTokenizer = NestedHooks & {
-	basicTokenizer: BasicTokenizer,
-};
-
 function createBasicTokenizer() {
 	return new BasicTokenizer();
 }
@@ -785,63 +780,35 @@ function runSingleTest(basicTokenizer: BasicTokenizer, key: string) {
 	return result;
 }
 
-QUnit.module("BasicTokenizer:decode: Tests", function (hooks) {
-	hooks.before(function () {
-		(hooks as hooksWithBasicTokenizer).basicTokenizer = createBasicTokenizer();
-	});
+describe("BasicTokenizer:decode: Tests", () => {
+	const basicTokenizer = createBasicTokenizer();
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const basicTokenizer = (hooks as hooksWithBasicTokenizer).basicTokenizer;
-
+	function runTestsFor(category: string, tests: TestsType) {
 		for (const key in tests) {
 			if (tests.hasOwnProperty(key)) {
-				const expected = tests[key],
-					result = runSingleTest(basicTokenizer, key);
+				const expected = tests[key];
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
-					const firstLine = expected.substring(0, expected.indexOf("\n")) || expected;
-
-					assert.strictEqual(result, expected, firstLine);
-				}
+				test(`${category}: ${key.substring(0, 30)}...`, () => {
+					const result = runSingleTest(basicTokenizer, key);
+					expect(result).toBe(expected);
+				});
 			}
 		}
 	}
 
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
-});
-
-
-QUnit.module("BasicTokenizer:decode: More Tests", function (hooks) {
-	hooks.before(function () {
-		(hooks as hooksWithBasicTokenizer).basicTokenizer = createBasicTokenizer();
-	});
-
-	function runTestsForMore(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const basicTokenizer = (hooks as hooksWithBasicTokenizer).basicTokenizer;
-
-		for (const key in tests) {
-			if (tests.hasOwnProperty(key)) {
-				const expected = tests[key],
-					result = runSingleTest(basicTokenizer, key);
-
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
-					const firstLine = expected.substring(0, expected.indexOf("\n")) || expected;
-
-					assert.strictEqual(result, expected, firstLine);
-				}
-			}
+	for (const category in allTests) {
+		if (allTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				runTestsFor(category, allTests[category]);
+			});
 		}
 	}
 
-	TestHelper.generateAllTests(moreTests, runTestsForMore, hooks);
+	for (const category in moreTests) {
+		if (moreTests.hasOwnProperty(category)) {
+			describe(category, () => {
+				runTestsFor(category, moreTests[category]);
+			});
+		}
+	}
 });
-
-
