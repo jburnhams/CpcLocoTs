@@ -29,6 +29,12 @@ Located primarily in `CpcVm.ts`, the VM provides the environment in which the co
     *   **Sound:** `Sound.ts` uses the Web Audio API to emulate the AY-3-8912 sound chip commands (`SOUND`, `ENV`).
     *   **Input:** `Keyboard.ts` and `VirtualKeyboard.ts` buffer input for `INKEY$` and `INPUT` commands.
     *   **File System:** `RsxAmsdos.ts` and `DiskImage.ts` simulate the disc interface (AMSDOS), allowing file loading/saving via browser local storage or imported files.
+### 4. Z80 Support and Disassembly
+*   **Z80Disass:** The `Z80Disass.ts` component is a **passive disassembler**, not an emulator. It is used solely to provide a human-readable "Disassembly View" of the memory in the UI. It translates memory bytes into Z80 assembly strings (e.g., `LD A, (HL)`).
+*   **No Native Assembly Execution:** The VM does not contain a general-purpose Z80 CPU emulator. It cannot execute arbitrary machine code or binary headers typically found in `.bin` files unless they strictly use high-level traps.
+*   **High-Level Emulation (HLE) Traps:** The BASIC `CALL` command is implemented in `CpcVm.ts` as a trap mechanism. It checks the target address against a list of known firmware entry points (e.g., `&BB18` for `KM Wait Key`, `&BB4E` for `TXT Initialize`).
+    *   **Supported:** Calls to these specific "hooked" addresses execute equivalent JavaScript functions.
+    *   **Unsupported:** Calls to any other address (including efficient custom assembly routines in games) do nothing or fail, as there is no CPU logic to step through the Z80 opcodes at that location.
 
 ## Comparison with Traditional Emulation
 
@@ -47,7 +53,7 @@ Located primarily in `CpcVm.ts`, the VM provides the environment in which the co
 ## Limitations and Opportunities
 
 ### Limitations
-1.  **Z80 Assembly Support:** The biggest limitation is the inability to run native Z80 machine code. Games or demos using `CALL &xxxx` to jump to assembly routines will fail unless that specific address is hooked in `CpcVm.ts` or `Z80Disass.ts` (which seems to be a disassembler, not a full runner).
+1.  **Z80 Assembly Support:** The biggest limitation is the inability to run native Z80 machine code. Games or demos using `CALL &xxxx` to jump to assembly routines will fail unless that specific address is hooked in `CpcVm.ts` (HLE pattern). `Z80Disass.ts` exists only for visual inspection, not execution.
 2.  **Hardware Tricks:** Raster interrupts, hardware scrolling tricks, and CRTC register abuse common in advanced demos cannot be emulated accurately because the rendering is abstracted to Canvas calls, not beam-synchronized pixel generation.
 3.  **Timing:** `WAIT FRAME` is approximated. Code relying on precise cycle counting for visual effects will likely desynchronize.
 
