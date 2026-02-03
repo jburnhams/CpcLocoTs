@@ -5,7 +5,7 @@ import { ModelPropID } from "../../src/Constants";
 import { Model } from "../../src/Model";
 
 describe("Model: Properties", () => {
-	let model: Model;
+	const context = {} as { model: Model };
 
 	function convId(id: string) {
 		return id as ModelPropID;
@@ -16,7 +16,7 @@ describe("Model: Properties", () => {
 			p1: "v1"
 		};
 
-		model = new Model(config);
+		context.model = new Model(config);
 	});
 
 	test("init without options", () => {
@@ -26,23 +26,23 @@ describe("Model: Properties", () => {
 	});
 
 	test("properties", () => {
-		const model = that.model,
+		const model = context.model,
 			prop1 = convId("p1"),
 			prop2 = convId("p2"),
 			prop3 = convId("p3");
 
-		that.model.setProperty(prop2, "v2");
+		context.model.setProperty(prop2, "v2");
 
 		let allProperties = model.getAllInitialProperties();
 
-		expect(Object.keys(allProperties)).toEqual(["p1"]);
+		expect(Object.keys(allProperties).join(" ")).toBe("p1");
 
 		expect(model.getProperty(prop1)).toBe("v1");
 		expect(model.getProperty(prop2)).toBe("v2");
 		expect(model.getProperty(convId(""))).toBeUndefined();
 
 		allProperties = model.getAllProperties();
-		expect(Object.keys(allProperties)).toEqual(["p1", "p2"]);
+		expect(Object.keys(allProperties).join(" ")).toBe("p1 p2");
 		expect(allProperties.p1).toBe("v1");
 		expect(allProperties.p2).toBe("v2");
 
@@ -53,10 +53,10 @@ describe("Model: Properties", () => {
 		expect(model.getProperty(prop3)).toBe("v3");
 
 		allProperties = model.getAllProperties();
-		expect(Object.keys(allProperties)).toEqual(["p1", "p2", "p3"]);
+		expect(Object.keys(allProperties).join(" ")).toBe("p1 p2 p3");
 
 		allProperties = model.getAllInitialProperties();
-		expect(Object.keys(allProperties)).toEqual(["p1"]);
+		expect(Object.keys(allProperties).join(" ")).toBe("p1");
 	});
 });
 
@@ -86,7 +86,7 @@ describe("Model: Databases", () => {
 
 		model.addDatabases(exampleDatabases);
 
-		expect(Object.keys(databases)).toEqual(["db1", "db2"]);
+		expect(Object.keys(databases).join(" ")).toBe("db1 db2");
 
 		model.setProperty(ModelPropID.database, "db1");
 
@@ -104,10 +104,10 @@ describe("Model: Databases", () => {
 
 
 describe("Model: Examples", () => {
-	const that = {} as { model: Model }; // eslint-disable-line consistent-this
+	const context = {} as { model: Model };
 
 	beforeEach(() => {
-		that.model = new Model({});
+		context.model = new Model({});
 
 		const exampleDatabases = {
 				db1: {
@@ -134,18 +134,18 @@ describe("Model: Examples", () => {
 				meta: ""
 			};
 
-		that.model.addDatabases(exampleDatabases);
-		that.model.setProperty(ModelPropID.database, "db1");
-		that.model.setExample(example1);
-		that.model.setExample(example2);
+		context.model.addDatabases(exampleDatabases);
+		context.model.setProperty(ModelPropID.database, "db1");
+		context.model.setExample(example1);
+		context.model.setExample(example2);
 	});
 
 	test("examples", () => {
-		const model = that.model;
+		const model = context.model;
 
 		expect(model.getExample("ex1").key).toBe("ex1");
 		expect(model.getExample("ex2").key).toBe("ex2");
 
-		expect(Object.keys(model.getAllExamples())).toEqual(["ex1", "ex2"]);
+		expect(Object.keys(model.getAllExamples()).join()).toBe("ex1,ex2");
 	});
 });
