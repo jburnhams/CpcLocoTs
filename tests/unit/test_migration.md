@@ -52,7 +52,7 @@ Edit the new `.test.ts` file:
 - [x] CodeGeneratorToken
 - [x] CpcVm
 - [x] Diff
-- [ ] Model
+- [x] Model
 - [ ] Sound
 - [ ] Variables
 - [ ] Z80Disass
@@ -63,3 +63,4 @@ Edit the new `.test.ts` file:
 
 - **CpcVm**: Replaced `TestHelper.generateAllTests` with a local loop to generate tests from `allTests` object. Replaced `QUnit.module` with `describe`. Updated imports to point to `../../src/`.
 - **Diff**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops iterating over `allTests`. Updated imports to `../../src/`.
+- **Model**: Direct translation of QUnit tests to Vitest. Updated imports to `../../src/`.
