@@ -13,7 +13,6 @@ import { Canvas } from "./Canvas";
 import { CodeGeneratorBasic } from "./CodeGeneratorBasic";
 import { CodeGeneratorJs } from "./CodeGeneratorJs";
 import { CodeGeneratorToken } from "./CodeGeneratorToken";
-import { CommonEventHandler } from "./CommonEventHandler";
 import { cpcCharset } from "./cpcCharset";
 import { CpcVm, FileMeta, VmStopEntry } from "./CpcVm";
 import { Diff } from "./Diff";
@@ -70,7 +69,6 @@ export class Controller implements IController {
 	private codeGeneratorBasic?: CodeGeneratorBasic; // for pretty print
 	private readonly model: Model;
 	private readonly view: View;
-	private readonly commonEventHandler: CommonEventHandler;
 
 	private readonly basicLexer: BasicLexer;
 	private readonly basicParser: BasicParser;
@@ -92,6 +90,10 @@ export class Controller implements IController {
 	});
 
 	private readonly vm: CpcVm;
+
+	public getVm(): CpcVm {
+		return this.vm;
+	}
 
 	private readonly noStop: VmStopEntry;
 	private readonly savedStop: VmStopEntry; // backup of stop object
@@ -119,15 +121,6 @@ export class Controller implements IController {
 		this.model = model;
 		this.view = view;
 
-		this.commonEventHandler = new CommonEventHandler({
-			model: model,
-			view: view,
-			controller: this
-		});
-		this.view.addEventListener("click", this.commonEventHandler);
-		this.view.addEventListener("change", this.commonEventHandler);
-
-		this.commonEventHandler.initToggles();
 
 		this.canvas = this.setCanvasType(model.getProperty<string>(ModelPropID.canvasType));
 
@@ -137,7 +130,6 @@ export class Controller implements IController {
 
 		this.fnSpeed();
 
-		this.commonEventHandler.onKbdLayoutSelectChange(this.commonEventHandler.getEventDefById("change", ViewID.kbdLayoutSelect));
 
 		this.keyboard = new Keyboard({
 			view: this.view,
@@ -148,7 +140,6 @@ export class Controller implements IController {
 			this.getVirtualKeyboard();
 		}
 
-		this.commonEventHandler.fnSetUserAction(this.fnOnUserActionHandler); // check first user action, also if sound is not yet on
 
 		this.vm = new CpcVm({
 			canvas: this.canvas,
@@ -200,7 +191,6 @@ export class Controller implements IController {
 
 		view.setSelectValue(ViewID.exampleSelect, example);
 
-		this.hasStorageDatabase = this.initDatabases();
 
 		if (model.getProperty<boolean>(ModelPropID.showCpc)) {
 			this.canvas.startUpdateCanvas();
@@ -231,232 +221,13 @@ export class Controller implements IController {
 		keepTokens: false
 	};
 
-	private static getUniqueDbKey(name: string, databases: DatabasesType) {
-		let key = name,
-			index = 2;
-
-		while (databases[key]) {
-			key = name + index;
-			index += 1;
-		}
-		return key;
-	}
-
-	private initDatabases() {
-		const model = this.model,
-			databases: DatabasesType = {},
-			databaseDirs = model.getProperty<string>(ModelPropID.databaseDirs).split(",");
-		let hasStorageDatabase = false;
-
-		for (let i = 0; i < databaseDirs.length; i += 1) {
-			const databaseDir = databaseDirs[i],
-				parts1 = databaseDir.split("="),
-				databaseSrc = parts1[0],
-				assignedName = parts1.length > 1 ? parts1[1] : "",
-				parts2 = databaseSrc.split("/"),
-				name = assignedName || parts2[parts2.length - 1],
-				key = Controller.getUniqueDbKey(name, databases);
-
-			databases[key] = {
-				text: key,
-				title: databaseSrc,
-				src: databaseSrc
-			};
-			if (databaseDir === "storage") {
-				hasStorageDatabase = true;
-			}
-		}
-		this.model.addDatabases(databases);
-
-		this.setDatabaseSelectOptions();
-		return hasStorageDatabase;
-	}
-
 	private onUserAction(/* event, id */) {
-		this.commonEventHandler.fnSetUserAction(undefined); // deactivate user action
 		this.sound.setActivatedByUser();
 		this.setSoundActive();
 	}
 
-	// Also called from index file 0index.js
-	addIndex(_dir: string, input: Record<string, unknown>): void { // dir maybe ""
-		for (const value in input) {
-			if (input.hasOwnProperty(value)) {
-				const item = input[value] as ExampleEntry[];
 
-				for (let i = 0; i < item.length; i += 1) {
-					//item[i].dir = dir; // TTT to check
-					this.model.setExample(item[i]);
-				}
-			}
-		}
-	}
 
-	// Also called from example files xxxxx.js
-	addItem(key: string, input: string): string { // key maybe ""
-		if (!key) { // maybe ""
-			key = (document.currentScript && document.currentScript.getAttribute("data-key")) || this.model.getProperty<string>(ModelPropID.example);
-			// on IE we can just get the current example
-		}
-		input = input.replace(/^\n/, "").replace(/\n$/, ""); // remove preceding and trailing newlines
-		// beware of data files ending with newlines! (do not use trimEnd)
-
-		const implicitLines = this.model.getProperty<boolean>(ModelPropID.implicitLines),
-			linesOnLoad = this.model.getProperty<boolean>(ModelPropID.linesOnLoad);
-
-		if (input.startsWith("REM ") && !implicitLines && linesOnLoad) {
-			input = Controller.addLineNumbers(input);
-		}
-
-		const example = this.model.getExample(key);
-
-		example.key = key; // maybe changed
-		example.script = input;
-		example.loaded = true;
-		Utils.console.log("addItem:", key);
-		return key;
-	}
-
-	addRsx(key: string, RsxConstructor: new () => ICpcVmRsx): string {
-		if (!key) { // maybe ""
-			key = (document.currentScript && document.currentScript.getAttribute("data-key")) || this.model.getProperty<string>(ModelPropID.example);
-			// on IE we can just get the current example
-		}
-
-		const example = this.model.getExample(key);
-
-		example.key = key; // maybe changed
-		example.rsx = new RsxConstructor();
-		example.loaded = true;
-		Utils.console.log("addItem:", key);
-		return key;
-	}
-
-	private setDatabaseSelectOptions() {
-		const items: SelectOptionElement[] = [],
-			databases = this.model.getAllDatabases(),
-			database = this.model.getProperty<string>(ModelPropID.database);
-
-		for (const value in databases) {
-			if (databases.hasOwnProperty(value)) {
-				const db = databases[value],
-					item: SelectOptionElement = {
-						value: value,
-						text: db.text,
-						title: db.title,
-						selected: value === database
-					};
-
-				items.push(item);
-			}
-		}
-		this.view.setSelectOptions(ViewID.databaseSelect, items);
-	}
-
-	private static getPathFromExample(example: string) {
-		const index = example.lastIndexOf("/");
-		let path = "";
-
-		if (index >= 0) {
-			path = example.substring(0, index);
-		}
-		return path;
-	}
-
-	private static getNameFromExample(example: string) {
-		const index = example.lastIndexOf("/");
-		let name = example;
-
-		if (index >= 0) {
-			name = example.substring(index + 1);
-		}
-		return name;
-	}
-
-	private setDirectorySelectOptions() {
-		const items: SelectOptionElement[] = [],
-			allExamples = this.model.getAllExamples(),
-			examplePath = Controller.getPathFromExample(this.model.getProperty<string>(ModelPropID.example)),
-			directorySeen: Record<string, boolean> = {};
-
-		for (const key in allExamples) {
-			if (allExamples.hasOwnProperty(key)) {
-				const exampleEntry = allExamples[key],
-					value = Controller.getPathFromExample(exampleEntry.key);
-
-				if (!directorySeen[value]) {
-					const item: SelectOptionElement = {
-						value: value,
-						text: value,
-						title: value,
-						selected: value === examplePath
-					};
-
-					items.push(item);
-					directorySeen[value] = true;
-				}
-			}
-		}
-		this.view.setSelectOptions(ViewID.directorySelect, items);
-	}
-
-	setExampleSelectOptions(): void {
-		const maxTitleLength = 160,
-			maxTextLength = 60, // (32 visible?)
-			items: SelectOptionElement[] = [],
-			exampleName = Controller.getNameFromExample(this.model.getProperty<string>(ModelPropID.example)),
-			allExamples = this.model.getAllExamples(),
-			directoryName = this.view.getSelectValue(ViewID.directorySelect),
-			selectDataFiles = this.model.getProperty<boolean>(ModelPropID.selectDataFiles);
-
-		let exampleSelected = false;
-
-		for (const key in allExamples) {
-			if (allExamples.hasOwnProperty(key) && (Controller.getPathFromExample(key) === directoryName)) {
-				const exampleEntry = allExamples[key],
-					exampleName2 = Controller.getNameFromExample(exampleEntry.key);
-
-				if (selectDataFiles || (exampleEntry.meta !== "D")) { // skip data files
-					const title = (exampleName2 + ": " + exampleEntry.title).substring(0, maxTitleLength),
-						item: SelectOptionElement = {
-							value: exampleName2,
-							title: title,
-							text: title.substring(0, maxTextLength),
-							selected: exampleName2 === exampleName
-						};
-
-					if (item.selected) {
-						exampleSelected = true;
-					}
-					items.push(item);
-				}
-			}
-		}
-		if (!exampleSelected && items.length) {
-			items[0].selected = true; // if example is not found, select first element
-		}
-		this.view.setSelectOptions(ViewID.exampleSelect, items);
-	}
-
-	setGalleryAreaInputs(): void {
-		const database = this.model.getDatabase(),
-			directory = this.view.getSelectValue(ViewID.directorySelect),
-			options = this.view.getSelectOptions(ViewID.exampleSelect),
-			inputs: AreaInputElement[] = [];
-
-		for (let i = 0; i < options.length; i += 1) {
-			const item = options[i],
-				input: AreaInputElement = {
-					value: item.value,
-					title: item.title,
-					checked: item.selected,
-					imgUrl: database.src + "/" + directory + "/img/" + item.value + ".png"
-				};
-
-			inputs.push(input);
-		}
-		this.view.setAreaInputList(ViewID.galleryAreaItems, inputs);
-	}
 
 	private static fnSortByStringProperties(a: SelectOptionElement, b: SelectOptionElement) {
 		const x = a.value,
@@ -501,28 +272,6 @@ export class Controller implements IController {
 
 	private static readonly exportEditorText = "<editor>";
 
-	setExportSelectOptions(select: ViewID): void {
-		const dirList = Controller.fnGetStorageDirectoryEntries(),
-			items: SelectOptionElement[] = [],
-			editorText = Controller.exportEditorText;
-
-		dirList.sort(); // we sort keys without editorText
-		dirList.unshift(editorText);
-		for (let i = 0; i < dirList.length; i += 1) {
-			const key = dirList[i],
-				title = key,
-				item: SelectOptionElement = {
-					value: key,
-					text: title,
-					title: title,
-					selected: title === editorText
-				};
-
-			items.push(item);
-		}
-		// sort already done
-		this.view.setSelectOptions(select, items);
-	}
 
 	private updateStorageDatabase(action: string, key: string) {
 		if (!this.hasStorageDatabase) {
@@ -988,7 +737,7 @@ export class Controller implements IController {
 		return dir;
 	}
 
-	private static fnGetStorageDirectoryEntries(mask?: string) {
+	public static fnGetStorageDirectoryEntries(mask?: string) {
 		const storage = Utils.localStorage,
 			metaIdent = FileHandler.getMetaIdent(),
 			dir: string[] = [];
@@ -1093,7 +842,7 @@ export class Controller implements IController {
 
 			if (storage.getItem(name) !== null) {
 				storage.removeItem(name);
-				this.updateStorageDatabase("remove", name);
+				this.storageUpdateHandler?.("remove", name);
 				if (Utils.debug > 0) {
 					Utils.console.debug("fnEraseFile: name=" + name + ": removed from localStorage");
 				}
@@ -1115,9 +864,9 @@ export class Controller implements IController {
 		if (item !== null) {
 			if (!storage.getItem(newName)) {
 				storage.setItem(newName, item);
-				this.updateStorageDatabase("set", newName);
+				this.storageUpdateHandler?.("set", newName);
 				storage.removeItem(oldName);
-				this.updateStorageDatabase("remove", oldName);
+				this.storageUpdateHandler?.("remove", oldName);
 			} else {
 				this.vm.print(stream, oldName + " already exists\r\n");
 			}
@@ -1205,7 +954,7 @@ export class Controller implements IController {
 		return basicTokenizer.decode(input);
 	}
 
-	private encodeTokenizedBasic(input: string, name = "test") {
+	public encodeTokenizedBasic(input: string, name = "test") {
 		const codeGeneratorToken = this.getCodeGeneratorToken();
 
 		this.basicLexer.setOptions({
@@ -1561,7 +1310,7 @@ export class Controller implements IController {
 		"bin"
 	];
 
-	private static tryLoadingFromLocalStorage(name: string) {
+	public static tryLoadingFromLocalStorage(name: string) {
 		const storage = Utils.localStorage;
 
 		let input: string | null = null;
@@ -1619,7 +1368,7 @@ export class Controller implements IController {
 		this.nextLoopTimeOut = this.vm.vmGetTimeUntilFrame(); // wait until next frame
 	}
 
-	private static splitMeta(input: string) {
+	public static splitMeta(input: string) {
 		let fileMeta: FileMeta | undefined;
 
 		if (input.indexOf(FileHandler.getMetaIdent()) === 0) { // starts with metaIdent?
@@ -1699,7 +1448,7 @@ export class Controller implements IController {
 			const meta = FileHandler.joinMeta(outFile);
 
 			storage.setItem(storageName, meta + "," + fileData);
-			this.updateStorageDatabase("set", storageName);
+			this.storageUpdateHandler?.("set", storageName);
 
 			if (outFile.fnFileCallback) {
 				try {
@@ -1938,7 +1687,7 @@ export class Controller implements IController {
 
 		this.invalidateScript();
 		this.setVarSelectOptions(ViewID.varSelect, this.variables);
-		this.commonEventHandler.onVarSelectChange();
+		// this.updateVarSelect();
 		return output;
 	}
 
@@ -1991,155 +1740,6 @@ export class Controller implements IController {
 		}
 	}
 
-	private fnGetFilename(input: string) {
-		let name = "file";
-		const reRemMatcher = /^\d* ?(?:REM|rem) ([\w.]+)+/,
-			matches = input.match(reRemMatcher);
-
-		if (matches !== null) {
-			name = matches[1];
-		} else {
-			const example = this.model.getProperty<string>(ModelPropID.example);
-
-			if (example !== "") {
-				if (example.indexOf("/") >= 0) {
-					name = example.substring(example.lastIndexOf("/") + 1);
-				}
-			}
-		}
-
-		if (name.indexOf(".") < 0) {
-			name += ".bas";
-		}
-		return name;
-	}
-
-	// eslint-disable-next-line complexity
-	fnDownload(): void {
-		const options = this.view.getSelectOptions(ViewID.exportFileSelect),
-			exportTokenized = this.view.getInputChecked(ViewID.exportTokenizedInput),
-			exportDSK = this.view.getInputChecked(ViewID.exportDSKInput),
-			format = this.view.getSelectValue(ViewID.exportDSKFormatSelect),
-			stripEmpty = this.view.getInputChecked(ViewID.exportDSKStripEmptyInput),
-			exportBase64 = this.view.getInputChecked(ViewID.exportBase64Input),
-			editorText = Controller.exportEditorText,
-			meta: FileMeta = {
-				typeString: "A", // ASCII
-				start: 0x170,
-				length: 0,
-				entry: 0
-			};
-
-		let diskImage: DiskImage | undefined,
-			name = "",
-			data = "";
-
-		const fnExportBase64 = function () {
-			meta.encoding = "base64";
-			const metaString = FileHandler.joinMeta(meta);
-
-			data = metaString + "," + Utils.btoa(data);
-			name += ".b64.txt";
-		};
-
-		if (exportDSK) {
-			diskImage = this.getFileHandler().getDiskImage();
-
-			diskImage.setOptions({
-				diskName: "test",
-				data: diskImage.formatImage(format) // data or system
-			});
-		}
-
-		for (let i = 0; i < options.length; i += 1) {
-			const item = options[i];
-
-			if (item.selected) {
-				if (item.value === editorText) {
-					data = this.view.getAreaValue(ViewID.inputText);
-					name = this.fnGetFilename(data);
-
-					const eolStr = data.indexOf("\r\n") > 0 ? "\r\n" : "\n"; // heuristic: if CRLF found, use it as split
-
-					if (eolStr === "\n") {
-						data = data.replace(/\n/g, "\r\n"); // replace LF by CRLF (not really needed if tokenized is used)
-					}
-
-					meta.typeString = "A"; // ASCII
-					meta.start = 0x170;
-					meta.length = data.length;
-					meta.entry = 0;
-				} else {
-					name = item.value;
-					data = Controller.tryLoadingFromLocalStorage(name) || "";
-					const metaAndData = Controller.splitMeta(data);
-
-					Object.assign(meta, metaAndData.meta); // copy meta info
-					data = metaAndData.data;
-				}
-
-				if (exportTokenized && meta.typeString === "A") { // do we need to tokenize it?
-					const tokens = this.encodeTokenizedBasic(data);
-
-					if (!tokens) { // not successful?
-						return;
-					}
-
-					data = tokens;
-					meta.typeString = "T";
-					meta.start = 0x170;
-					meta.length = data.length;
-					meta.entry = 0;
-				}
-
-				if (meta.typeString !== "A" && meta.typeString !== "X" && meta.typeString !== "Z") {
-					const [name1, ext1] = DiskImage.getFilenameAndExtension(name), // eslint-disable-line array-element-newline
-						header = DiskImage.createAmsdosHeader({
-							name: name1,
-							ext: ext1,
-							typeString: meta.typeString,
-							start: meta.start,
-							length: meta.length,
-							entry: meta.entry
-						}),
-						headerString = DiskImage.combineAmsdosHeader(header);
-
-					data = headerString + data;
-				}
-
-				if (diskImage) {
-					diskImage.writeFile(name, data);
-
-					const diskOptions = diskImage.getOptions();
-
-					data = diskOptions.data; // we need the modified disk image with the file(s) inside
-					name = name.substring(0, name.indexOf(".") + 1) + "dsk";
-					meta.length = data.length;
-					meta.typeString = "X"; // (extended) disk image
-				} else {
-					if (exportBase64) {
-						fnExportBase64();
-					}
-					if (data) {
-						this.view.fnDownloadBlob(data, name);
-					}
-				}
-			}
-		}
-
-		if (diskImage) {
-			if (stripEmpty) {
-				data = diskImage.stripEmptyTracks();
-			}
-
-			if (exportBase64) {
-				fnExportBase64();
-			}
-			if (data) {
-				this.view.fnDownloadBlob(data, name);
-			}
-		}
-	}
 
 	private selectJsError(script: string, e: Error) {
 		const lineNumber = (e as any).lineNumber, // only on FireFox
@@ -2409,7 +2009,7 @@ export class Controller implements IController {
 		this.view.setDisabled(ViewID.continueButton, reason === "end" || reason === "fileLoad" || reason === "fileSave" || reason === "parse" || reason === "renumLines" || reason === "reset");
 
 		this.setVarSelectOptions(ViewID.varSelect, this.variables);
-		this.commonEventHandler.onVarSelectChange();
+		// this.updateVarSelect();
 
 		if (reason === "stop" || reason === "end" || reason === "error" || reason === "parse" || reason === "parseRun") {
 			this.startWithDirectInput();
@@ -2624,7 +2224,7 @@ export class Controller implements IController {
 			}
 		}
 		this.setVarSelectOptions(ViewID.varSelect, variables);
-		this.commonEventHandler.onVarSelectChange(); // title change?
+		// this.updateVarSelect(); // title change?
 	}
 
 	setBasicVersion(basicVersion: string): void {
@@ -2686,7 +2286,7 @@ export class Controller implements IController {
 
 				// make sure canvas area is not hidden when creating canvas object (allows to get width, height)
 				if (isAreaHidden) {
-					this.commonEventHandler.toggleAreaHiddenById("change", ViewID.showCpcInput); // show: ViewID.cpcArea
+					// this.toggleAreaHiddenById("change", ViewID.showCpcInput); // show: ViewID.cpcArea
 				}
 				this.view.setHidden(ViewID.cpcCanvas, false);
 				canvas = new Canvas({
@@ -2695,7 +2295,7 @@ export class Controller implements IController {
 					palette: validPalette
 				});
 				if (isAreaHidden) {
-					this.commonEventHandler.toggleAreaHiddenById("change", ViewID.showCpcInput); // hide again: ViewID.cpcArea
+					// this.toggleAreaHiddenById("change", ViewID.showCpcInput); // hide again: ViewID.cpcArea
 				}
 			}
 			this.canvases[canvasType] = canvas;
@@ -2797,11 +2397,15 @@ export class Controller implements IController {
 		return this.vm.vmAdaptFilename(name, err);
 	}
 
-	private getFileHandler() {
+	public getFileHandler() {
 		if (!this.fileHandler) {
 			this.fileHandler = new FileHandler({
 				adaptFilename: this.adaptFilename.bind(this),
-				updateStorageDatabase: this.updateStorageDatabase.bind(this),
+				updateStorageDatabase: (action: string, key: string) => {
+					if (this.storageUpdateHandler) {
+						this.storageUpdateHandler(action, key);
+					}
+				},
 				outputError: this.outputError.bind(this),
 				processFileImports: this.model.getProperty<boolean>(ModelPropID.processFileImports)
 			});
@@ -2979,116 +2583,6 @@ export class Controller implements IController {
 		return this.inputStack.redo();
 	}
 
-	private createFnDatabaseLoaded(url: string) {
-		return (_sFullUrl: string, key: string) => {
-			const selectedName = this.model.getProperty<string>(ModelPropID.database);
-
-			if (selectedName === key) {
-				this.model.getDatabase().loaded = true;
-			} else { // should not occur
-				Utils.console.warn("databaseLoaded: name changed: " + key + " => " + selectedName);
-				this.model.setProperty(ModelPropID.database, key);
-				const database = this.model.getDatabase();
-
-				if (database) {
-					database.loaded = true;
-				}
-				this.model.setProperty(ModelPropID.database, selectedName);
-			}
-
-			Utils.console.log("fnDatabaseLoaded: database loaded: " + key + ": " + url);
-			this.setDirectorySelectOptions();
-			this.onDirectorySelectChange();
-		};
-	}
-
-	private createFnDatabaseError(url: string) {
-		return (_sFullUrl: string, key: string) => {
-			Utils.console.error("fnDatabaseError: database error: " + key + ": " + url);
-			this.setDirectorySelectOptions();
-			this.onDirectorySelectChange();
-			this.setInputText("");
-			this.view.setAreaValue(ViewID.resultText, "Cannot load database: " + key);
-		};
-	}
-
-	onDatabaseSelectChange(): void {
-		const databaseName = this.view.getSelectValue(ViewID.databaseSelect);
-
-		this.model.setProperty(ModelPropID.database, databaseName);
-		this.view.setSelectTitleFromSelectedOption(ViewID.databaseSelect);
-
-		const database = this.model.getDatabase();
-
-		if (!database) {
-			Utils.console.error("onDatabaseSelectChange: database not available:", databaseName);
-			return;
-		}
-
-		if (database.text === "storage") { // special handling: browser localStorage
-			this.updateStorageDatabase("set", ""); // set all
-			database.loaded = true;
-		}
-
-		if (database.loaded) {
-			this.setDirectorySelectOptions();
-			this.onDirectorySelectChange();
-		} else {
-			this.setInputText("#loading database " + databaseName + "...");
-			const exampleIndex = this.model.getProperty<string>(ModelPropID.exampleIndex),
-				url = database.src + "/" + exampleIndex;
-
-			Utils.loadScript(url, this.createFnDatabaseLoaded(url), this.createFnDatabaseError(url), databaseName);
-		}
-	}
-
-	onDirectorySelectChange(): void {
-		this.setExampleSelectOptions();
-		this.onExampleSelectChange();
-	}
-
-	onExampleSelectChange(): void {
-		const vm = this.vm,
-			inFile = vm.vmGetInFileObject(),
-			dataBaseName = this.model.getProperty<string>(ModelPropID.database),
-			directoryName = this.view.getSelectValue(ViewID.directorySelect);
-
-		vm.closein();
-
-		this.commonEventHandler.setPopoversHiddenExcept(); // hide all popovers, especially the gallery
-		inFile.open = true;
-
-		let exampleName = this.view.getSelectValue(ViewID.exampleSelect);
-
-		if (directoryName) {
-			exampleName = directoryName + "/" + exampleName;
-		}
-
-		const exampleEntry = this.model.getExample(exampleName);
-		let autorun = this.model.getProperty<boolean>(ModelPropID.autorun);
-
-		if (exampleEntry && exampleEntry.meta) { // TTT TODO: this is just a workaround, meta is in input now; should change command after loading!
-			const type = exampleEntry.meta.charAt(0);
-
-			if (type === "B" || type === "D" || type === "G") { // binary, data only, Gena Assembler?
-				autorun = false;
-			}
-		}
-		inFile.command = autorun ? "run" : "load";
-
-		if (dataBaseName !== "storage") {
-			exampleName = "/" + exampleName; // load absolute
-		} else {
-			this.model.setProperty(ModelPropID.example, exampleName);
-		}
-
-		inFile.name = exampleName;
-		inFile.start = undefined;
-		inFile.fnFileCallback = vm.vmGetLoadHandler();
-		vm.vmStop("fileLoad", 90);
-		this.startMainLoop();
-	}
-
 	// currently not used. Can be called manually: CpcLoco.controller.exportAsBase64(file);
 	exportAsBase64(storageName: string): string { // eslint-disable-line class-methods-use-this
 		const storage = Utils.localStorage;
@@ -3114,7 +2608,7 @@ export class Controller implements IController {
 	}
 
 	onCpcCanvasClick(event: MouseEvent): void {
-		this.commonEventHandler.setPopoversHiddenExcept(); // hide all popovers
+		// this.setPopoversHiddenExcept(); // hide all popovers
 
 		this.canvas.onCanvasClick(event);
 		this.keyboard.setActive(true);
