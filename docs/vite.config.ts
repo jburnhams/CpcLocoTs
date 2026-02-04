@@ -15,8 +15,14 @@ export default defineConfig({
       }
     }
   },
+  resolve: {
+    alias: {
+      "my-library": resolve(__dirname, "../src/index.ts")
+    }
+  },
   test: {
     globals: true,
-    environment: 'happy-dom',
+    environment: 'jsdom',
+    setupFiles: ['./test/setup.ts'],
   }
 })

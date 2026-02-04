@@ -18,9 +18,9 @@ export type CanvasCharsetType = CanvasCharType[];
 
 export interface CanvasOptions {
     canvasID: ViewID
-	charset: CanvasCharsetType
-	palette: "color" | "green" | "grey"
-	onCanvasClick?: CanvasClickType
+    charset: CanvasCharsetType
+    palette: "color" | "green" | "grey"
+    onCanvasClick?: CanvasClickType
 }
 
 export interface ICanvas {
@@ -77,35 +77,35 @@ export interface ICanvas {
 }
 
 export interface VmBaseParas {
-	command: string
-	stream: number
-	line: string | number
+    command: string
+    stream: number
+    line: string | number
 }
 
 export interface VmLineParas extends VmBaseParas { // delete lines, list lines, edit line, run line
-	first?: number // (req)
-	last?: number // (req)
+    first?: number // (req)
+    last?: number // (req)
 }
 
 export interface VmLineRenumParas extends VmBaseParas { // renum lines
-	newLine?: number // (req)
-	oldLine?: number // (req)
-	step?: number // (req)
-	keep?: number // (req)
+    newLine?: number // (req)
+    oldLine?: number // (req)
+    step?: number // (req)
+    keep?: number // (req)
 }
 
 export interface VmFileParas extends VmBaseParas {
-	fileMask?: string // (req) CAT, |DIR, |ERA
-	newName?: string // |REN
-	oldName?: string // |REN
+    fileMask?: string // (req) CAT, |DIR, |ERA
+    newName?: string // |REN
+    oldName?: string // |REN
 }
 
 export interface VmInputParas extends VmBaseParas {
-	input: string // (req)
-	message: string // (req)
-	noCRLF?: string
-	types?: string[]
-	fnInputCallback: () => boolean
+    input: string // (req)
+    message: string // (req)
+    noCRLF?: string
+    types?: string[]
+    fnInputCallback: () => boolean
 }
 
 export type VmStopParas = VmFileParas | VmInputParas | VmLineParas | VmLineRenumParas
@@ -126,11 +126,16 @@ export interface ICpcVm {
 }
 
 
-export type RsxCommandType = (this: ICpcVm, ...args: (string|number)[]) => void
+export type RsxCommandType = (this: ICpcVm, ...args: (string | number)[]) => void
 
 export interface ICpcVmRsx {
     getRsxCommands: () => Record<string, RsxCommandType>
 }
+
+export type LoadHandlerType = (name: string) => void;
+export type DirectoryHandlerType = (mask: string) => string[];
+export type StorageUpdateHandlerType = (action: string, key: string) => void;
+
 
 export interface IController {
     startParse: () => void
@@ -148,22 +153,14 @@ export interface IController {
     fnAddLines: () => void
     fnRemoveLines: () => void
 
-    fnDownload: () => void
+    loadFileContinue: (input: string | null | undefined) => void
     setInputText: (input: string, keepStack?: boolean) => void
-    setExampleSelectOptions: () => void
-    setExportSelectOptions: (id: ViewID) => void
-    setGalleryAreaInputs: () => void
     invalidateScript: () => void
     setSoundActive: () => void
     setBasicVersion: (basicVersion: string) => void
     setPalette: (palette: string) => void
     setCanvasType: (canvasType: string) => ICanvas
     setDisassAddr: (addr: number, endAddr?: number) => void
-
-    changeVariable: () => void
-    onExampleSelectChange: () => void
-    onDirectorySelectChange: () => void
-    onDatabaseSelectChange: () => void
 
     onCpcCanvasClick: (event: MouseEvent) => void
     onWindowClick: (event: Event) => void
@@ -185,7 +182,7 @@ export interface IController {
     fnSpeed: () => void
 
     fnDragElementsActive: (enabled: boolean) => void
- }
+}
 
 //
 

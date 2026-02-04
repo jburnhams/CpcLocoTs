@@ -3,7 +3,6 @@
 // https://benchmarko.github.io/cpclocots/
 
 import { ModelPropID } from "./Constants";
-import { Utils } from "./Utils";
 import { ICpcVmRsx } from "./Interfaces";
 
 export type ConfigEntryType = string | number | boolean;
@@ -27,21 +26,13 @@ export interface ExampleEntry {
 	loaded?: boolean
 }
 
-export type DatabasesType = Record<string, DatabaseEntry>;
-
-type ExamplesType = Record<string, Record<string, ExampleEntry>>;
-
 export class Model {
 	private config: ConfigType;
 	private initialConfig: ConfigType;
-	private databases: DatabasesType;
-	private examples: ExamplesType;
 
 	constructor(config: ConfigType) {
 		this.config = config || {}; // store only a reference
 		this.initialConfig = Object.assign({}, this.config); // save initial config
-		this.databases = {};
-		this.examples = {}; // loaded examples per database
 	}
 
 	getProperty<T extends ConfigEntryType>(property: ModelPropID): T {
@@ -71,56 +62,4 @@ export class Model {
 		}
 		return changed;
 	}
-
-	addDatabases(db: DatabasesType): void {
-		for (const par in db) {
-			if (db.hasOwnProperty(par)) {
-				const entry = db[par];
-
-				this.databases[par] = entry;
-				this.examples[par] = {};
-			}
-		}
-	}
-	getAllDatabases(): DatabasesType {
-		return this.databases;
-	}
-	getDatabase(): DatabaseEntry {
-		const database = this.getProperty<string>(ModelPropID.database);
-
-		return this.databases[database];
-	}
-
-	getAllExamples(): {	[x: string]: ExampleEntry; } {
-		const database = this.getProperty<string>(ModelPropID.database);
-
-		return this.examples[database];
-	}
-	getExample(key: string): ExampleEntry {
-		const database = this.getProperty<string>(ModelPropID.database);
-
-		return this.examples[database][key];
-	}
-	setExample(example: ExampleEntry): void {
-		const database = this.getProperty<string>(ModelPropID.database),
-			key = example.key;
-
-		if (!this.examples[database][key]) {
-			if (Utils.debug > 1) {
-				Utils.console.debug("setExample: creating new example:", key);
-			}
-		}
-		this.examples[database][key] = example;
-	}
-	removeExample(key: string): void {
-		const database = this.getProperty<string>(ModelPropID.database);
-
-		if (!this.examples[database][key]) {
-			Utils.console.warn("removeExample: example does not exist: " + key);
-		}
-		delete this.examples[database][key];
-	}
 }
-
-
-
