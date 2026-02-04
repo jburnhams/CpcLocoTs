@@ -27,31 +27,40 @@ describe('Basic Parsing Integration Tests', () => {
         return parseTree;
     };
 
-    test('Should parse valid .BAS files from basic/ directory', () => {
+    describe('Valid .BAS files', () => {
         const basicDir = path.join(__dirname, '../../basic');
-        const files = fs.readdirSync(basicDir).filter(file => file.endsWith('.BAS') || file.endsWith('.bas'));
+        // Ensure directory exists and read files
+        let files: string[] = [];
+        try {
+            if (fs.existsSync(basicDir)) {
+                files = fs.readdirSync(basicDir).filter(file => file.endsWith('.BAS') || file.endsWith('.bas'));
+            }
+        } catch (e) {
+            console.error("Could not read basic directory", e);
+        }
 
-        expect(files.length).toBeGreaterThan(0);
+        test('should have .BAS files to test', () => {
+            expect(files.length).toBeGreaterThan(0);
+        });
 
         files.forEach(file => {
-            const filePath = path.join(basicDir, file);
-            const content = fs.readFileSync(filePath, 'utf-8');
+            test(`should parse ${file} correctly`, () => {
+                const filePath = path.join(basicDir, file);
+                const content = fs.readFileSync(filePath, 'utf-8');
 
-            // Assuming the files are ASCII as verified during exploration.
-            // If they were binary, we would need BasicTokenizer.decode first.
+                // Assuming the files are ASCII as verified during exploration.
+                // If they were binary, we would need BasicTokenizer.decode first.
 
-            try {
-                const result = parseScript(content);
-                expect(result).toBeDefined();
-                expect(Array.isArray(result)).toBe(true);
-            } catch (error) {
-                console.error(`Failed to parse ${file}:`, error);
-                throw error;
-            }
+                expect(() => {
+                    const result = parseScript(content);
+                    expect(result).toBeDefined();
+                    expect(Array.isArray(result)).toBe(true);
+                }).not.toThrow();
+            });
         });
     });
 
-    test('Should detect syntax errors in invalid scripts', () => {
+    describe('Invalid scripts (Error Detection)', () => {
         const invalidScripts = [
             {
                 name: 'Missing TO in FOR loop',
@@ -66,7 +75,6 @@ describe('Basic Parsing Integration Tests', () => {
             {
                 name: 'Mismatched parentheses',
                 script: '10 PRINT (1+2\n', // Missing closing )
-                // Note: Parser might report "Expected )" or unexpected token
                 errorPartial: 'Expected )'
             },
             {
@@ -77,15 +85,9 @@ describe('Basic Parsing Integration Tests', () => {
         ];
 
         invalidScripts.forEach(item => {
-            try {
-                parseScript(item.script);
-                throw new Error(`Should have failed for ${item.name}`);
-            } catch (e: any) {
-                // Check if the error message contains expected text
-                // The error object from BasicParser via Utils.composeError usually has a message property
-                const msg = e.message || String(e);
-                expect(msg).toContain(item.errorPartial);
-            }
+            test(`should detect error in: ${item.name}`, () => {
+                expect(() => parseScript(item.script)).toThrow(item.errorPartial);
+            });
         });
     });
 });
