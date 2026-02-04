@@ -1,11 +1,11 @@
-// Sound.qunit.ts - QUnit tests for CpcLoco Sound
+// Sound.test.ts - Vitest tests for CpcLoco Sound
 //
 
-import { Utils } from "../Utils";
-import { Sound, SoundData, ToneEnvData, VolEnvData } from "../Sound";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
+import { describe, test, expect, beforeEach, beforeAll, afterAll } from 'vitest';
+import { Utils } from "../../src/Utils";
+import { Sound, SoundData, ToneEnvData, VolEnvData } from "../../src/Sound";
 
-type TestFunctionInputType = string | number | undefined; // | object | Function;
+type TestFunctionInputType = string | number | undefined;
 
 type TestFunctionType = (sound: Sound, input: TestFunctionInputType[]) => number | string | void;
 
@@ -48,13 +48,13 @@ class AudioContextMock {
 			createChannelMerger: args
 		});
 		return {
-			connect: function (...args2) {
+			connect: function (...args2: any[]) {
 				lastTestFunctions.push({
 					"channelMerger:connect": args2 as any
 				});
 				return this;
 			},
-			disconnect: function (...args2 /* destinationNode: AudioNode */) {
+			disconnect: function (...args2: any[] /* destinationNode: AudioNode */) {
 				lastTestFunctions.push({
 					"channelMerger:disconnect": args2 as any
 				});
@@ -62,7 +62,7 @@ class AudioContextMock {
 			toString: function () {
 				return "[obj channelMerger]";
 			}
-		} as ChannelMergerNode;
+		} as unknown as ChannelMergerNode;
 	}
 
 	createGain() {
@@ -70,18 +70,18 @@ class AudioContextMock {
 			createGain: []
 		});
 		return {
-			connect: function (...args) {
+			connect: function (...args: any[]) {
 				lastTestFunctions.push({
 					"gain:connect": args as any
 				});
 			},
 			gain: {
-				setValueAtTime: function (...args) {
+				setValueAtTime: function (...args: any[]) {
 					lastTestFunctions.push({
 						"gain:gain.setValueAtTime": args as any
 					});
 				},
-				linearRampToValueAtTime: function (...args) {
+				linearRampToValueAtTime: function (...args: any[]) {
 					lastTestFunctions.push({
 						"gain:gain.linearRampToValueAtTime": args
 					});
@@ -90,7 +90,7 @@ class AudioContextMock {
 			toString: function () {
 				return "[obj gain]";
 			}
-		} as GainNode;
+		} as unknown as GainNode;
 	}
 
 	createBuffer(...args: number[]) { // numberOfChannels: number, length: number, sampleRate: number
@@ -101,13 +101,13 @@ class AudioContextMock {
 			buffer = new Float32Array(length);
 
 		return {
-			getChannelData: function (...args2 /* channel: number */) {
+			getChannelData: function (...args2: any[] /* channel: number */) {
 				lastTestFunctions.push({
 					"createBuffer:getChannelData": args2
 				});
 				return buffer; // TODO: new Float32Array()
 			}
-		} as AudioBuffer;
+		} as unknown as AudioBuffer;
 	}
 
 	createBufferSource() {
@@ -115,23 +115,23 @@ class AudioContextMock {
 			createBufferSource: []
 		});
 		return {
-			start: function (...args) {
+			start: function (...args: any[]) {
 				lastTestFunctions.push({
 					"bufferSource:start": args
 				});
 			},
-			stop: function (...args) {
+			stop: function (...args: any[]) {
 				lastTestFunctions.push({
 					"bufferSource:stop": args
 				});
 			},
-			connect: function (...args) {
+			connect: function (...args: any[]) {
 				lastTestFunctions.push({
 					"bufferSource.connect": args as any
 				});
 				return this as AudioNode;
 			}
-		} as AudioBufferSourceNode;
+		} as unknown as AudioBufferSourceNode;
 	}
 
 	createBiquadFilter() {
@@ -145,7 +145,7 @@ class AudioContextMock {
 			toString: function () {
 				return "[obj BiquadFilterNode]";
 			}
-		} as BiquadFilterNode;
+		} as unknown as BiquadFilterNode;
 	}
 
 	createOscillator() {
@@ -155,76 +155,73 @@ class AudioContextMock {
 		return {
 			frequency: {
 				value: 0,
-				setValueAtTime: function (...args) {
+				setValueAtTime: function (...args: any[]) {
 					lastTestFunctions.push({
 						"oscillator.frequency.setValueAtTime": args
 					});
 				}
 			},
-			connect: function (...args) {
+			connect: function (...args: any[]) {
 				lastTestFunctions.push({
 					"oscillator.connect": args as any
 				});
 			},
-			start: function (...args) {
+			start: function (...args: any[]) {
 				lastTestFunctions.push({
 					"oscillator.start": args
 				});
 			},
-			stop: function (...args) {
+			stop: function (...args: any[]) {
 				lastTestFunctions.push({
 					"oscillator.stop": args
 				});
 			},
-			disconnect: function (...args) {
+			disconnect: function (...args: any[]) {
 				lastTestFunctions.push({
 					"oscillator.disconnect": args as any
 				});
 			}
-		} as OscillatorNode;
+		} as unknown as OscillatorNode;
 	}
 }
 /* eslint-enable class-methods-use-this */
 
+describe("Sound: Tests1", function () {
+	let sound: Sound;
 
-QUnit.module("Sound: Tests1", function (hooks) {
-	const that = {} as { sound: Sound }; // eslint-disable-line consistent-this
-
-	hooks.beforeEach(function () {
-		that.sound = new Sound({
-			AudioContextConstructor: AudioContextMock as typeof window.AudioContext
+	beforeEach(function () {
+		sound = new Sound({
+			AudioContextConstructor: AudioContextMock as unknown as typeof window.AudioContext
 		});
 	});
 
-	QUnit.test("create class", function (assert) {
-		assert.ok(that.sound, "defined");
+	test("create class", function () {
+		expect(sound).toBeDefined();
 	});
 
-	QUnit.test("reset", function (assert) {
-		const sound = that.sound;
-
+	test("reset", function () {
 		sound.reset();
-		assert.strictEqual(sound.testCanQueue(0), true, "testCanQueue(0): true");
+		expect(sound.testCanQueue(0)).toBe(true);
 	});
 
-	QUnit.test("soundOn", function (assert) {
-		const sound = that.sound;
-
-		assert.strictEqual(sound.isActivatedByUser(), false, "isActivatedByUser: false");
+	test("soundOn", function () {
+		expect(sound.isActivatedByUser()).toBe(false);
 
 		sound.soundOn();
-		assert.strictEqual(sound.testCanQueue(0), false, "testCanQueue(0): false");
-		assert.strictEqual(sound.isActivatedByUser(), false, "isActivatedByUser: false");
+		expect(sound.testCanQueue(0)).toBe(false);
+		expect(sound.isActivatedByUser()).toBe(false);
 
 		sound.setActivatedByUser();
-		assert.strictEqual(sound.isActivatedByUser(), true, "isActivatedByUser: true");
-		assert.strictEqual(sound.testCanQueue(0), true, "testCanQueue(0): true");
+		expect(sound.isActivatedByUser()).toBe(true);
+		expect(sound.testCanQueue(0)).toBe(true);
 
 		sound.soundOff();
 	});
 });
 
-QUnit.module("Sound: Tests", function (hooks) {
+describe("Sound: Tests", function () {
+    type AllTestsType = Record<string, Record<string, string>>;
+
 	const allTests: AllTestsType = {
 		sound: {
 			"1,100,3,12": "createOscillator: , oscillator.connect:[obj gain] , gain:gain.setValueAtTime:0.6400000000000001,0 , oscillator.start:0 , oscillator.stop:0.03 -- undefined",
@@ -237,8 +234,9 @@ QUnit.module("Sound: Tests", function (hooks) {
 		setVolEnv: {
 			"1,3,2,2": "undefined"
 		}
-	},
-		allTestFunctions: Record<string, TestFunctionType> = {
+	};
+
+    const allTestFunctions: Record<string, TestFunctionType> = {
 			sound: function (sound: Sound, input: TestFunctionInputType[]) {
 				const soundData = {
 					state: input[0],
@@ -341,34 +339,34 @@ QUnit.module("Sound: Tests", function (hooks) {
 		return result;
 	}
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const sound = new Sound({
-				AudioContextConstructor: AudioContextMock as typeof window.AudioContext
-			}),
-			testFunction = allTestFunctions[category];
+    for (const category in allTests) {
+        describe(category, () => {
+            const tests = allTests[category];
+            const testFunction = allTestFunctions[category];
+            let sound: Sound;
 
-		sound.soundOn();
-		sound.setActivatedByUser();
+            beforeAll(() => {
+                sound = new Sound({
+                    AudioContextConstructor: AudioContextMock as unknown as typeof window.AudioContext
+                });
+                sound.soundOn();
+                sound.setActivatedByUser();
+            });
 
-		for (const key in tests) {
-			if (tests.hasOwnProperty(key)) {
-				const expected = tests[key],
-					result = runSingleTest(testFunction, sound, key, expected, category);
+            afterAll(() => {
+                sound.soundOff();
+            });
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
+            for (const key in tests) {
+                if (Object.prototype.hasOwnProperty.call(tests, key)) {
+                    test(key, () => {
+                        const expected = tests[key];
+                        const result = runSingleTest(testFunction, sound, key, expected, category);
 
-				if (assert) {
-					assert.strictEqual(result, expected, key);
-				}
-			}
-		}
-		sound.soundOff();
-	}
-
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
+                        expect(result).toBe(expected);
+                    });
+                }
+            }
+        });
+    }
 });
-// end
-
-
