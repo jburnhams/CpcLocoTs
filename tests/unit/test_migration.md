@@ -53,7 +53,7 @@ Edit the new `.test.ts` file:
 - [x] CpcVm
 - [x] Diff
 - [x] Model
-- [ ] Sound
+- [x] Sound
 - [ ] Variables
 - [ ] Z80Disass
 - [ ] ZipFile
@@ -64,3 +64,4 @@ Edit the new `.test.ts` file:
 - **CpcVm**: Replaced `TestHelper.generateAllTests` with a local loop to generate tests from `allTests` object. Replaced `QUnit.module` with `describe`. Updated imports to point to `../../src/`.
 - **Diff**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops iterating over `allTests`. Updated imports to `../../src/`.
 - **Model**: Direct translation of QUnit tests to Vitest. Updated imports to `../../src/`.
+- **Sound**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops. Used `beforeAll` to create a shared `Sound` instance for each category to maintain state consistency required by the legacy data-driven tests. Updated imports to `../../src/`.
