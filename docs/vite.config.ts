@@ -15,6 +15,11 @@ export default defineConfig({
       }
     }
   },
+  resolve: {
+    alias: {
+      "my-library": resolve(__dirname, "../src/index.ts")
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',

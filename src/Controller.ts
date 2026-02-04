@@ -20,12 +20,12 @@ import { DiskImage } from "./DiskImage";
 import { FileHandler } from "./FileHandler";
 import { FileSelect } from "./FileSelect";
 import { InputStack } from "./InputStack";
-import { IController, IOutput, ICanvas, VmFileParas, VmInputParas, VmLineParas, VmLineRenumParas, VmBaseParas, VariableValue, ICpcVmRsx } from "./Interfaces";
+import { IController, IOutput, ICanvas, VmFileParas, VmInputParas, VmLineParas, VmLineRenumParas, VmBaseParas, VariableValue, ICpcVmRsx, LoadHandlerType, DirectoryHandlerType, StorageUpdateHandlerType } from "./Interfaces";
 import { Keyboard } from "./Keyboard";
 import { NoCanvas } from "./NoCanvas";
 import { TextCanvas } from "./TextCanvas";
 import { VirtualKeyboard } from "./VirtualKeyboard";
-import { Model, DatabasesType, ExampleEntry } from "./Model";
+import { Model, ExampleEntry } from "./Model";
 import { Snapshot } from "./Snapshot";
 import { Sound, SoundData } from "./Sound";
 import { Variables } from "./Variables";
@@ -101,7 +101,11 @@ export class Controller implements IController {
 	private fileHandler?: FileHandler;
 	private fileSelect?: FileSelect;
 
-	private hasStorageDatabase: boolean;
+
+
+	private loadHandler?: LoadHandlerType;
+	private directoryHandler?: DirectoryHandlerType;
+	private storageUpdateHandler?: StorageUpdateHandlerType;
 
 	private z80Disass?: Z80Disass;
 
@@ -226,6 +230,18 @@ export class Controller implements IController {
 		this.setSoundActive();
 	}
 
+	public setExternalLoadHandler(handler: LoadHandlerType): void {
+		this.loadHandler = handler;
+	}
+
+	public setExternalDirectoryHandler(handler: DirectoryHandlerType): void {
+		this.directoryHandler = handler;
+	}
+
+	public setStorageUpdateHandler(handler: StorageUpdateHandlerType): void {
+		this.storageUpdateHandler = handler;
+	}
+
 
 
 
@@ -273,70 +289,6 @@ export class Controller implements IController {
 	private static readonly exportEditorText = "<editor>";
 
 
-	private updateStorageDatabase(action: string, key: string) {
-		if (!this.hasStorageDatabase) {
-			return;
-		}
-
-		const database = this.model.getProperty<string>(ModelPropID.database),
-			storage = Utils.localStorage;
-
-		let selectedExample = "",
-			exampleChanged = false;
-
-		if (database !== "storage") {
-			this.model.setProperty(ModelPropID.database, "storage"); // switch to storage database
-		} else {
-			selectedExample = this.view.getSelectValue(ViewID.exampleSelect);
-		}
-
-		let dir: string[];
-
-		if (!key) { // no key => get all
-			dir = Controller.fnGetStorageDirectoryEntries();
-			dir.sort();
-		} else {
-			dir = [key];
-		}
-
-		for (let i = 0; i < dir.length; i += 1) {
-			key = dir[i];
-			if (action === "remove") {
-				this.model.removeExample(key);
-			} else if (action === "set") {
-				let example = this.model.getExample(key);
-
-				if (selectedExample === "" || (selectedExample === key)) {
-					exampleChanged = true;
-				}
-
-				if (!example) {
-					const dataString = storage.getItem(key) || "",
-						data = Controller.splitMeta(dataString);
-
-					example = {
-						key: key,
-						title: "", // or set key?
-						meta: data.meta.typeString // currently we take only the type
-					};
-					this.model.setExample(example);
-				}
-			} else {
-				Utils.console.error("updateStorageDatabase: unknown action", action);
-			}
-		}
-
-		if (database === "storage") {
-			this.setDirectorySelectOptions();
-			if (exampleChanged) {
-				this.onDirectorySelectChange();
-			} else {
-				this.setExampleSelectOptions();
-			}
-		} else {
-			this.model.setProperty(ModelPropID.database, database); // restore database
-		}
-	}
 
 	private removeKeyBoardHandler() {
 		this.keyboard.setOptions({
@@ -714,28 +666,6 @@ export class Controller implements IController {
 		return new RegExp("^" + mask + "$");
 	}
 
-	private fnGetExampleDirectoryEntries(mask?: string) { // optional mask
-		const dir: string[] = [],
-			allExamples = this.model.getAllExamples();
-		let regExp: RegExp | undefined;
-
-		if (mask) {
-			regExp = Controller.fnPrepareMaskRegExp(mask);
-		}
-
-		for (const key in allExamples) {
-			if (allExamples.hasOwnProperty(key)) {
-				const example = allExamples[key],
-					key2 = example.key,
-					matchKey2 = key2 + ((key2.indexOf(".") < 0) ? "." : "");
-
-				if (!regExp || regExp.test(matchKey2)) {
-					dir.push(key2);
-				}
-			}
-		}
-		return dir;
-	}
 
 	public static fnGetStorageDirectoryEntries(mask?: string) {
 		const storage = Utils.localStorage,
@@ -783,46 +713,46 @@ export class Controller implements IController {
 	}
 
 	private fnFileCat(paras: VmFileParas): void {
-		const stream = paras.stream,
+		const stream = paras.stream;
+		let dirList: string[] = [];
+
+		if (this.directoryHandler) {
+			dirList = this.directoryHandler(paras.fileMask || "");
+		} else {
+			// Fallback or legacy behavior if needed, or just empty
+			// dirList = Controller.fnGetStorageDirectoryEntries();
+			// But since we want to remove dependency on examples, we should rely on handler.
+			// For now, if no handler, returns empty? Or minimal local storage?
+			// Let's keep local storage as fallback for now?
+			// The original code mixed localStorage and examples.
+			// logic: fnGetStorageDirectoryEntries
 			dirList = Controller.fnGetStorageDirectoryEntries();
+		}
 
 		this.fnPrintDirectoryEntries(stream, dirList, true);
-
-		// currently only from localstorage
 
 		this.vm.vmStop("", 0, true);
 	}
 
 	private fnFileDir(paras: VmFileParas): void {
-		const stream = paras.stream,
-			example = this.model.getProperty<string>(ModelPropID.example),
-			lastSlash = example.lastIndexOf("/");
+		const stream = paras.stream;
+		// fileMask handling moved to handler logic ideally, but we pass mask to handler.
+		// Original logic combined local storage and examples.
+		// We delegate to directoryHandler.
 
-		let fileMask = paras.fileMask ? Controller.fnLocalStorageName(paras.fileMask) : "";
-		const dirList = Controller.fnGetStorageDirectoryEntries(fileMask);
-		let path = "";
+		let dirList: string[] = [];
 
-		if (lastSlash >= 0) {
-			path = example.substring(0, lastSlash) + "/";
-			fileMask = path + (fileMask ? fileMask : "*.*"); // only in same directory
+		if (this.directoryHandler) {
+			dirList = this.directoryHandler(paras.fileMask || "");
+		} else {
+			// Fallback: mostly local storage?
+			const fileMask = paras.fileMask ? Controller.fnLocalStorageName(paras.fileMask) : "";
+			dirList = Controller.fnGetStorageDirectoryEntries(fileMask);
 		}
 
-		const fileExists: Record<string, boolean> = {};
+		// Remove duplicates? Handler should handle it.
+		// If using fallback, we just have local storage.
 
-		for (let i = 0; i < dirList.length; i += 1) {
-			fileExists[dirList[i]] = true;
-		}
-
-		const dirListEx = this.fnGetExampleDirectoryEntries(fileMask); // also from examples
-
-		for (let i = 0; i < dirListEx.length; i += 1) {
-			const file = dirListEx[i].substring(path.length); // remove preceding path including "/"
-
-			if (!fileExists[file]) { // ignore duplicates
-				fileExists[file] = true;
-				dirList.push(file);
-			}
-		}
 		this.fnPrintDirectoryEntries(stream, dirList, false);
 		this.vm.vmStop("", 0, true);
 	}
@@ -1070,7 +1000,7 @@ export class Controller implements IController {
 		return mem;
 	}
 
-	private loadFileContinue(input: string | null | undefined) { // eslint-disable-line complexity
+	public loadFileContinue(input: string | null | undefined) { // eslint-disable-line complexity
 		const inFile = this.vm.vmGetInFileObject();
 		let data: FileMetaAndData | undefined;
 
@@ -1200,101 +1130,7 @@ export class Controller implements IController {
 		this.startMainLoop();
 	}
 
-	private createFnExampleLoaded(example: string, url: string, inFile: ReturnType<typeof this.vm.vmGetInFileObject>) {
-		return (_sFullUrl: string, key: string, suppressLog?: boolean) => {
-			if (key !== example) {
-				Utils.console.warn("fnExampleLoaded: Unexpected", key, "<>", example);
-			}
-			const exampleEntry = this.model.getExample(example);
 
-			if (!suppressLog) {
-				Utils.console.log("Example", url, (exampleEntry.meta ? exampleEntry.meta + " " : "") + "loaded");
-			}
-			this.model.setProperty(ModelPropID.example, inFile.memorizedExample);
-			this.vm.vmStop("", 0, true);
-
-			if (exampleEntry.rsx) {
-				this.vm.vmRegisterRsx(exampleEntry.rsx, false);
-			}
-
-			const input = exampleEntry.script;
-
-			this.loadFileContinue(input);
-		};
-	}
-
-	private createFnExampleError(example: string, url: string, inFile: ReturnType<typeof this.vm.vmGetInFileObject>) {
-		return () => {
-			Utils.console.log("Example", url, "error");
-			this.model.setProperty(ModelPropID.example, inFile.memorizedExample);
-
-			this.vm.vmStop("", 0, true);
-
-			const error = this.vm.vmComposeError(Error(), 32, example + " not found"); // TODO: set also derr=146 (xx not found)
-
-			// error or onError set
-			if (error.hidden) {
-				this.vm.vmStop("", 0, true); // clear onError
-			}
-			this.outputError(error, true);
-			this.loadFileContinue(null);
-		};
-	}
-
-	private loadExample() {
-		const inFile = this.vm.vmGetInFileObject(),
-			key = this.model.getProperty<string>(ModelPropID.example);
-		let name = inFile.name;
-
-		if (name.charAt(0) === "/") { // absolute path?
-			name = name.substring(1); // remove "/"
-			inFile.memorizedExample = name; // change!
-		} else {
-			inFile.memorizedExample = key;
-			const lastSlash = key.lastIndexOf("/");
-
-			if (lastSlash >= 0) {
-				const path = key.substring(0, lastSlash); // take path from selected example
-
-				name = path + "/" + name;
-				name = name.replace(/\w+\/\.\.\//, ""); // simplify 2 dots (go back) in path: "dir/.."" => ""
-			}
-		}
-		const example = name;
-
-		if (Utils.debug > 0) {
-			Utils.console.debug("loadExample: name=" + name + " (current=" + key + ")");
-		}
-
-		const exampleEntry = this.model.getExample(example); // already loaded
-		let url: string;
-
-		if (exampleEntry && exampleEntry.loaded) {
-			this.model.setProperty(ModelPropID.example, example);
-			url = example;
-			const fnExampleLoaded = this.createFnExampleLoaded(example, url, inFile);
-
-			fnExampleLoaded("", example, true);
-		} else if (example && exampleEntry) { // need to load
-			this.model.setProperty(ModelPropID.example, example);
-			const databaseDir = this.model.getDatabase().src;
-
-			url = databaseDir + "/" + example + ".js";
-			Utils.loadScript(url, this.createFnExampleLoaded(example, url, inFile), this.createFnExampleError(example, url, inFile), example);
-		} else { // keep original example in this error case
-			url = example;
-			if (example !== "") { // only if not empty
-				Utils.console.warn("loadExample: Unknown file:", example);
-				const fnExampleError = this.createFnExampleError(example, url, inFile);
-
-				fnExampleError();
-			} else {
-				this.model.setProperty(ModelPropID.example, example);
-				this.vm.vmStop("", 0, true);
-				this.loadFileContinue(""); // empty input?
-			}
-		}
-	}
 
 	private static fnLocalStorageName(name: string, defaultExtension?: string) {
 		// modify name so we do not clash with localstorage methods/properites
@@ -1359,8 +1195,13 @@ export class Controller implements IController {
 				}
 				this.vm.vmStop("", 0, true);
 				this.loadFileContinue(input);
-			} else { // load from example
-				this.loadExample(/* name */);
+			} else if (this.loadHandler) { // load from handler
+				this.vm.vmStop("fileLoad", 90); // Stop VM before async load, priority similar to load
+				this.loadHandler(name); // Handler should call loadFileContinue or set error
+			} else {
+				Utils.console.warn("fnFileLoad: No load handler found for", name);
+				// Report error or stop?
+				this.vm.vmStop("", 0, true);
 			}
 		} else {
 			Utils.console.error("fnFileLoad:", inFile.name, "File not open!"); // hopefully isName is defined

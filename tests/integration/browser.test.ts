@@ -35,9 +35,9 @@ const esmBundlePath = path.join(distDir, 'bundles', `${libraryName}.esm.js`);
 
 const localStorageMock = {
   getItem: () => null,
-  setItem: () => {},
-  removeItem: () => {},
-  clear: () => {},
+  setItem: () => { },
+  removeItem: () => { },
+  clear: () => { },
   length: 0,
   key: () => null
 };
@@ -54,10 +54,15 @@ describe('Browser Bundle Tests', () => {
       vm.runInContext(bundleCode, context);
     }).not.toThrow();
 
-    const globalApi = context.window['CpcLoco'] ?? context.globalThis['CpcLoco'];
+    const globalApi = context['Cpclocots'] || context.window['Cpclocots'] || context.globalThis['Cpclocots'];
+    if (!globalApi) {
+      console.log('Context keys:', Object.keys(context));
+      console.log('Window keys:', Object.keys(context.window));
+      console.log('GlobalThis keys:', Object.keys(context.globalThis));
+    }
     expect(globalApi).toBeTruthy();
-    expect(typeof globalApi.addIndex).toBe('function');
-    expect(typeof globalApi.addItem).toBe('function');
+    expect(globalApi.Controller).toBeTruthy();
+    expect(globalApi.Model).toBeTruthy();
   });
 
   test('ESM bundle can be imported directly', async () => {
@@ -74,8 +79,8 @@ describe('Browser Bundle Tests', () => {
     const moduleUrl = pathToFileURL(esmBundlePath).href;
     const mod = await import(moduleUrl);
 
-    expect(mod.CpcLoco).toBeTruthy();
-    expect(typeof mod.CpcLoco.addIndex).toBe('function');
+    expect(mod.Controller).toBeTruthy();
+    expect(mod.Model).toBeTruthy();
   });
 
   test('bundle size is reasonable', () => {
@@ -104,9 +109,9 @@ describe('Functional Tests - Verify Bundle Works Correctly', () => {
     return await import(moduleUrl.href);
   }
 
-  test('CpcLoco class is exported in browser bundle', async () => {
+  test('Core classes are exported in browser bundle', async () => {
     const bundle = await loadBundleModule();
-    expect(bundle.CpcLoco).toBeDefined();
-    expect(typeof bundle.CpcLoco.fnOnLoad).toBe('function');
+    expect(bundle.Controller).toBeDefined();
+    expect(bundle.Model).toBeDefined();
   });
 });

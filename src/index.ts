@@ -9,7 +9,7 @@ export * from "./Controller";
 export * from "./FileHandler";
 export * from "./FileSelect";
 export * from "./DiskImage";
-export * from "./Polyfills";
+import "./Polyfills";
 export * from "./Sound";
 export * from "./Canvas";
 export * from "./TextCanvas";

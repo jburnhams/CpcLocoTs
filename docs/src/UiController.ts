@@ -5,70 +5,70 @@ import { UiModel } from "./UiModel";
 import { cpcconfig } from "./cpcconfig";
 
 export class UiController {
-    public readonly model: UiModel;
-    public readonly view: View;
-    public readonly controller: Controller;
+	public readonly model: UiModel;
+	public readonly view: View;
+	public readonly controller: Controller;
 
-    constructor(controller: Controller, model: UiModel, view: View) {
-        this.controller = controller;
-        this.model = model;
-        this.view = view;
-    }
+	constructor(controller: Controller, model: UiModel, view: View) {
+		this.controller = controller;
+		this.model = model;
+		this.view = view;
+	}
 
-    // Proxy methods
-    startContinue() { this.controller.startContinue(); }
-    startParseRun() { this.controller.startParseRun(); }
-    startParse() { this.controller.startParse(); }
-    startRenum(options: any) { this.controller.startRenum(options); }
-    startReset() { this.controller.startReset(); }
-    startRun() { this.controller.startRun(); }
-    startBreak() { this.controller.startBreak(); }
-    startEnter() { this.controller.startEnter(); }
-    startScreenshot() { return this.controller.startScreenshot(); }
-    startUpdateCanvas() { this.controller.startUpdateCanvas(); }
-    stopUpdateCanvas() { this.controller.stopUpdateCanvas(); }
+	// Proxy methods
+	startContinue() { this.controller.startContinue(); }
+	startParseRun() { this.controller.startParseRun(); }
+	startParse() { this.controller.startParse(); }
+	startRenum(options: any) { this.controller.startRenum(options); }
+	startReset() { this.controller.startReset(); }
+	startRun() { this.controller.startRun(); }
+	startBreak() { this.controller.startBreak(); }
+	startEnter() { this.controller.startEnter(); }
+	startScreenshot() { return this.controller.startScreenshot(); }
+	startUpdateCanvas() { this.controller.startUpdateCanvas(); }
+	stopUpdateCanvas() { this.controller.stopUpdateCanvas(); }
 
-    fnAddLines() { this.controller.fnAddLines(); }
-    fnRemoveLines() { this.controller.fnRemoveLines(); }
-    fnPretty(options: any) { this.controller.fnPretty(options); }
+	fnAddLines() { this.controller.fnAddLines(); }
+	fnRemoveLines() { this.controller.fnRemoveLines(); }
+	fnPretty(options: any) { this.controller.fnPretty(options); }
 
-    fnArrayBounds() { this.controller.fnArrayBounds(); }
-    fnImplicitLines() { this.controller.fnImplicitLines(); }
-    fnIntegerOverflow() { this.controller.fnIntegerOverflow(); }
-    fnPrettyLowercaseVars() { this.controller.fnPrettyLowercaseVars(); }
-    fnSpeed() { this.controller.fnSpeed(); }
-    fnTrace() { this.controller.fnTrace(); }
+	fnArrayBounds() { this.controller.fnArrayBounds(); }
+	fnImplicitLines() { this.controller.fnImplicitLines(); }
+	fnIntegerOverflow() { this.controller.fnIntegerOverflow(); }
+	fnPrettyLowercaseVars() { this.controller.fnPrettyLowercaseVars(); }
+	fnSpeed() { this.controller.fnSpeed(); }
+	fnTrace() { this.controller.fnTrace(); }
 
-    onWindowClick(event: Event) { this.controller.onWindowClick(event); }
-    onCpcCanvasClick(event: MouseEvent) { this.controller.onCpcCanvasClick(event); }
+	onWindowClick(event: Event) { this.controller.onWindowClick(event); }
+	onCpcCanvasClick(event: MouseEvent) { this.controller.onCpcCanvasClick(event); }
 
-    setInputText(text: string, keepStack?: boolean) { this.controller.setInputText(text, keepStack); }
-    undoStackElement() { return this.controller.undoStackElement(); }
-    redoStackElement() { return this.controller.redoStackElement(); }
+	setInputText(text: string, keepStack?: boolean) { this.controller.setInputText(text, keepStack); }
+	undoStackElement() { return this.controller.undoStackElement(); }
+	redoStackElement() { return this.controller.redoStackElement(); }
 
-    getVariable(name: string) { return this.controller.getVariable(name); }
-    changeVariable() {
-        // Logic to be implemented if needed, possibly proxy to Controller or just update UI
-    }
+	getVariable(name: string) { return this.controller.getVariable(name); }
+	changeVariable() {
+		// Logic to be implemented if needed, possibly proxy to Controller or just update UI
+	}
 
-    setBasicVersion(val: string) { this.controller.setBasicVersion(val); }
-    setPalette(val: string) { this.controller.setPalette(val); }
-    setCanvasType(val: string) { this.controller.setCanvasType(val); }
+	setBasicVersion(val: string) { this.controller.setBasicVersion(val); }
+	setPalette(val: string) { this.controller.setPalette(val); }
+	setCanvasType(val: string) { this.controller.setCanvasType(val); }
 
-    fnDragElementsActive(active: boolean) { this.controller.fnDragElementsActive(active); }
+	fnDragElementsActive(active: boolean) { this.controller.fnDragElementsActive(active); }
 
-    getVirtualKeyboard() { return this.controller.getVirtualKeyboard(); }
-    invalidateScript() { this.controller.invalidateScript(); }
+	getVirtualKeyboard() { return this.controller.getVirtualKeyboard(); }
+	invalidateScript() { this.controller.invalidateScript(); }
 
-    setDisassAddr(addr: number, endAddr?: number) { this.controller.setDisassAddr(addr, endAddr); }
-    setSoundActive() { this.controller.setSoundActive(); }
+	setDisassAddr(addr: number, endAddr?: number) { this.controller.setDisassAddr(addr, endAddr); }
+	setSoundActive() { this.controller.setSoundActive(); }
 
 
-    // UI Specific Methods
+	// UI Specific Methods
 
-    private static readonly exportEditorText = "<editor>";
+	private static readonly exportEditorText = "<editor>";
 
-    fnGetFilename(input: string) {
+	fnGetFilename(input: string) {
 		let name = "file";
 		const reRemMatcher = /^\d* ?(?:REM|rem) ([\w.]+)+/,
 			matches = reRemMatcher.exec(input);
@@ -91,7 +91,7 @@ export class UiController {
 		return name;
 	}
 
-    fnDownload(eventDef?: any): void {
+	fnDownload(eventDef?: any): void {
 		const options = this.view.getSelectOptions(ViewID.exportFileSelect),
 			exportTokenized = this.view.getInputChecked(ViewID.exportTokenizedInput),
 			exportDSK = this.view.getInputChecked(ViewID.exportDSKInput),
@@ -217,7 +217,7 @@ export class UiController {
 		}
 	}
 
-    setExportSelectOptions(select: ViewID): void {
+	setExportSelectOptions(select: ViewID): void {
 		const dirList = Controller.fnGetStorageDirectoryEntries(),
 			items: SelectOptionElement[] = [],
 			editorText = UiController.exportEditorText;
@@ -240,7 +240,7 @@ export class UiController {
 		this.view.setSelectOptions(select, items);
 	}
 
-    setGalleryAreaInputs(): void {
+	setGalleryAreaInputs(): void {
 		const database = this.model.getDatabase(),
 			directory = this.view.getSelectValue(ViewID.directorySelect),
 			options = this.view.getSelectOptions(ViewID.exampleSelect),
@@ -260,20 +260,68 @@ export class UiController {
 		this.view.setAreaInputList(ViewID.galleryAreaItems, inputs);
 	}
 
-    updateStorageDatabase(action: string, key: string) {
+	updateStorageDatabase(action: string, key: string) {
 		const database = this.model.getProperty<string>(ModelPropID.database),
 			storage = Utils.localStorage;
 
+		let selectedExample = "",
+			exampleChanged = false;
+
 		if (database !== "storage") {
 			this.model.setProperty(ModelPropID.database, "storage"); // switch to storage database
+		} else {
+			selectedExample = this.view.getSelectValue(ViewID.exampleSelect);
 		}
 
-		// Implementation simplified for brevity/matching original logic structure
-        this.setDirectorySelectOptions();
-        this.onDirectorySelectChange();
-    }
+		let dir: string[];
 
-    onDatabaseSelectChange(): void {
+		if (!key) { // no key => get all
+			dir = Controller.fnGetStorageDirectoryEntries();
+			dir.sort();
+		} else {
+			dir = [key];
+		}
+
+		for (let i = 0; i < dir.length; i += 1) {
+			key = dir[i];
+			if (action === "remove") {
+				this.model.removeExample(key);
+			} else if (action === "set") {
+				let example = this.model.getExample(key);
+
+				if (selectedExample === "" || (selectedExample === key)) {
+					exampleChanged = true;
+				}
+
+				if (!example) {
+					const dataString = storage.getItem(key) || "",
+						data = Controller.splitMeta(dataString);
+
+					example = {
+						key: key,
+						title: "", // or set key?
+						meta: data.meta.typeString // currently we take only the type
+					};
+					this.model.setExample(example);
+				}
+			} else {
+				Utils.console.error("updateStorageDatabase: unknown action", action);
+			}
+		}
+
+		if (database === "storage") {
+			this.setDirectorySelectOptions();
+			if (exampleChanged) {
+				this.onDirectorySelectChange();
+			} else {
+				this.setExampleSelectOptions();
+			}
+		} else {
+			this.model.setProperty(ModelPropID.database, database); // restore database
+		}
+	}
+
+	onDatabaseSelectChange(): void {
 		const databaseName = this.view.getSelectValue(ViewID.databaseSelect);
 
 		this.model.setProperty(ModelPropID.database, databaseName);
@@ -317,13 +365,13 @@ export class UiController {
 		vm.closein();
 
 		// this.commonEventHandler.setPopoversHiddenExcept(); // This needs to be handled by EventHandler calling this?
-        // Or UiController calls View? View doesn't handle popovers. UiEventHandler does.
-        // I will omit this call here or expose it. UiEventHandler calls onExampleSelectChange so it should handle popovers before calling.
-        // But onGalleryItemClick called setPopoversHiddenExcept() before calling onExampleSelectChange.
-        // onDirectorySelectChange calls onExampleSelectChange.
-        // onDatabaseSelectChange calls onDirectorySelectChange.
+		// Or UiController calls View? View doesn't handle popovers. UiEventHandler does.
+		// I will omit this call here or expose it. UiEventHandler calls onExampleSelectChange so it should handle popovers before calling.
+		// But onGalleryItemClick called setPopoversHiddenExcept() before calling onExampleSelectChange.
+		// onDirectorySelectChange calls onExampleSelectChange.
+		// onDatabaseSelectChange calls onDirectorySelectChange.
 
-        // It seems safer to ignore UI state change (popovers) here and let the caller handle it.
+		// It seems safer to ignore UI state change (popovers) here and let the caller handle it.
 
 		inFile.open = true;
 
@@ -358,22 +406,22 @@ export class UiController {
 		this.controller.startMainLoop();
 	}
 
-    // Also called from index file 0index.js
-    addIndex(_dir: string, input: Record<string, unknown>): void { // dir maybe ""
-        for (const value in input) {
-            if (input.hasOwnProperty(value)) {
-                // We assume input[value] is ExampleEntry[] but the type is unknown
-                const item = input[value] as any[]; // Simplification
+	// Also called from index file 0index.js
+	addIndex(_dir: string, input: Record<string, unknown>): void { // dir maybe ""
+		for (const value in input) {
+			if (input.hasOwnProperty(value)) {
+				// We assume input[value] is ExampleEntry[] but the type is unknown
+				const item = input[value] as any[]; // Simplification
 
-                for (let i = 0; i < item.length; i += 1) {
-                    //item[i].dir = dir; // TTT to check
-                    this.model.setExample(item[i]);
-                }
-            }
-        }
-    }
+				for (let i = 0; i < item.length; i += 1) {
+					//item[i].dir = dir; // TTT to check
+					this.model.setExample(item[i]);
+				}
+			}
+		}
+	}
 
-    // Also called from example files xxxxx.js
+	// Also called from example files xxxxx.js
 	addItem(key: string, input: string): string { // key maybe ""
 		if (!key) { // maybe ""
 			key = (document.currentScript && document.currentScript.getAttribute("data-key")) || this.model.getProperty<string>(ModelPropID.example);
@@ -390,49 +438,49 @@ export class UiController {
 
 		const example = this.model.getExample(key);
 
-        if (example) { // Should check if example exists, or create it?
-            // Original code: const example = this.model.getExample(key); example.key = key; ...
-            // If getExample returns undefined, we have a problem.
-            // But usually the database is loaded first, creating the structure?
-            // Wait, UiModel.setExample handles creation?
-            // Actually getExample might return undefined.
-            // The original Model.setExample creates it if missing?
-            // "if (!this.examples[database][key]) ..."
+		if (example) { // Should check if example exists, or create it?
+			// Original code: const example = this.model.getExample(key); example.key = key; ...
+			// If getExample returns undefined, we have a problem.
+			// But usually the database is loaded first, creating the structure?
+			// Wait, UiModel.setExample handles creation?
+			// Actually getExample might return undefined.
+			// The original Model.setExample creates it if missing?
+			// "if (!this.examples[database][key]) ..."
 
-            // addItem assumes the example entry exists in the database structure?
-            // Or maybe it creates it?
-            // Original code: "const example = this.model.getExample(key);"
-            // If it returns undefined, next line "example.key = key" throws.
-            // So it must exist.
+			// addItem assumes the example entry exists in the database structure?
+			// Or maybe it creates it?
+			// Original code: "const example = this.model.getExample(key);"
+			// If it returns undefined, next line "example.key = key" throws.
+			// So it must exist.
 
-            example.key = key; // maybe changed
-            example.script = input;
-            example.loaded = true;
-            Utils.console.log("addItem:", key);
-        } else {
-             Utils.console.warn("addItem: example not found:", key);
-        }
+			example.key = key; // maybe changed
+			example.script = input;
+			example.loaded = true;
+			Utils.console.log("addItem:", key);
+		} else {
+			Utils.console.warn("addItem: example not found:", key);
+		}
 		return key;
 	}
 
 	addRsx(key: string, RsxConstructor: new () => ICpcVmRsx): string {
 		if (!key) { // maybe ""
-            key = (document.currentScript && document.currentScript.getAttribute("data-key")) || this.model.getProperty<string>(ModelPropID.example);
-        }
+			key = (document.currentScript && document.currentScript.getAttribute("data-key")) || this.model.getProperty<string>(ModelPropID.example);
+		}
 
 		const example = this.model.getExample(key);
 
-        if (example) {
-            example.key = key; // maybe changed
-            example.rsx = new RsxConstructor();
-            example.loaded = true;
-            Utils.console.log("addRsx:", key);
-        }
+		if (example) {
+			example.key = key; // maybe changed
+			example.rsx = new RsxConstructor();
+			example.loaded = true;
+			Utils.console.log("addRsx:", key);
+		}
 		return key;
 	}
 
 
-    private setDatabaseSelectOptions() {
+	private setDatabaseSelectOptions() {
 		const items: SelectOptionElement[] = [],
 			databases = this.model.getAllDatabases(),
 			database = this.model.getProperty<string>(ModelPropID.database);
@@ -534,11 +582,11 @@ export class UiController {
 		}
 		if (!exampleSelected && items.length) {
 			items[0].selected = true; // if example is not found, select first element
-            // We should update the selected property?
-            // Original code logic ended here?
-            // sed output was truncated.
+			// We should update the selected property?
+			// Original code logic ended here?
+			// sed output was truncated.
 		}
-        this.view.setSelectOptions(ViewID.exampleSelect, items);
+		this.view.setSelectOptions(ViewID.exampleSelect, items);
 	}
 
 	private createFnDatabaseLoaded(url: string) {
@@ -570,59 +618,148 @@ export class UiController {
 			this.setDirectorySelectOptions();
 			this.onDirectorySelectChange();
 			this.setInputText("");
-        };
-    }
+		};
+	}
 
-    fnDoStart() {
-        const databases = this.parseDatabaseDirs(cpcconfig.databaseDirs);
-        this.model.addDatabases(databases);
+	fnDoStart() {
+		const databases = this.parseDatabaseDirs(cpcconfig.databaseDirs);
+		this.model.addDatabases(databases);
 
-        // Register external load handler
-        this.controller.setExternalLoadHandler(this.onLoadExternal.bind(this));
+		// Register external load handler
+		this.controller.setExternalLoadHandler(this.onLoadExternal.bind(this));
+		this.controller.setExternalDirectoryHandler(this.onDirectoryHandler.bind(this));
+		this.controller.setStorageUpdateHandler(this.onStorageUpdate.bind(this));
 
-        // Init options
-        this.setDatabaseSelectOptions();
+		// Init options
+		this.setDatabaseSelectOptions();
 
-        // Trigger initial selection?
-        // this.onDatabaseSelectChange();
-        // Typically the controller logic would init things.
-    }
+		// Trigger initial selection?
+		// this.onDatabaseSelectChange();
+		// Typically the controller logic would init things.
+	}
 
-    private parseDatabaseDirs(dirs: string) {
-        // Implementation of parsing cpcconfig.databaseDirs
-        // Based on observation of cpcconfig format: "dir,url,url=name,..."
-        // Returns DatabasesType
+	private parseDatabaseDirs(dirs: string) {
+		// Implementation of parsing cpcconfig.databaseDirs
+		// Based on observation of cpcconfig format: "dir,url,url=name,..."
+		// Returns DatabasesType
 
-        const databases: any = {};
-        const parts = dirs.split(",");
+		const databases: any = {};
+		const parts = dirs.split(",");
 
-        for (const part of parts) {
-            let [url, name] = part.split("=");
-            if (!name) {
-                // derive name from url
-                const match = url.match(/\/([^\/]+)$/);
-                name = match ? match[1] : url;
-                if (url.startsWith("./")) { // e.g. ./examples
-                     name = url.substring(2);
-                }
-            }
-            databases[name] = {
-                text: name,
-                title: name, // could be better
-                src: url
-            };
-        }
-        return databases;
-    }
+		for (const part of parts) {
+			let [url, name] = part.split("=");
+			if (!name) {
+				// derive name from url
+				const match = url.match(/\/([^\/]+)$/);
+				name = match ? match[1] : url;
+				if (url.startsWith("./")) { // e.g. ./examples
+					name = url.substring(2);
+				}
+			}
+			databases[name] = {
+				text: name,
+				title: name, // could be better
+				src: url
+			};
+		}
+		return databases;
+	}
 
-    private onLoadExternal(name: string) {
-        // Handle external load request (e.g. from BASIC command)
-        // Check if it's in our examples
-        // This mirrors part of fnFileLoad logic in Controller?
-        // Controller calls this if not found in localStorage.
+	private onDirectoryHandler(mask: string): string[] {
+		const dir: string[] = [],
+			allExamples = this.model.getAllExamples();
+		let regExp: RegExp | undefined;
 
-        // We can try to find it in the current database/directory?
+		if (mask) {
+			// We use the static method from Controller to prepare mask (or copy it here?)
+			// Controller.fnPrepareMaskRegExp is private static.
+			// We can implement simple regex or make it public.
+			// For now, let's implement simple regex or use what Controller uses for local storage?
+			// Controller.fnGetStorageDirectoryEntries uses it internally.
 
-        Utils.console.log("onLoadExternal:", name);
-    }
+			// To be safe and consistent, we can just filter manually or assume mask is simple.
+			// Actually, we should probably access local storage first.
+		}
+		// Get local storage entries (via Controller static helper or directly)
+		const storageDir = Controller.fnGetStorageDirectoryEntries(mask);
+		dir.push(...storageDir);
+
+		// Get examples
+		// We need to filter examples by mask. 
+		// Since we cannot access fnPrepareMaskRegExp, we'll try to replicate basic wildcard support
+		// or just ignore mask for examples if it's complex? 
+		// Usually mask is "*.bas" or similar.
+
+		let maskRe: RegExp | null = null;
+		if (mask) {
+			const escaped = mask.replace(/([.+^$[\]\\(){}|-])/g, "\\$1").replace(/\?/g, ".").replace(/\*/g, ".*");
+			maskRe = new RegExp("^" + escaped + "$", "i");
+		}
+
+		for (const key in allExamples) {
+			if (allExamples.hasOwnProperty(key)) {
+				const example = allExamples[key],
+					key2 = example.key,
+					matchKey2 = key2 + ((key2.indexOf(".") < 0) ? "." : "");
+
+				// Check duplicates (storage takes precedence usually, or we merge?)
+				// Controller logic was: combine and remove duplicates.
+				if (storageDir.includes(key2)) continue;
+
+				if (!maskRe || maskRe.test(matchKey2)) {
+					dir.push(key2);
+				}
+			}
+		}
+		return dir;
+	}
+
+	private onStorageUpdate(action: string, key: string) {
+		this.updateStorageDatabase(action, key);
+	}
+
+	private onLoadExternal(name: string) {
+		// Check if it's in examples
+		const exampleEntry = this.model.getExample(name);
+		const inFile = this.controller.getVm().vmGetInFileObject(); // We need inFile for context
+
+		if (exampleEntry) {
+			if (exampleEntry.loaded) {
+				// Already loaded script
+				if (exampleEntry.rsx) {
+					this.controller.getVm().vmRegisterRsx(exampleEntry.rsx, false);
+				}
+				this.controller.loadFileContinue(exampleEntry.script);
+			} else {
+				// Need to load from URL
+				const databaseDir = this.model.getDatabase().src;
+				const url = databaseDir + "/" + name + ".js";
+
+				Utils.loadScript(url,
+					(_sFullUrl: string, key: string) => {
+						// Loaded
+						const entry = this.model.getExample(key); // reload entry
+						if (entry && entry.loaded) {
+							if (entry.rsx) {
+								this.controller.getVm().vmRegisterRsx(entry.rsx, false);
+							}
+							this.controller.loadFileContinue(entry.script);
+						} else {
+							// Error?
+							this.controller.loadFileContinue(null); // Stop
+						}
+					},
+					(_sFullUrl: string, key: string) => {
+						Utils.console.error("Failed to load example:", key);
+						this.controller.loadFileContinue(null);
+					},
+					name
+				);
+			}
+		} else {
+			// Not found
+			Utils.console.warn("onLoadExternal: Not found:", name);
+			this.controller.loadFileContinue(null);
+		}
+	}
 }
