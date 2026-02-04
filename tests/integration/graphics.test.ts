@@ -70,11 +70,23 @@ describe('Graphics Integration with jsdom and @napi-rs/canvas', () => {
         delete global.window;
         // @ts-ignore
         delete global.document;
+        // @ts-ignore
+        delete global.HTMLElement;
+        // @ts-ignore
+        delete global.HTMLCanvasElement;
+        // @ts-ignore
+        delete global.requestAnimationFrame;
+        // @ts-ignore
+        delete global.cancelAnimationFrame;
+        // @ts-ignore
+        delete global.MouseEvent;
+        // @ts-ignore
+        delete global.ImageData;
     });
 
     test('Canvas initializes correctly', () => {
         const options: CanvasOptions = {
-            canvasID: "cpcCanvas" as any,
+            canvasID: ViewID.cpcCanvas,
             palette: "color",
             charset: cpcCharset as CanvasCharType[]
         };
@@ -85,7 +97,7 @@ describe('Graphics Integration with jsdom and @napi-rs/canvas', () => {
 
     test('Canvas drawing operations (plot, draw, printChar)', () => {
         const options: CanvasOptions = {
-            canvasID: "cpcCanvas" as any,
+            canvasID: ViewID.cpcCanvas,
             palette: "color",
             charset: cpcCharset as CanvasCharType[]
         };
@@ -94,13 +106,13 @@ describe('Graphics Integration with jsdom and @napi-rs/canvas', () => {
         let capturedImageData: ImageData | null = null;
         const originalPutImageData = rsCtx.putImageData;
         rsCtx.putImageData = (imagedata: ImageData, dx: number, dy: number) => {
-             capturedImageData = imagedata;
-             // We can skip calling original if it is broken, but calling it is safer for side-effects if any
-             try {
+            capturedImageData = imagedata;
+            // We can skip calling original if it is broken, but calling it is safer for side-effects if any
+            try {
                 return originalPutImageData.call(rsCtx, imagedata, dx, dy);
-             } catch (e) {
-                 // Ignore failure in napi-rs
-             }
+            } catch (e) {
+                // Ignore failure in napi-rs
+            }
         };
 
         const canvas = new Canvas(options);
@@ -127,9 +139,9 @@ describe('Graphics Integration with jsdom and @napi-rs/canvas', () => {
         const data = capturedImageData!.data;
 
         let nonZero = 0;
-        for(let i=0; i<data.length; i+=4) {
-            if(data[i] !== 0 || data[i+1] !== 0 || data[i+2] !== 0) {
-                 nonZero++;
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i] !== 0 || data[i + 1] !== 0 || data[i + 2] !== 0) {
+                nonZero++;
             }
         }
         expect(nonZero).toBeGreaterThan(0);
@@ -137,7 +149,7 @@ describe('Graphics Integration with jsdom and @napi-rs/canvas', () => {
 
     test('Canvas fill operation', () => {
         const options: CanvasOptions = {
-            canvasID: "cpcCanvas" as any,
+            canvasID: ViewID.cpcCanvas,
             palette: "color",
             charset: cpcCharset as CanvasCharType[]
         };
