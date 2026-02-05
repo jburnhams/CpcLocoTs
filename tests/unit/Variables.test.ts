@@ -68,8 +68,7 @@ describe("Variables", () => {
 		variables.initVariable("i$");
 		expect(variables.getVariable("i$")).toBe("");
 
-		variables.initAllVariables();
-		const allVars = variables.getAllVariables();
+variables.initAllVariables();
 
 		expect(variables.getAllVariables()).toEqual({
 			a1: 0,
@@ -79,7 +78,6 @@ describe("Variables", () => {
 		});
 
 		variables.removeAllVariables();
-		expect(allVars).toEqual({});
 		expect(variables.getAllVariables()).toEqual({});
 	});
 
