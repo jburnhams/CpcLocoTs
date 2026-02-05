@@ -2174,8 +2174,7 @@ export class Controller implements IController {
 
 	private getZ80Disass() {
 		if (!this.z80Disass) {
-			const dataArr = this.vm.vmGetMem(),
-				data = dataArr as unknown as Uint8Array; // fast hack: we take number array as Uint8Array
+			const data = this.vm.vmGetMem();
 
 			this.z80Disass = new Z80Disass({
 				data: data,
