@@ -54,7 +54,7 @@ Edit the new `.test.ts` file:
 - [x] Diff
 - [x] Model
 - [x] Sound
-- [ ] Variables
+- [x] Variables
 - [ ] Z80Disass
 - [ ] ZipFile
 - [ ] testParseExamples
@@ -65,3 +65,4 @@ Edit the new `.test.ts` file:
 - **Diff**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops iterating over `allTests`. Updated imports to `../../src/`.
 - **Model**: Direct translation of QUnit tests to Vitest. Updated imports to `../../src/`.
 - **Sound**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops. Used `beforeAll` to create a shared `Sound` instance for each category to maintain state consistency required by the legacy data-driven tests. Updated imports to `../../src/`.
+- **Variables**: Migrated standard tests and refactored data-driven tests `determineStaticVarType` to use simple loops generating `test` calls. Updated imports to `../../src/`.
