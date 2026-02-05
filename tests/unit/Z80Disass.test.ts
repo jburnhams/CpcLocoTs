@@ -1,11 +1,8 @@
-// Z80Disass.qunit.ts - QUnit tests for CpcLoco Z80Disass
-//
+// Z80Disass.test.ts - Vitest tests for CpcLoco Z80Disass
 
-import { Utils } from "../Utils";
-import { Z80Disass } from "../Z80Disass";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
-
-QUnit.dump.maxDepth = 10;
+import { describe, test, expect, beforeAll } from 'vitest';
+import { Utils } from "../../src/Utils";
+import { Z80Disass } from "../../src/Z80Disass";
 
 /* eslint-disable quote-props */
 const allTests: AllTestsType = {
@@ -1824,135 +1821,54 @@ const allTests: AllTestsType = {
 };
 /* eslint-enable quote-props */
 
-
-type HooksWithZ80Disass = NestedHooks & {
-	z80Disass: Z80Disass
-};
-
-function createZ80Disass() {
-	return new Z80Disass({
-		data: [] as unknown as Uint8Array,
-		addr: 0,
-		format: 4
-	});
+function hexInQuotes(s: string): string {
+    let out = "";
+    for (let i = 0; i < s.length; i += 1) {
+        out += "\\x" + ("00" + s.charCodeAt(i).toString(16)).slice(-2);
+    }
+    return '"' + out + '"';
 }
 
-function createAllTests1(category: string, results: ResultType) {
-	const z80Disass = createZ80Disass(),
-		categoryMap: Record<string, number> = {
-			prefixCB: 0xcb,
-			prefixDD: 0xdd,
-			prefixDDCB: 0xcbdd,
-			prefixED: 0xed,
-			prefixFD: 0xfd,
-			prefixFDCB: 0xcbfd
-		},
-		prefix = categoryMap[category];
+describe("Z80Disass: Tests", () => {
+    let z80Disass: Z80Disass;
 
-	for (let i = 0; i < 256; i += 1) {
-		const data = [];
+    beforeAll(() => {
+        z80Disass = new Z80Disass({
+            data: [], // number[] is now allowed!
+            addr: 0,
+            format: 4
+        });
+    });
 
-		if (prefix) {
-			data.push(prefix & 0xff); // eslint-disable-line no-bitwise
-			if (prefix > 255) {
-				data.push(prefix >> 8); // eslint-disable-line no-bitwise
-			}
+    for (const category in allTests) {
+        describe(category, () => {
+            const tests = allTests[category as keyof typeof allTests];
+            for (const key in tests) {
+                if (tests.hasOwnProperty(key)) {
+                    test(hexInQuotes(key), () => {
+                        const data = Utils.string2Uint8Array(key);
+                        const expected = tests[key as keyof typeof tests];
 
-			if (prefix === 0xcbdd || prefix === 0xcbfd) {
-				data.push(3); // push a fixed index
-			}
-		}
+                        z80Disass.setOptions({
+                            data: data,
+                            addr: 0
+                        });
 
-		data.push(i);
+                        const result = z80Disass.disassLine();
+                        expect(result).toBe(expected);
+                    });
+                }
+            }
+        });
+    }
 
-		z80Disass.setOptions({
-			data: data as unknown as Uint8Array,
-			addr: 0
-		});
-
-		let result = z80Disass.disassLine();
-		const options = z80Disass.getOptions();
-
-		if (options.addr > data.length) { // some missing bytes?
-			let j = 1;
-
-			while (options.addr > data.length) {
-				data.push(j);
-				j += 1;
-			}
-			z80Disass.setOptions({
-				addr: 0
-			});
-			result = z80Disass.disassLine(); // do it again
-		}
-
-		const key = data.map(function (value: number) {
-			return String.fromCharCode(value);
-		}).join("");
-
-		results[category].push(TestHelper.hexInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-	}
-	return results;
-}
-
-
-QUnit.module("Z80Disass: Tests", function (hooks) {
-	hooks.before(function () {
-		const thisHooks = hooks as HooksWithZ80Disass;
-
-		thisHooks.z80Disass = createZ80Disass();
-	});
-
-	function runSingleTest(z80Disass: Z80Disass, key: string) {
-		const data = Utils.string2Uint8Array(key);
-
-		z80Disass.setOptions({
-			data: data,
-			addr: 0
-		});
-
-		const result = z80Disass.disassLine(),
-			options = z80Disass.getOptions();
-
-		if (options.addr > data.length) {
-			Utils.console.error("Data too short: key: " + TestHelper.hexInQuotes(key) + ", length: " + data.length + ", addr: " + options.addr);
-		}
-
-		return result;
-	}
-
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		const thisHooks = hooks as HooksWithZ80Disass,
-			z80Disass = thisHooks.z80Disass;
-
-		if (results && TestHelper.config.test === "createAll") { // fast hack to do something else
-			createAllTests1(category, results);
-
-			if (assert) {
-				assert.ok("See console: createAllTests1");
-			}
-			return;
-		}
-
-		for (const key in tests) {
-			if (tests.hasOwnProperty(key)) {
-				const expected = tests[key],
-					result = runSingleTest(z80Disass, key);
-
-				if (results) {
-					results[category].push(TestHelper.hexInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
-				}
-
-				if (assert) {
-					assert.strictEqual(result, expected, TestHelper.hexInQuotes(key));
-				}
-			}
-		}
-	}
-
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
+    test("Accepts number[] as data", () => {
+        const data = [0x00]; // NOP
+        z80Disass.setOptions({
+            data: data,
+            addr: 0
+        });
+        const result = z80Disass.disassLine();
+        expect(result).toBe("NOP");
+    });
 });
-
-// end
-
-

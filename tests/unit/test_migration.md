@@ -55,12 +55,13 @@ Edit the new `.test.ts` file:
 - [x] Model
 - [x] Sound
 - [x] Variables
-- [ ] Z80Disass
+- [x] Z80Disass
 - [ ] ZipFile
 - [ ] testParseExamples
 
 ## Migration Notes
 
+- **Z80Disass**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops iterating over `allTests`. Updated imports to `../../src/`. Added verification for `number[]` input support.
 - **CpcVm**: Replaced `TestHelper.generateAllTests` with a local loop to generate tests from `allTests` object. Replaced `QUnit.module` with `describe`. Updated imports to point to `../../src/`.
 - **Diff**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops iterating over `allTests`. Updated imports to `../../src/`.
 - **Model**: Direct translation of QUnit tests to Vitest. Updated imports to `../../src/`.

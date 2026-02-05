@@ -10,7 +10,7 @@
 //
 
 interface Z80DisassOptions {
-	data: Uint8Array,
+	data: Uint8Array | number[],
 	addr: number,
 	format?: number
 }
