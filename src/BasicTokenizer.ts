@@ -541,14 +541,14 @@ export class BasicTokenizer {
 	}
 
 	private fnParseProgram() {
-		const outParts: string[] = [];
+		const lines: string[] = [];
 		let line: string | undefined;
 
 		while ((line = this.fnParseNextLine()) !== undefined) {
-			outParts.push(line + "\n");
-			// CPC uses "\r\n" line breaks, JavaScript uses "\n", textArea cannot contain "\r"
+			lines.push(line);
 		}
-		return outParts.join("");
+		// CPC uses "\r\n" line breaks, JavaScript uses "\n", textArea cannot contain "\r"
+		return lines.length ? lines.join("\n") + "\n" : "";
 	}
 
 	decodeLineFragment(program: string, offset: number, length: number): string { // decode tokenized BASIC line fragment to ASCII

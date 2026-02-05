@@ -877,7 +877,7 @@ export class CodeGeneratorJs {
 			}
 		}
 
-		let lineString = String(this.line); // TODO: already string?
+		let lineString = this.line;
 
 		if (lineString === "direct") {
 			lineString = '"' + lineString + '"';
@@ -1804,6 +1804,7 @@ export class CodeGeneratorJs {
 		this.fnPrecheckTree(parseTree, this.countMap); // also sets "resumeNoArgsCount" for resume without args
 
 		let output = "";
+		const outputLines: string[] = [];
 
 		for (let i = 0; i < parseTree.length; i += 1) {
 			if (Utils.debug > 2) {
@@ -1813,16 +1814,13 @@ export class CodeGeneratorJs {
 
 			if ((line !== undefined) && (line !== "")) {
 				if (line !== null) {
-					if (output.length === 0) {
-						output = line;
-					} else {
-						output += "\n" + line;
-					}
+					outputLines.push(line);
 				} else {
-					output = ""; // cls (clear output when node is set to null)
+					outputLines.length = 0; // cls (clear output when node is set to null)
 				}
 			}
 		}
+		output = outputLines.join("\n");
 
 		// optimize: comment lines which are not referenced
 		if (!this.countMap.merge && !this.countMap.chainMerge && !this.countMap.resumeNext && !this.countMap.resumeNoArgsCount) {
