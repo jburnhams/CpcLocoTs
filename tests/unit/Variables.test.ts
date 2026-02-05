@@ -100,7 +100,7 @@ function createListOfItems<T>(item: T, length: number): T[] {
 		expect(variables.getVariable("a1A")).toEqual(zeros11);
 
 		variables.initVariable("sA$");
-		expect(variables.getVariable("sA$")).toEqual(["", "", "", "", "", "", "", "", "", "", ""]);
+expect(variables.getVariable("sA$")).toEqual(createListOfItems("", 11));
 
 		const zero11x11 = createListOfListWithZeros(11, 11);
 
