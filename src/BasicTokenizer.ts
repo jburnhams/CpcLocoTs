@@ -510,7 +510,7 @@ export class BasicTokenizer {
 
 	private fnParseLineFragment() {
 		const input = this.input;
-		let out = "";
+		const outParts: string[] = [];
 
 		this.needSpace = false; // only needed in fnParseNextToken
 		while (this.pos < this.lineEnd) {
@@ -518,9 +518,9 @@ export class BasicTokenizer {
 
 			const tstr = this.fnParseNextToken(input);
 
-			out += tstr;
+			outParts.push(tstr);
 		}
-		return out;
+		return outParts.join("");
 	}
 
 	private fnParseNextLine() {
@@ -541,14 +541,14 @@ export class BasicTokenizer {
 	}
 
 	private fnParseProgram() {
-		let out = "",
-			line: string | undefined;
+		const outParts: string[] = [];
+		let line: string | undefined;
 
 		while ((line = this.fnParseNextLine()) !== undefined) {
-			out += line + "\n";
+			outParts.push(line + "\n");
 			// CPC uses "\r\n" line breaks, JavaScript uses "\n", textArea cannot contain "\r"
 		}
-		return out;
+		return outParts.join("");
 	}
 
 	decodeLineFragment(program: string, offset: number, length: number): string { // decode tokenized BASIC line fragment to ASCII
