@@ -225,6 +225,8 @@ export class Controller implements IController {
 		keepTokens: false
 	};
 
+	private static readonly listRegExp = /([\x00-\x1f])/g; // eslint-disable-line no-control-regex
+
 	private onUserAction(/* event, id */) {
 		this.sound.setActivatedByUser();
 		this.setSoundActive();
@@ -1348,14 +1350,13 @@ export class Controller implements IController {
 	private fnList(paras: VmLineParas) {
 		const input = this.view.getAreaValue(ViewID.inputText),
 			stream = paras.stream,
-			lines = this.fnGetLinesInRange(input, paras.first || 0, paras.last || 65535),
-			regExp = new RegExp(/([\x00-\x1f])/g); // eslint-disable-line no-control-regex
+			lines = this.fnGetLinesInRange(input, paras.first || 0, paras.last || 65535);
 
 		for (let i = 0; i < lines.length; i += 1) {
 			let line = lines[i];
 
 			if (stream !== 9) {
-				line = line.replace(regExp, "\x01$1"); // escape control characters to print them directly
+				line = line.replace(Controller.listRegExp, "\x01$1"); // escape control characters to print them directly
 			}
 			this.vm.print(stream, line, "\r\n");
 		}
