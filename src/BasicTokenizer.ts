@@ -510,7 +510,7 @@ export class BasicTokenizer {
 
 	private fnParseLineFragment() {
 		const input = this.input;
-		let out = "";
+		const outParts: string[] = [];
 
 		this.needSpace = false; // only needed in fnParseNextToken
 		while (this.pos < this.lineEnd) {
@@ -518,9 +518,9 @@ export class BasicTokenizer {
 
 			const tstr = this.fnParseNextToken(input);
 
-			out += tstr;
+			outParts.push(tstr);
 		}
-		return out;
+		return outParts.join("");
 	}
 
 	private fnParseNextLine() {
