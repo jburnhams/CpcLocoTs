@@ -225,7 +225,7 @@ export class Controller implements IController {
 		keepTokens: false
 	};
 
-	private static readonly listRegExp = /([\x00-\x1f])/g; // eslint-disable-line no-control-regex
+	private static readonly controlCharRegExp = /([\x00-\x1f])/g; // eslint-disable-line no-control-regex
 
 	private onUserAction(/* event, id */) {
 		this.sound.setActivatedByUser();
