@@ -5,7 +5,7 @@ import { Utils } from "../../src/Utils";
 import { Z80Disass } from "../../src/Z80Disass";
 
 /* eslint-disable quote-props */
-const allTests: AllTestsType = {
+const allTests: Record<string, Record<string, string>> = {
 	normal: {
 		"\x00": "NOP",
 		"\x01\x01\x02": "LD BC,&0201",
