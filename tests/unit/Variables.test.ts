@@ -81,20 +81,12 @@ variables.initAllVariables();
 		expect(variables.getAllVariables()).toEqual({});
 	});
 
-	function createListOfItems<T>(item: T, length: number) {
-		const list: T[] = [];
-		for (let i = 0; i < length; i += 1) {
-			list.push(item);
-		}
-		return list;
+function createListOfItems<T>(item: T, length: number): T[] {
+		return new Array(length).fill(item);
 	}
 
-	function createListOfListWithZeros(count: number, count2: number) {
-		const listList = [];
-		for (let i = 0; i < count; i += 1) {
-			listList.push(createListOfItems<number>(0, count2));
-		}
-		return listList;
+	function createListOfListWithZeros(count: number, count2: number): number[][] {
+		return Array.from({ length: count }, () => createListOfItems<number>(0, count2));
 	}
 
 	test("array variables", () => {
