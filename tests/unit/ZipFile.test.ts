@@ -1,13 +1,13 @@
-// ZipFile.qunit.ts - QUnit tests for CpcLoco ZipFile
-//
+// ZipFile.test.ts - Vitest tests for CpcLoco ZipFile
 
-import { Utils } from "../Utils";
-import { ZipFile } from "../ZipFile";
-import { TestHelper, TestsType, AllTestsType, ResultType } from "./TestHelper";
+import { describe, test, expect } from 'vitest';
+import { Utils } from "../../src/Utils";
+import { ZipFile } from "../../src/ZipFile";
 
-QUnit.dump.maxDepth = 10;
+type TestsType = Record<string, string>;
+type AllTestsType = Record<string, TestsType>;
 
-QUnit.module("ZipFile: Tests", function (hooks) {
+describe("ZipFile: Tests", () => {
 	// examples store.zip and deflate.zip taken from https://github.com/bower/decompress-zip/tree/master/test/assets/file-mode-pack
 	// deflate example created by: Controller.exportAsBase64("deflate.zip.xxx")
 	const allTests: AllTestsType = {
@@ -18,7 +18,6 @@ QUnit.module("ZipFile: Tests", function (hooks) {
 			"CpcLoco;B;0;408;;base64,UEsDBAoAAAAAAGyFJkYAAAAAAAAAAAAAAAAFAAAAZGlyMS9QSwMECgAAAAAAbIUmRgAAAAAAAAAAAAAAAAUAAABkaXIyL1BLAwQUAAgACABshSZGAAAAAAAAAAAAAAAABQAAAGZpbGUxS0xKBgBQSwcIwkEkNQUAAAADAAAAUEsDBBQACAAIAGyFJkYAAAAAAAAAAAAAAAAFAAAAZmlsZTKrqKwCAFBLBwhnuo7rBQAAAAMAAABQSwECLQMKAAAAAABshSZGAAAAAAAAAAAAAAAABQAAAAAAAAAAABAA7QEAAAAAZGlyMS9QSwECLQMKAAAAAABshSZGAAAAAAAAAAAAAAAABQAAAAAAAAAAABAAyQEjAAAAZGlyMi9QSwECLQMUAAgACABshSZGwkEkNQUAAAADAAAABQAAAAAAAAAAACAA7YFGAAAAZmlsZTFQSwECLQMUAAgACABshSZGZ7qO6wUAAAADAAAABQAAAAAAAAAAACAAyYF+AAAAZmlsZTJQSwUGAAAAAAQABADMAAAAtgAAAAAA": "file1=abc,file2=xyz"
 		}
 	};
-
 
 	function fnExtractZipFiles(zip: ZipFile) {
 		const result: string[] = [];
@@ -39,40 +38,35 @@ QUnit.module("ZipFile: Tests", function (hooks) {
 		return result.join(",");
 	}
 
-	function runTestsFor(category: string, tests: TestsType, assert?: Assert, results?: ResultType) {
-		for (const key in tests) {
-			if (tests.hasOwnProperty(key)) {
-				const parts = Utils.split2(key, ","),
-					meta = parts[0],
-					data = Utils.atob(parts[1]), // decode base64
-					zip = new ZipFile({
-						data: Utils.string2Uint8Array(data),
-						zipName: "name"
-					}),
-					expected = tests[key];
-				let result: string;
+	for (const category in allTests) {
+		if (Object.prototype.hasOwnProperty.call(allTests, category)) {
+			describe(category, () => {
+				const tests = allTests[category];
+				for (const key in tests) {
+					if (Object.prototype.hasOwnProperty.call(tests, key)) {
+						test(category + ": " + key.substring(0, 30) + "...", () => {
+							const parts = Utils.split2(key, ","),
+								// meta = parts[0],
+								data = Utils.atob(parts[1]), // decode base64
+								zip = new ZipFile({
+									data: Utils.string2Uint8Array(data),
+									zipName: "name"
+								}),
+								expected = tests[key];
+							let result: string;
 
-				try {
-					result = fnExtractZipFiles(zip);
-				} catch (e) {
-					Utils.console.error(e);
-					result = String(e);
-				}
+							try {
+								result = fnExtractZipFiles(zip);
+							} catch (e) {
+								console.error(e);
+								result = String(e);
+							}
 
-				if (results) {
-					results[category].push(TestHelper.stringInQuotes(key) + ": " + TestHelper.stringInQuotes(result));
+							expect(result).toBe(expected);
+						});
+					}
 				}
-
-				if (assert) {
-					assert.strictEqual(result, expected, meta);
-				}
-			}
+			});
 		}
 	}
-
-	TestHelper.generateAllTests(allTests, runTestsFor, hooks);
 });
-
-// end
-
-
