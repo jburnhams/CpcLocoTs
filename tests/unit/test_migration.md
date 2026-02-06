@@ -56,11 +56,12 @@ Edit the new `.test.ts` file:
 - [x] Sound
 - [x] Variables
 - [x] Z80Disass
-- [ ] ZipFile
+- [x] ZipFile
 - [ ] testParseExamples
 
 ## Migration Notes
 
+- **ZipFile**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops. Implemented `fnExtractZipFiles` locally. Updated imports to `../../src/`.
 - **Z80Disass**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops iterating over `allTests`. Updated imports to `../../src/`. Added verification for `number[]` input support.
 - **CpcVm**: Replaced `TestHelper.generateAllTests` with a local loop to generate tests from `allTests` object. Replaced `QUnit.module` with `describe`. Updated imports to point to `../../src/`.
 - **Diff**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops iterating over `allTests`. Updated imports to `../../src/`.
