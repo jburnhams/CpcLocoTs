@@ -2,7 +2,7 @@
 
 import {
     Model, View, Controller, Utils, ModelPropID, ViewID, NodeAdapt, ICpcVmRsx
-} from "my-library"; // Importing from library
+} from "cpclocots"; // Importing from library
 
 import { UiModel } from "./UiModel";
 import { UiController } from "./UiController";
@@ -25,7 +25,7 @@ export class CpcLoco {
         databaseDirs: "examples",
         database: "examples",
         debug: 0,
-        example: "CpcLoco",
+        example: "cpcbasic",
         exampleIndex: "0index.js",
         implicitLines: false,
         input: "",
@@ -270,6 +270,10 @@ export class CpcLoco {
 
         CpcLoco.controller.fnDoStart(); // Init UI controller
         CpcLoco.controller.onDatabaseSelectChange();
+
+        // Register event listeners
+        window.addEventListener("click", CpcLoco.eventHandler);
+        window.addEventListener("change", CpcLoco.eventHandler);
     }
 
     static fnOnLoad() {

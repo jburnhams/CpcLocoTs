@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UiController } from '../src/UiController';
 import { UiModel } from '../src/UiModel';
-import { Controller, Model, View, ModelPropID, Utils } from 'my-library';
+import { Controller, Model, View, ModelPropID, Utils } from 'cpclocots';
 
 // Mock dependencies
-vi.mock('my-library', async () => {
-    const actual = await vi.importActual('my-library');
+vi.mock('cpclocots', async () => {
+    const actual = await vi.importActual('cpclocots');
     return {
         ...actual,
         Controller: vi.fn(),
@@ -65,6 +65,7 @@ describe('UiController', () => {
             getSelectValue: vi.fn(),
             setHidden: vi.fn(),
             setAreaInputList: vi.fn(),
+            getSelectOptions: vi.fn(),
         } as unknown as View;
 
         // Controller mock
@@ -77,9 +78,12 @@ describe('UiController', () => {
                 vmGetInFileObject: vi.fn().mockReturnValue({}),
                 vmStop: vi.fn(),
                 vmRegisterRsx: vi.fn(),
+                closein: vi.fn(),
+                vmGetLoadHandler: vi.fn(),
             }),
             loadFileContinue: vi.fn(),
             setInputText: vi.fn(),
+            startMainLoop: vi.fn(),
         };
 
         uiController = new UiController(mockController, mockModel, mockView);
@@ -163,5 +167,24 @@ describe('UiController', () => {
         expect(Utils.loadScript).toHaveBeenCalled();
         // expect(mockController.loadFileContinue).toHaveBeenCalledWith('loaded script'); 
         // Note: checking this requires the mock impl to run synchronously which it does.
+    });
+    it('should update example property on selection change', () => {
+        uiController.fnDoStart();
+
+        // Setup
+        mockView.getSelectValue.mockReturnValue('newExample');
+        mockView.getSelectOptions.mockReturnValue([{ value: 'newExample', text: 'New Example' }]);
+        mockModel.getProperty.mockImplementation((prop: string) => {
+            if (prop === ModelPropID.database) return 'examples'; // Non-storage
+            if (prop === ModelPropID.example) return 'oldExample';
+            return '';
+        });
+        mockModel.getDatabase.mockReturnValue({ src: 'http://db' });
+
+        // Act
+        uiController.onExampleSelectChange();
+
+        // Assert
+        expect(mockModel.setProperty).toHaveBeenCalledWith(ModelPropID.example, 'newExample');
     });
 });

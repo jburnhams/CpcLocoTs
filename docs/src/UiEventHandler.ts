@@ -1,4 +1,4 @@
-// CommonEventHandler.ts - Common event handler for browser events
+// UiEventHandler.ts - Common event handler for browser events
 // (c) Marco Vieth, 2019
 // https://benchmarko.github.io/cpclocots/
 
@@ -6,9 +6,9 @@ import { ModelPropID, ViewID } from "./Constants";
 import { Utils } from "./Utils";
 import { IController } from "./Interfaces";
 import { Model, ConfigType } from "./Model";
-import { View } from "./View";
+import { ModelPropID, ViewID, Utils, IController, Model, ConfigType, View } from "cpclocots";
 
-interface CommonEventHandlerOptions {
+interface UiEventHandlerOptions {
 	model: Model,
 	view: View,
 	controller: IController
@@ -28,8 +28,8 @@ export type EventDefType = {
 type EventDefMapType = Record<string, EventDefType[]>;
 
 
-export class CommonEventHandler implements EventListenerObject {
-	private readonly options: CommonEventHandlerOptions;
+export class UiEventHandler implements EventListenerObject {
+	private readonly options: UiEventHandlerOptions;
 
 	private readonly model: Model;
 	private readonly view: View;
@@ -39,8 +39,8 @@ export class CommonEventHandler implements EventListenerObject {
 
 	private fnUserAction: ((event: Event, id: string) => void) | undefined = undefined;
 
-	constructor(options: CommonEventHandlerOptions) {
-		this.options = {} as CommonEventHandlerOptions;
+	constructor(options: UiEventHandlerOptions) {
+		this.options = {} as UiEventHandlerOptions;
 		this.setOptions(options);
 
 		// copy for easy access:
@@ -51,11 +51,11 @@ export class CommonEventHandler implements EventListenerObject {
 		this.createEventDefMap();
 	}
 
-	getOptions(): CommonEventHandlerOptions {
+	getOptions(): UiEventHandlerOptions {
 		return this.options;
 	}
 
-	private setOptions(options: Partial<CommonEventHandlerOptions>): void {
+	private setOptions(options: Partial<UiEventHandlerOptions>): void {
 		Object.assign(this.options, options);
 	}
 
@@ -142,8 +142,8 @@ export class CommonEventHandler implements EventListenerObject {
 				const eventDef = eventDefMapClick[id as ViewID];
 
 				if (eventDef.isPopover && (eventDef.toggleId !== exceptId)) {
-					const toggleId = CommonEventHandler.getToggleId(eventDef),
-						property = CommonEventHandler.getproperty(eventDef);
+					const toggleId = UiEventHandler.getToggleId(eventDef),
+						property = UiEventHandler.getproperty(eventDef);
 
 					if (!this.view.getHidden(toggleId)) {
 						// we cannot use toggleAreaHidden because it would be recursive
@@ -156,8 +156,8 @@ export class CommonEventHandler implements EventListenerObject {
 	}
 
 	private toggleAreaHidden(eventDef: EventDefType): boolean {
-		const toggleId = CommonEventHandler.getToggleId(eventDef),
-			property = CommonEventHandler.getproperty(eventDef),
+		const toggleId = UiEventHandler.getToggleId(eventDef),
+			property = UiEventHandler.getproperty(eventDef),
 			visible = !this.model.getProperty<boolean>(property);
 
 		this.model.setProperty(property, visible);
@@ -194,7 +194,7 @@ export class CommonEventHandler implements EventListenerObject {
 
 	private onCheckedChange(eventDef: EventDefType) {
 		const id = eventDef.id,
-			property = CommonEventHandler.getproperty(eventDef),
+			property = UiEventHandler.getproperty(eventDef),
 			checked = this.view.getInputChecked(id);
 
 		this.model.setProperty(property, checked);
@@ -203,7 +203,7 @@ export class CommonEventHandler implements EventListenerObject {
 
 	private onNumberInputChange(eventDef: EventDefType) {
 		const id = eventDef.id,
-			property = CommonEventHandler.getproperty(eventDef),
+			property = UiEventHandler.getproperty(eventDef),
 			valueAsString = this.view.getInputValue(id),
 			value = Number(valueAsString);
 
@@ -213,7 +213,7 @@ export class CommonEventHandler implements EventListenerObject {
 
 	private onSelectChange(eventDef: EventDefType) {
 		const id = eventDef.id,
-			property = CommonEventHandler.getproperty(eventDef),
+			property = UiEventHandler.getproperty(eventDef),
 			value = this.view.getSelectValue(id);
 
 		this.model.setProperty(property, value);
@@ -306,7 +306,7 @@ export class CommonEventHandler implements EventListenerObject {
 		this.setPopoversHiddenExcept(); // hide all popovers,
 
 		const changed = this.model.getChangedProperties();
-		let paras = CommonEventHandler.encodeUriParam(changed);
+		let paras = UiEventHandler.encodeUriParam(changed);
 
 		paras = paras.replace(/%2[Ff]/g, "/"); // unescape %2F -> /
 		window.location.search = "?" + paras;
@@ -482,7 +482,7 @@ export class CommonEventHandler implements EventListenerObject {
 					},
 					{
 						id: ViewID.helpButton,
-						func: CommonEventHandler.onHelpButtonClick
+						func: UiEventHandler.onHelpButtonClick
 					},
 					{
 						id: ViewID.lineNumberAddButton,
@@ -831,7 +831,7 @@ export class CommonEventHandler implements EventListenerObject {
 	handleEvent(event: Event): void { // eslint-disable-line complexity
 		const target = View.getEventTarget<HTMLButtonElement>(event),
 			type = event.type; // click or change
-		let	id = (target) ? target.getAttribute("id") as string : String(target);
+		let id = (target) ? target.getAttribute("id") as string : String(target);
 
 		if (this.fnUserAction) {
 			this.fnUserAction(event, id);

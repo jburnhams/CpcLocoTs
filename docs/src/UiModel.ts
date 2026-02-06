@@ -2,7 +2,7 @@
 // (c) Marco Vieth, 2019
 // https://benchmarko.github.io/cpclocots/
 
-import { Utils, Model, ModelPropID, ICpcVmRsx, DatabaseEntry, ExampleEntry } from "my-library"; // Assuming imports will be resolved from library
+import { Utils, Model, ModelPropID, ICpcVmRsx, DatabaseEntry, ExampleEntry } from "cpclocots"; // Assuming imports will be resolved from library
 
 export type DatabasesType = Record<string, DatabaseEntry>;
 type ExamplesType = Record<string, Record<string, ExampleEntry>>;

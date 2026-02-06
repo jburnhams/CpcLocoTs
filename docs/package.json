@@ -4,13 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node ../scripts/copy-lib-to-docs.mjs && vite",
-    "build": "node ../scripts/copy-lib-to-docs.mjs && vite build",
+    "dev": "node ../scripts/copy-lib-to-docs.mjs && node ../scripts/copy-basic-to-docs.mjs && vite",
+    "build": "node ../scripts/copy-lib-to-docs.mjs && node ../scripts/copy-basic-to-docs.mjs && vite build",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "dependencies": {
-    "my-library": "file:.."
+    "cpclocots": "file:.."
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

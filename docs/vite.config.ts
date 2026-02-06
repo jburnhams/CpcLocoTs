@@ -17,7 +17,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "my-library": resolve(__dirname, "../src/index.ts")
+      "cpclocots": resolve(__dirname, "../src/index.ts")
     }
   },
   test: {

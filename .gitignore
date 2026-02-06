@@ -4,3 +4,4 @@ docs-dist
 .DS_Store
 *.log
 docs/public/cpclocots.*
+docs/public/basic

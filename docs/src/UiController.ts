@@ -1,6 +1,6 @@
 // UiController.ts
 
-import { Controller, ModelPropID, View, ViewID, Utils, FileHandler, FileSelect, DiskImage, FileMeta, SelectOptionElement, AreaInputElement, ICpcVmRsx } from "my-library";
+import { Controller, ModelPropID, View, ViewID, Utils, FileHandler, FileSelect, DiskImage, FileMeta, SelectOptionElement, AreaInputElement, ICpcVmRsx } from "cpclocots";
 import { UiModel } from "./UiModel";
 import { cpcconfig } from "./cpcconfig";
 
@@ -395,9 +395,9 @@ export class UiController {
 
 		if (dataBaseName !== "storage") {
 			exampleName = "/" + exampleName; // load absolute
-		} else {
-			this.model.setProperty(ModelPropID.example, exampleName);
 		}
+
+		this.model.setProperty(ModelPropID.example, this.view.getSelectValue(ViewID.exampleSelect));
 
 		inFile.name = exampleName;
 		inFile.start = undefined;
@@ -720,7 +720,16 @@ export class UiController {
 
 	private onLoadExternal(name: string) {
 		// Check if it's in examples
-		const exampleEntry = this.model.getExample(name);
+		let exampleEntry = this.model.getExample(name);
+
+		if (!exampleEntry && name.startsWith("/")) {
+			exampleEntry = this.model.getExample(name.substring(1));
+			// Update name to match key for loading
+			if (exampleEntry) {
+				name = name.substring(1);
+			}
+		}
+
 		const inFile = this.controller.getVm().vmGetInFileObject(); // We need inFile for context
 
 		if (exampleEntry) {

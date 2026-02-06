@@ -12,7 +12,7 @@ CpcLoco.addIndex("./examples", {
 			"title": "First Program (empty)"
 		},
 		{
-			"key": "CpcLoco",
+			"key": "cpcbasic",
 			"title": "CPC Basic TS"
 		},
 		{
