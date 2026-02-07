@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { UiController } from '../src/UiController';
 import { UiModel } from '../src/UiModel';
 import { Controller, Model, View, ModelPropID, Utils } from 'cpclocots';
+import { CpcLoco } from '../src/main';
 
 // Mock dependencies
 vi.mock('cpclocots', async () => {
@@ -186,5 +187,10 @@ describe('UiController', () => {
 
         // Assert
         expect(mockModel.setProperty).toHaveBeenCalledWith(ModelPropID.example, 'newExample');
+    });
+
+    afterEach(() => {
+        CpcLoco.fnDoStop();
+        vi.restoreAllMocks();
     });
 });

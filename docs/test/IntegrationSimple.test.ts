@@ -4,15 +4,12 @@ import { ViewID, View } from 'cpclocots';
 import { CpcLoco } from '../src/main';
 
 describe('Integration Simple: Initialization with Real Canvas', () => {
-    let rsCanvas: any;
-    let rsCtx: any;
 
     beforeEach(() => {
         // 1. Reset DOM using global document
         document.body.innerHTML = `
             <div id="${ViewID.mainArea}">
                 <div id="${ViewID.cpcArea}" tabindex="0">
-                    <canvas id="${ViewID.cpcCanvas}" width="640" height="400"></canvas>
                 </div>
                 <div id="${ViewID.kbdArea}">
                     <div id="${ViewID.kbdAreaInner}">
@@ -47,39 +44,34 @@ describe('Integration Simple: Initialization with Real Canvas', () => {
                 <button id="${ViewID.undoButton2}"></button>
                 <button id="${ViewID.redoButton}"></button>
                 <button id="${ViewID.redoButton2}"></button>
+                <div id="${ViewID.resultText}"></div>
+                <textarea id="${ViewID.outputText}"></textarea>
             </div>
         `;
 
-        // 2. Create napi-rs canvas
-        rsCanvas = createCanvas(640, 400);
-        rsCtx = rsCanvas.getContext('2d');
+        // Manually create and append canvas to ensure it's patched
+        const canvas = document.createElement('canvas');
+        canvas.id = ViewID.cpcCanvas;
+        canvas.width = 640;
+        canvas.height = 400;
+        document.getElementById(ViewID.cpcArea)?.appendChild(canvas);
 
-        // 3. Patch the canvas element in the DOM
-        const cpcCanvas = document.getElementById(ViewID.cpcCanvas) as HTMLCanvasElement;
+        if (global.gc) {
+            global.gc();
+        }
+        const memory = process.memoryUsage();
+        console.log(`DEBUG: Memory before IntegrationSimple: ${Math.round(memory.heapUsed / 1024 / 1024)}MB / ${Math.round(memory.heapTotal / 1024 / 1024)}MB`);
 
-        // Patch getContext to return napi-rs context
-        const originalGetContext = cpcCanvas.getContext;
-        cpcCanvas.getContext = ((type: string, options?: any) => {
-            if (type === '2d') {
-                return rsCtx as any;
-            }
-            return originalGetContext.call(cpcCanvas, type, options);
-        }) as any;
-
-        // Patch toDataURL
-        cpcCanvas.toDataURL = rsCanvas.toDataURL.bind(rsCanvas);
-
-        // 4. Mocks
         window.alert = vi.fn();
         window.confirm = vi.fn(() => true);
 
         // AudioContext mock (override setup.ts)
         window.AudioContext = vi.fn().mockImplementation(() => ({
-            createGain: vi.fn(() => ({ connect: vi.fn(), gain: { value: 0 } })),
-            createChannelMerger: vi.fn(() => ({ connect: vi.fn() })),
-            createOscillator: vi.fn(() => ({ connect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0 } })),
+            createGain: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), gain: { value: 0 } })),
+            createChannelMerger: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn() })),
+            createOscillator: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0 } })),
             destination: {},
-            close: vi.fn(),
+            close: vi.fn().mockImplementation(() => Promise.resolve()),
             state: 'running',
             resume: vi.fn(),
             currentTime: 0
@@ -95,6 +87,7 @@ describe('Integration Simple: Initialization with Real Canvas', () => {
     });
 
     afterEach(() => {
+        CpcLoco.fnDoStop();
         vi.restoreAllMocks();
         // Clean up body?
         document.body.innerHTML = '';

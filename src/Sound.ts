@@ -468,7 +468,7 @@ export class Sound {
 
 		if (this.isSoundOn && !this.isActivatedByUserFlag) { // sound on but not yet activated? -> say cannot queue
 			canQueue = false;
-		/* eslint-disable no-bitwise */
+			/* eslint-disable no-bitwise */
 		} else if (!(state & 0x80)) { // 0x80: flush
 			const queues = this.queues;
 
@@ -663,6 +663,16 @@ export class Sound {
 			if (Utils.debug) {
 				Utils.console.debug("soundOff: Sound switched off");
 			}
+		}
+	}
+
+	dispose(): void {
+		this.soundOff();
+		if (this.context) {
+			this.context.close().catch((err) => {
+				Utils.console.error("Sound.dispose: Error closing context:", err);
+			});
+			this.context = undefined;
 		}
 	}
 }

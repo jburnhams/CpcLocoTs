@@ -56,6 +56,7 @@ export class Controller implements IController {
 	private fnScript?: Function = undefined; // eslint-disable-line @typescript-eslint/ban-types
 
 	private timeoutHandlerActive = false;
+	private runLoopTimeoutId?: any; // To store setTimeout ID for the main loop
 	private nextLoopTimeOut = 0; // next timeout for the main loop
 	private initialLoopTimeout = 0;
 
@@ -1894,15 +1895,31 @@ export class Controller implements IController {
 			this.timeoutHandlerActive = false; // not running any more
 			this.exitLoop();
 		} else {
-			setTimeout(this.fnRunLoopHandler, this.nextLoopTimeOut);
+			this.runLoopTimeoutId = setTimeout(this.fnRunLoopHandler, this.nextLoopTimeOut);
 		}
 	}
 
 	startMainLoop(): void {
 		if (!this.timeoutHandlerActive) {
 			this.timeoutHandlerActive = true;
-			setTimeout(this.fnRunLoopHandler, 0);
+			this.runLoopTimeoutId = setTimeout(this.fnRunLoopHandler, 0);
 		}
+	}
+
+	stopMainLoop(): void {
+		if (this.timeoutHandlerActive) {
+			this.timeoutHandlerActive = false;
+			if (this.runLoopTimeoutId) {
+				clearTimeout(this.runLoopTimeoutId);
+				this.runLoopTimeoutId = undefined;
+			}
+		}
+	}
+
+	dispose(): void {
+		this.stopMainLoop();
+		this.stopUpdateCanvas();
+		this.sound.dispose();
 	}
 
 	private setStopObject(stop: VmStopEntry) {

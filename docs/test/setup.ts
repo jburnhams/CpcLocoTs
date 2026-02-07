@@ -34,10 +34,11 @@ if (typeof document !== 'undefined') {
 
 // Mock AudioContext
 global.AudioContext = vi.fn().mockImplementation(() => ({
-    createGain: vi.fn(() => ({ connect: vi.fn(), gain: { value: 0 } })),
-    createOscillator: vi.fn(() => ({ connect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0 } })),
+    createGain: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), gain: { value: 0 } })),
+    createChannelMerger: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn() })),
+    createOscillator: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0 } })),
     destination: {},
-    close: vi.fn(),
+    close: vi.fn().mockImplementation(() => Promise.resolve()),
     state: 'running',
     resume: vi.fn(),
     currentTime: 0

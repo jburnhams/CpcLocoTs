@@ -66,6 +66,8 @@ export class CpcLoco {
     public static view: View;
     public static controller: UiController; // Use UiController
     private static eventHandler: UiEventHandler;
+    private static keydownHandler?: (e: KeyboardEvent) => void;
+    private static keyupHandler?: (e: KeyboardEvent) => void;
 
     private static fnHereDoc(fn: () => void) {
         return String(fn).
@@ -188,6 +190,25 @@ export class CpcLoco {
         }
     }
 
+    static fnDoStop() {
+        if (CpcLoco.controller) {
+            CpcLoco.controller.dispose();
+        }
+        window.removeEventListener("click", CpcLoco.eventHandler);
+        window.removeEventListener("change", CpcLoco.eventHandler);
+        if (CpcLoco.keydownHandler) {
+            window.removeEventListener("keydown", CpcLoco.keydownHandler);
+            CpcLoco.keydownHandler = undefined;
+        }
+        if (CpcLoco.keyupHandler) {
+            window.removeEventListener("keyup", CpcLoco.keyupHandler);
+            CpcLoco.keyupHandler = undefined;
+        }
+        (CpcLoco as any).model = undefined;
+        (CpcLoco as any).controller = undefined;
+        (CpcLoco as any).view = undefined;
+        (CpcLoco as any).eventHandler = undefined;
+    }
     static fnDoStart() {
         const startConfig = CpcLoco.config,
             winCpcConfig = (typeof window !== "undefined" && (window as any).cpcConfig) || {};
@@ -278,14 +299,16 @@ export class CpcLoco {
         const virtualKeyboard = CpcLoco.controller.getVirtualKeyboard();
         if (virtualKeyboard) {
             const handler = virtualKeyboard.fnKeydownOrKeyupHandler.bind(virtualKeyboard);
-            window.addEventListener("keydown", (e) => {
+            CpcLoco.keydownHandler = (e: KeyboardEvent) => {
                 Utils.console.log("Keydown:", e.code);
                 handler(e);
-            });
-            window.addEventListener("keyup", (e) => {
+            };
+            CpcLoco.keyupHandler = (e: KeyboardEvent) => {
                 Utils.console.log("Keyup:", e.code);
                 handler(e);
-            });
+            };
+            window.addEventListener("keydown", CpcLoco.keydownHandler);
+            window.addEventListener("keyup", CpcLoco.keyupHandler);
         }
     }
 

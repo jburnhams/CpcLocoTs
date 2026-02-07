@@ -27,6 +27,8 @@ export class UiController {
 	startScreenshot() { return this.controller.startScreenshot(); }
 	startUpdateCanvas() { this.controller.startUpdateCanvas(); }
 	stopUpdateCanvas() { this.controller.stopUpdateCanvas(); }
+	stopMainLoop() { this.controller.stopMainLoop(); }
+	dispose() { this.controller.dispose(); }
 
 	fnAddLines() { this.controller.fnAddLines(); }
 	fnRemoveLines() { this.controller.fnRemoveLines(); }

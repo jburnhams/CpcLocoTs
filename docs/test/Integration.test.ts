@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { UiController } from '../src/UiController';
 import { UiModel } from '../src/UiModel';
 import { Controller, Model, View, ModelPropID, Utils } from 'cpclocots';
+import { CpcLoco } from '../src/main';
 // We use real classes for integration if possible, but jsdom environment might lack canvas support?
 // "cpclocots" should resolve to real source code.
 
@@ -38,6 +39,12 @@ describe('Integration: Run Example', () => {
         // Let's partial mock Controller to avoid canvas
         // This is tricky if we want real logic.
         // Alternatives: Mock the Canvas class in the module.
+    });
+
+    afterEach(() => {
+        CpcLoco.fnDoStop();
+        vi.restoreAllMocks();
+        document.body.innerHTML = '';
     });
 
     it('should run a simple basic script', () => {
