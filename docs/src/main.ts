@@ -274,6 +274,19 @@ export class CpcLoco {
         // Register event listeners
         window.addEventListener("click", CpcLoco.eventHandler);
         window.addEventListener("change", CpcLoco.eventHandler);
+
+        const virtualKeyboard = CpcLoco.controller.getVirtualKeyboard();
+        if (virtualKeyboard) {
+            const handler = virtualKeyboard.fnKeydownOrKeyupHandler.bind(virtualKeyboard);
+            window.addEventListener("keydown", (e) => {
+                Utils.console.log("Keydown:", e.code);
+                handler(e);
+            });
+            window.addEventListener("keyup", (e) => {
+                Utils.console.log("Keyup:", e.code);
+                handler(e);
+            });
+        }
     }
 
     static fnOnLoad() {
@@ -316,7 +329,7 @@ if (typeof window !== "undefined") {
 }
 
 const MyPolyfills = (typeof window !== "undefined" && (window as any).Polyfills) ? (window as any).Polyfills : (globalThis as any).Polyfills;
-if (MyPolyfills && MyPolyfills.isNodeAvailable) {
+if (MyPolyfills && MyPolyfills.isNodeAvailable && typeof window.document === "undefined") {
     NodeAdapt.doAdapt();
     CpcLoco.fnOnLoad();
     Utils.console.debug("End of main.");
