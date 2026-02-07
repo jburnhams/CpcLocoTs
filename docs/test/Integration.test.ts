@@ -3,22 +3,22 @@ import { UiController } from '../src/UiController';
 import { UiModel } from '../src/UiModel';
 import { Controller, Model, View, ModelPropID, Utils } from 'cpclocots';
 // We use real classes for integration if possible, but jsdom environment might lack canvas support?
-// "my-library" should resolve to real source code.
+// "cpclocots" should resolve to real source code.
 
 // We need to mock Canvas and Sound if they use browser APIs not in jsdom.
 // But Vitest with jsdom handles most DOM. Canvas might need 'canvas' package or mock.
 // Let's rely on basic mocking of the View or Canvas if needed, 
 // but we want to test the Controller logic flow (load example -> run).
 
-// If my-library is mocked in unit test, does it affect integration test?
+// If cpclocots is mocked in unit test, does it affect integration test?
 // Vitest mocks are per file unless setup file does it globally.
 // Our setup.ts only does cleanup.
-// Unit test mocked "my-library" via vi.mock. Integration test should NOT mock "my-library" completely.
+// Unit test mocked "cpclocots" via vi.mock. Integration test should NOT mock "cpclocots" completely.
 // But we might need to mock parts of it (like Sound/Canvas).
 
 describe('Integration: Run Example', () => {
     // We cannot easily test real integration without building the library or having valid resolving.
-    // Assuming "my-library" resolves to src.
+    // Assuming "cpclocots" resolves to src.
 
     // We need real instances.
     let uiController: UiController;
