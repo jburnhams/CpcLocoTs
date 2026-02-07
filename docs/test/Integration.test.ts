@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { UiController } from '../src/UiController';
 import { UiModel } from '../src/UiModel';
-import { Controller, Model, View, ModelPropID, Utils } from 'my-library';
+import { Controller, Model, View, ModelPropID, Utils } from 'cpclocots';
 // We use real classes for integration if possible, but jsdom environment might lack canvas support?
 // "my-library" should resolve to real source code.
 
