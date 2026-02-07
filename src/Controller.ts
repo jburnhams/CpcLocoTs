@@ -15,6 +15,7 @@ import { CodeGeneratorJs } from "./CodeGeneratorJs";
 import { CodeGeneratorToken } from "./CodeGeneratorToken";
 import { cpcCharset } from "./cpcCharset";
 import { CpcVm, FileMeta, VmStopEntry } from "./CpcVm";
+import { Debugger } from "./Debugger";
 import { Diff } from "./Diff";
 import { DiskImage } from "./DiskImage";
 import { FileHandler } from "./FileHandler";
@@ -91,9 +92,14 @@ export class Controller implements IController {
 	});
 
 	private readonly vm: CpcVm;
+	private readonly debugger: Debugger;
 
 	public getVm(): CpcVm {
 		return this.vm;
+	}
+
+	public getDebugger(): Debugger {
+		return this.debugger;
 	}
 
 	private readonly noStop: VmStopEntry;
@@ -157,6 +163,9 @@ export class Controller implements IController {
 
 		this.vm.vmRegisterRsx(new RsxAmsdos(), true);
 		this.vm.vmRegisterRsx(new RsxCpcLoco(), true);
+
+		this.debugger = new Debugger(this.vm);
+		this.vm.vmSetDebugger(this.debugger);
 
 		this.noStop = Object.assign({}, this.vm.vmGetStopObject());
 		this.savedStop = {
@@ -1960,6 +1969,7 @@ export class Controller implements IController {
 		this.setStopObject(this.noStop);
 
 		this.removeKeyBoardHandler();
+		this.debugger.resume();
 		this.vm.vmStop("run", 95);
 		this.startMainLoop();
 	}
@@ -1967,6 +1977,7 @@ export class Controller implements IController {
 	startParseRun(): void {
 		this.setStopObject(this.noStop);
 		this.removeKeyBoardHandler();
+		this.debugger.resume();
 		this.vm.vmStop("parseRun", 95);
 		this.startMainLoop();
 	}
@@ -1996,6 +2007,7 @@ export class Controller implements IController {
 			if (stop.reason === "direct" || stop.reason === "escape") {
 				this.vm.cursor(stop.paras.stream, 0); // switch it off (for continue button)
 			}
+			this.debugger.resume();
 			Object.assign(stop, savedStop); // fast hack
 			this.setStopObject(this.noStop);
 		}
@@ -2552,6 +2564,7 @@ export class Controller implements IController {
 		error: Controller.fnDummy,
 		onError: this.fnOnError,
 		stop: Controller.fnDummy,
+		debug: Controller.fnDummy,
 		"break": Controller.fnDummy,
 		escape: Controller.fnDummy,
 		renumLines: this.fnRenumLines,

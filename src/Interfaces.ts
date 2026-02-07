@@ -6,6 +6,7 @@
 
 import { CustomError } from "./Utils";
 import { ViewID } from "./Constants";
+import { Debugger } from "./Debugger";
 
 export interface IOutput {
     text: string
@@ -123,6 +124,9 @@ export interface ICpcVm {
     vmChangeMode(mode: number): void
     renum(newLine: number, oldLine: number, step: number, keep: number): void
     vmNotImplemented(name: string): void
+    vmSetDebugger(dbg: Debugger | undefined): void
+    vmDebugHook(): void
+    vmGetGosubStack(): (number | string)[]
 }
 
 
@@ -182,6 +186,7 @@ export interface IController {
     fnSpeed: () => void
 
     fnDragElementsActive: (enabled: boolean) => void
+    getDebugger: () => Debugger
 }
 
 //
