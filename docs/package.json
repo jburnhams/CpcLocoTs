@@ -7,7 +7,9 @@
     "dev": "node ../scripts/copy-lib-to-docs.mjs && node ../scripts/copy-basic-to-docs.mjs && vite",
     "build": "node ../scripts/copy-lib-to-docs.mjs && node ../scripts/copy-basic-to-docs.mjs && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test:unit": "vitest run -c vitest.config.ts",
+    "test:integration": "vitest run -c vitest.integration.config.ts",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.90",

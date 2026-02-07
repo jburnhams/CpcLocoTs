@@ -4,31 +4,7 @@ import { UiModel } from '../src/UiModel';
 import { Controller, Model, View, ModelPropID, Utils } from 'cpclocots';
 
 // Mock dependencies
-vi.mock('cpclocots', async () => {
-    const actual = await vi.importActual('cpclocots');
-    return {
-        ...actual,
-        Controller: vi.fn(),
-        Model: vi.fn(),
-        View: vi.fn(),
-        Utils: {
-            ...actual.Utils,
-            console: {
-                log: vi.fn(),
-                warn: vi.fn(),
-                error: vi.fn(),
-            },
-            localStorage: {
-                getItem: vi.fn(),
-                setItem: vi.fn(),
-                key: vi.fn(),
-                length: 0,
-                removeItem: vi.fn(),
-            },
-            loadScript: vi.fn(),
-        }
-    };
-});
+vi.mock('cpclocots');
 
 describe('UiController', () => {
     let uiController: UiController;

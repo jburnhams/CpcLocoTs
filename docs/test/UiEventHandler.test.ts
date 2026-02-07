@@ -18,6 +18,7 @@ vi.mock('cpclocots', async () => {
         },
         ModelPropID: {},
         ViewID: {},
+        Polyfills: vi.fn()
     };
 });
 

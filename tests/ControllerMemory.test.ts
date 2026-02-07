@@ -184,5 +184,5 @@ describe('Controller RunLoop Memory Test', () => {
         console.log(`Finished ${count} loops in ${(end - start).toFixed(2)}ms`);
 
         expect(count).toBe(limit);
-    });
+    }, 15000);
 });

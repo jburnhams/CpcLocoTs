@@ -8,6 +8,7 @@ describe('Integration Simple: Initialization with Real Canvas', () => {
     let rsCtx: any;
 
     beforeEach(() => {
+        vi.useFakeTimers();
         // 1. Reset DOM using global document
         document.body.innerHTML = `
             <div id="${ViewID.mainArea}">
@@ -95,6 +96,13 @@ describe('Integration Simple: Initialization with Real Canvas', () => {
     });
 
     afterEach(() => {
+        vi.useRealTimers();
+        if (CpcLoco.controller && CpcLoco.controller.controller) {
+            const vm = CpcLoco.controller.controller.getVm();
+            if (vm) {
+                vm.vmStop("stop", 0, true);
+            }
+        }
         vi.restoreAllMocks();
         // Clean up body?
         document.body.innerHTML = '';

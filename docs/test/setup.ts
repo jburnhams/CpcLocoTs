@@ -11,6 +11,9 @@ if (typeof document !== 'undefined') {
         const el = origCreateElement(tagName, options);
         if (tagName.toLowerCase() === 'canvas') {
             const canvasEl = el as HTMLCanvasElement;
+            Object.defineProperty(canvasEl, 'offsetParent', {
+                get() { return document.body; } // Mock offsetParent to be truthy
+            });
             canvasEl.getContext = function (type: string) {
                 if (!this._context) {
                     this._napiCanvas = createCanvas(this.width || 300, this.height || 150);
