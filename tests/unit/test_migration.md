@@ -57,7 +57,7 @@ Edit the new `.test.ts` file:
 - [x] Variables
 - [x] Z80Disass
 - [x] ZipFile
-- [ ] testParseExamples
+- [x] testParseExamples
 
 ## Migration Notes
 
@@ -68,3 +68,4 @@ Edit the new `.test.ts` file:
 - **Model**: Direct translation of QUnit tests to Vitest. Updated imports to `../../src/`.
 - **Sound**: Replaced `TestHelper.generateAllTests` with nested `describe`/`test` loops. Used `beforeAll` to create a shared `Sound` instance for each category to maintain state consistency required by the legacy data-driven tests. Updated imports to `../../src/`.
 - **Variables**: Migrated standard tests and refactored data-driven tests `determineStaticVarType` to use simple loops generating `test` calls. Updated imports to `../../src/`.
+- **testParseExamples**: Implemented dynamic discovery of examples from `cpcconfig.databaseDirs`, mapping local paths and loading `0index.js` and example scripts via `eval` (simulating the legacy test environment). Added `TestModel` to support legacy `addDatabases`/`setExample` methods removed from `src/Model.ts`. Updated imports to `../../src/`.
