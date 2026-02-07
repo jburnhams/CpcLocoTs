@@ -61,7 +61,7 @@ o.vmDebugHook(lineNumber)
 
 | Doc | Delivers | MVP? |
 |-----|----------|------|
-| [01-DEBUGGER-CORE](01-DEBUGGER-CORE.md) | `Debugger` class, `DebuggerTypes`, `vmDebugHook`, CodeGen changes | Yes [x] |
+| [01-DEBUGGER-CORE](01-DEBUGGER-CORE.md) | `Debugger` class, `DebuggerTypes`, `vmDebugHook`, CodeGen changes | Yes |
 | [02-SPEED-AND-HIGHLIGHT](02-SPEED-AND-HIGHLIGHT.md) | Speed slider, line highlighting, basic UI panel | Yes |
 | [03-BREAKPOINTS](03-BREAKPOINTS.md) | Line breakpoints, conditional breakpoints, UI gutter | |
 | [04-STEP-MODES-AND-CALLSTACK](04-STEP-MODES-AND-CALLSTACK.md) | Step-over, step-out, call stack display | |
