@@ -18,6 +18,7 @@ interface CodeGeneratorJsOptions {
 	integerOverflow?: boolean // check for integer overflow
 	quiet?: boolean // quiet mode: suppress most warnings
 	trace?: boolean
+	debug?: boolean
 }
 
 interface CodeNode extends ParserNode {
@@ -74,6 +75,9 @@ export class CodeGeneratorJs {
 			quiet: false
 		} as CodeGeneratorJsOptions;
 		this.setOptions(options); // optional options
+		if (options.debug) {
+			console.log("CodeGeneratorJs: debug enabled");
+		}
 
 		this.reJsKeywords = CodeGeneratorJs.createJsKeywordRegex();
 	}
@@ -811,7 +815,9 @@ export class CodeGeneratorJs {
 		if (!this.options.noCodeFrame) {
 			value += "case " + label + ":";
 			value += " o.line = " + label + ";";
-			if (isTraceActive) {
+			if (this.options.debug) {
+				value += " o.vmDebugHook(); if (o.vmGetStopObject().reason) break;";
+			} else if (isTraceActive) {
 				value += " o.vmTrace();";
 			}
 		} else {
@@ -1846,6 +1852,7 @@ export class CodeGeneratorJs {
 	}
 
 	generate(input: string, variables: Variables, allowDirect?: boolean): IOutput {
+		console.log("CodeGeneratorJs input:", input, "debug option:", this.options.debug);
 		const out: IOutput = {
 			text: ""
 		};

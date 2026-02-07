@@ -10,6 +10,7 @@ import { Random } from "./Random";
 import { Sound, SoundData, ToneEnvData, VolEnvData } from "./Sound";
 import { Variables, VariableMap, VarTypes, VariableTypeMap } from "./Variables";
 import { CpcVmRsx } from "./CpcVmRsx";
+import { Debugger } from "./Debugger";
 
 export interface CpcVmOptions {
 	canvas: ICanvas
@@ -194,6 +195,8 @@ export class CpcVm implements ICpcVm {
 	private progEnd = (CpcVm as any).progStart + 3; // initially 370
 
 	private readonly rsx = new CpcVmRsx();
+
+	private debuggerRef?: Debugger;
 
 	private static readonly frameTimeMs = 1000 / 50; // 50 Hz => 20 ms
 	private static readonly timerCount = 4; // number of timers
@@ -1211,6 +1214,28 @@ export class CpcVm implements ICpcVm {
 
 	vmSetSourceMap(sourceMap: Record<string, number[]>): void {
 		this.sourceMap = sourceMap;
+	}
+
+	vmSetDebugger(dbg: Debugger | undefined): void {
+		console.log("vmSetDebugger", dbg ? "set" : "unset");
+		this.debuggerRef = dbg;
+	}
+
+	vmDebugHook(): void {
+		if (this.tronFlag1) {
+			// existing trace output
+			const stream = 0;
+
+			this.print(stream, "[" + String(this.line) + "]");
+		}
+		if (this.debuggerRef) {
+			console.log("vmDebugHook", this.line);
+			this.debuggerRef.onLine(this.line);
+		}
+	}
+
+	vmGetGosubStack(): (number | string)[] {
+		return this.gosubStack;
 	}
 
 	vmTrace(): void {
