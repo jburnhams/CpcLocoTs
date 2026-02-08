@@ -2,9 +2,11 @@ import { Controller, DebugEvent, DebugState, View, ViewID } from "cpclocots";
 
 export class UiDebugger {
 	private readonly controller: Controller;
+	private readonly view: View;
 
-	constructor(controller: Controller) {
+	constructor(controller: Controller, view: View) {
 		this.controller = controller;
+		this.view = view;
 		this.init();
 	}
 
@@ -73,35 +75,7 @@ export class UiDebugger {
 
 		if (range) {
 			label.textContent = "Line: " + range.line;
-			// Scroll textarea and select line
-			const textArea = View.getElementById1(ViewID.inputText) as HTMLTextAreaElement;
-
-			// We can use setSelectionRange to highlight, but we need to ensure we don't mess up if user is editing.
-			// Usually debug mode implies read-only or careful editing.
-
-			// Only scroll if we are not editing?
-			// For now, simple implementation:
-			textArea.setSelectionRange(range.startPos, range.endPos);
-
-			// To scroll to the selection:
-			// There is no standard API for scrolling textarea to selection.
-			// But focusing it usually scrolls.
-			// textArea.focus(); // Steals focus from buttons?
-
-			// Maybe just updating label is enough for MVP if scroll is hard.
-			// Design doc: "Recommended for MVP: Option B — a status line showing the current BASIC line number, plus auto-scroll of the textarea to that line."
-
-			// Auto-scroll hack:
-			const text = textArea.value;
-			const sub = text.substring(0, range.startPos);
-			const lines = sub.split("\n").length;
-			const lineHeight = 15; // approximate line height in px?
-			// textArea.scrollTop = lines * lineHeight;
-			// This is unreliable.
-
-			// blur and focus might work?
-			// textArea.blur();
-			// textArea.focus();
+			this.view.setAreaSelection(ViewID.inputText, range.startPos, range.endPos);
 		} else {
 			label.textContent = "Line: -";
 		}

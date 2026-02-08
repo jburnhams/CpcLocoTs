@@ -15,7 +15,7 @@ export class UiController {
 		this.controller = controller;
 		this.model = model;
 		this.view = view;
-		this.uiDebugger = new UiDebugger(controller);
+		this.uiDebugger = new UiDebugger(controller, view);
 	}
 
 	// Proxy methods

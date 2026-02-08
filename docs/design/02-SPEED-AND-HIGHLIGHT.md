@@ -132,52 +132,52 @@ ViewID.debugStepIntoButton = "debugStepIntoButton"
 ## Checklist
 
 ### Speed control — library
-- [ ] Add `SpeedConfig` type to `DebuggerTypes.ts`
-- [ ] Add `lineCounter` and `speedConfig` properties to `Debugger`
-- [ ] Implement speed-to-config mapping in `setSpeed()`
-- [ ] Add throttle check in `onLine()`: pause after N lines with delay
-- [ ] Add `nextDelay` property readable by Controller
-- [ ] Add `getSpeed()` method
+- [x] Add `SpeedConfig` type to `DebuggerTypes.ts`
+- [x] Add `lineCounter` and `speedConfig` properties to `Debugger`
+- [x] Implement speed-to-config mapping in `setSpeed()`
+- [x] Add throttle check in `onLine()`: pause after N lines with delay
+- [x] Add `nextDelay` property readable by Controller
+- [x] Add `getSpeed()` method
 
 ### Speed control — Controller
-- [ ] In `"debug"` handler: check `debugger.nextDelay` for throttle pauses
-- [ ] Use `setTimeout(fnRunLoopHandler, delay)` for throttle-only pauses
-- [ ] Distinguish throttle-pause (auto-resume) from user-pause (wait for input)
+- [x] In `"debug"` handler: check `debugger.nextDelay` for throttle pauses
+- [x] Use `setTimeout(fnRunLoopHandler, delay)` for throttle-only pauses
+- [x] Distinguish throttle-pause (auto-resume) from user-pause (wait for input)
 
 ### Line highlighting — library
-- [ ] Add `LineRange` type to `DebuggerTypes.ts`
-- [ ] Add `setSourceMap()` to `Debugger`
-- [ ] Add `getCurrentLineRange()` to `Debugger`
-- [ ] Call `setSourceMap()` from Controller after compilation
+- [x] Add `LineRange` type to `DebuggerTypes.ts`
+- [x] Add `setSourceMap()` to `Debugger`
+- [x] Add `getCurrentLineRange()` to `Debugger`
+- [x] Call `setSourceMap()` from Controller after compilation
 
 ### Line highlighting — UI
-- [ ] Add `debugLineLabel` span to `index.html`
-- [ ] Implement `updateLineHighlight()` in `UiDebugger` — update label text
-- [ ] Auto-scroll `inputText` textarea to approximate line position
-- [ ] Wire `onDebugEvent` to call `updateLineHighlight` on "paused"/"step" events
+- [x] Add `debugLineLabel` span to `index.html`
+- [x] Implement `updateLineHighlight()` in `UiDebugger` — update label text
+- [x] Auto-scroll `inputText` textarea to approximate line position
+- [x] Wire `onDebugEvent` to call `updateLineHighlight` on "paused"/"step" events
 
 ### Debug UI panel
-- [ ] Add debug fieldset to `docs/index.html`
-- [ ] Add `debugMode` checkbox to Settings fieldset
-- [ ] Add ViewID constants for all new elements
-- [ ] Create `docs/src/UiDebugger.ts` class
-- [ ] Wire speed slider to `debugger.setSpeed()`
-- [ ] Wire Pause/Continue/Step buttons to `debugger.pause()`/`resume()`/`stepInto()`
-- [ ] Disable buttons appropriately per state (e.g., no Step when running at full speed)
-- [ ] Show/hide debug panel based on `debugMode` setting
+- [x] Add debug fieldset to `docs/index.html`
+- [x] Add `debugMode` checkbox to Settings fieldset
+- [x] Add ViewID constants for all new elements
+- [x] Create `docs/src/UiDebugger.ts` class
+- [x] Wire speed slider to `debugger.setSpeed()`
+- [x] Wire Pause/Continue/Step buttons to `debugger.pause()`/`resume()`/`stepInto()`
+- [x] Disable buttons appropriately per state (e.g., no Step when running at full speed)
+- [x] Show/hide debug panel based on `debugMode` setting
 
 ### Integration
-- [ ] Toggle debug mode recompiles script (`invalidateScript()`)
-- [ ] Speed slider works while program is running (real-time speed change)
-- [ ] Verify existing Run/Break/Continue buttons still work alongside debugger
+- [x] Toggle debug mode recompiles script (`invalidateScript()`)
+- [x] Speed slider works while program is running (real-time speed change)
+- [x] Verify existing Run/Break/Continue buttons still work alongside debugger
 
 ### Unit tests
-- [ ] Test speed config mapping (speed 0, 50, 100 produce correct linesPerChunk/delay)
-- [ ] Test throttle logic in `onLine()` — pauses after correct number of lines
-- [ ] Test `getCurrentLineRange()` returns correct range for known source map
-- [ ] Test `nextDelay` is set for throttle pause, 0 for breakpoint pause
+- [x] Test speed config mapping (speed 0, 50, 100 produce correct linesPerChunk/delay)
+- [x] Test throttle logic in `onLine()` — pauses after correct number of lines
+- [x] Test `getCurrentLineRange()` returns correct range for known source map
+- [x] Test `nextDelay` is set for throttle pause, 0 for breakpoint pause
 
 ### Integration tests
-- [ ] Run a simple BASIC program with debug enabled and speed=50, verify it completes
-- [ ] Verify line highlight updates during speed-throttled execution
-- [ ] Verify pause/step/continue cycle works end-to-end
+- [x] Run a simple BASIC program with debug enabled and speed=50, verify it completes
+- [x] Verify line highlight updates during speed-throttled execution
+- [x] Verify pause/step/continue cycle works end-to-end

@@ -205,4 +205,31 @@ describe("Debugger", () => {
 			expect(debuggerInstance.getCallStack()).toEqual(stack);
 		});
 	});
+
+	describe("Source Map and Line Range", () => {
+		it("should return null if no source map is set", () => {
+			expect(debuggerInstance.getCurrentLineRange()).toBeNull();
+		});
+
+		it("should return correct range for existing line", () => {
+			const map = { "10": [0, 5], "20": [6, 10] };
+			debuggerInstance.setSourceMap(map);
+			debuggerInstance.onLine(10);
+
+			const range = debuggerInstance.getCurrentLineRange();
+			expect(range).toEqual({
+				line: 10,
+				startPos: 0,
+				endPos: 5
+			});
+		});
+
+		it("should return null for non-existent line", () => {
+			const map = { "10": [0, 5] };
+			debuggerInstance.setSourceMap(map);
+			debuggerInstance.onLine(30);
+
+			expect(debuggerInstance.getCurrentLineRange()).toBeNull();
+		});
+	});
 });
