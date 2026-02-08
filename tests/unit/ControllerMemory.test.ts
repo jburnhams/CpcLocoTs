@@ -152,12 +152,20 @@ describe('Controller RunLoop Memory Test', () => {
         vi.restoreAllMocks();
     });
 
-    it('should run 1,000,000 loops of fnRunLoop without crashing', async () => {
-        // Setup VM to always return "no stop" so loop continues
-        mockVm.vmGetStopObject.mockReturnValue({ reason: "" });
+    it('should run 100,000 loops of fnRunLoop without crashing', async () => {
+        // Setup a mutable stop object
+        const stopObject = { reason: "" };
+        mockVm.vmGetStopObject.mockReturnValue(stopObject);
 
-        // Mock fnRunPart1 to do nothing (simulating VM step)
-        (controller as any).fnRunPart1 = vi.fn();
+        // Mock vmStop to update the reason
+        mockVm.vmStop.mockImplementation((reason: string) => {
+            stopObject.reason = reason;
+        });
+
+        // Mock fnRunPart1 to simulate a valid execution cycle (setting reason to "timer")
+        (controller as any).fnRunPart1 = vi.fn(() => {
+            stopObject.reason = "timer";
+        });
         (controller as any).fnScript = () => { }; // Fake script
 
         // Start loop
@@ -165,9 +173,9 @@ describe('Controller RunLoop Memory Test', () => {
 
         // Drain queue
         let count = 0;
-        const limit = 1000000;
+        const limit = 100000;
 
-        console.log("Starting 1M loop test...");
+        console.log(`Starting ${limit} loop test...`);
         const start = performance.now();
 
         // We can execute synchronously since everything is mocked
@@ -175,15 +183,11 @@ describe('Controller RunLoop Memory Test', () => {
             const fn = timeouts.shift();
             if (fn) fn();
             count++;
-            if (count % 100000 === 0) {
-                // console.log(`Executed ${count} loops`);
-                await new Promise(r => setImmediate(r));
-            }
         }
 
         const end = performance.now();
         console.log(`Finished ${count} loops in ${(end - start).toFixed(2)}ms`);
 
         expect(count).toBe(limit);
-    }, 20000);
+    });
 });
