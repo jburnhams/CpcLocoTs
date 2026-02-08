@@ -366,6 +366,7 @@ export class CpcVm implements ICpcVm {
 		error: 50, // BASIC error, ERROR command
 		onError: 50, // ON ERROR GOTO active, hide error
 		stop: 60, // STOP or END command
+		debug: 70, // debugger pause
 		"break": 80, // break pressed
 		escape: 85, // escape key, set in controller
 		renumLines: 85, // RENUMber program
@@ -1229,7 +1230,6 @@ export class CpcVm implements ICpcVm {
 			this.print(stream, "[" + String(this.line) + "]");
 		}
 		if (this.debuggerRef) {
-			console.log("vmDebugHook", this.line);
 			this.debuggerRef.onLine(this.line);
 		}
 	}

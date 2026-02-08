@@ -1829,7 +1829,7 @@ export class CodeGeneratorJs {
 		output = outputLines.join("\n");
 
 		// optimize: comment lines which are not referenced
-		if (!this.countMap.merge && !this.countMap.chainMerge && !this.countMap.resumeNext && !this.countMap.resumeNoArgsCount) {
+		if (!this.options.debug && !this.countMap.merge && !this.countMap.chainMerge && !this.countMap.resumeNext && !this.countMap.resumeNoArgsCount) {
 			output = CodeGeneratorJs.fnCommentUnusedCases(output, this.referencedLabelsCount);
 		}
 		return output;

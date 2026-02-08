@@ -9,6 +9,7 @@ export class Debugger {
 	private breakOnError = false;
 	private stepMode: StepMode | null = null;
 	private stepDepth = 0;
+	private skipBreakpoint: number | null = null;
 	private currentLine: number | string = 0;
 	private listeners: DebugListener[] = [];
 
@@ -40,6 +41,9 @@ export class Debugger {
 	}
 
 	resume(): void {
+		if (this.state === "paused" && typeof this.currentLine === "number") {
+			this.skipBreakpoint = this.currentLine;
+		}
 		this.setState("running");
 		this.stepMode = null;
 		this.emit({
@@ -151,7 +155,6 @@ export class Debugger {
 	// Core Hook
 
 	onLine(line: number | string): void {
-		console.log("Debugger.onLine", line, this.state);
 		this.currentLine = line;
 
 		if (this.state === "idle") {
@@ -163,12 +166,20 @@ export class Debugger {
 
 		// 1. Check breakpoints
 		if (typeof line === "number") {
+			if (this.skipBreakpoint !== null && this.skipBreakpoint !== line) {
+				this.skipBreakpoint = null;
+			}
+
 			const bp = this.breakpoints.get(line);
 			if (bp && bp.enabled) {
-				// TODO: Condition check
-				shouldPause = true;
-				hitBreakpoint = bp;
-				bp.hitCount = (bp.hitCount || 0) + 1;
+				if (this.skipBreakpoint === line) {
+					this.skipBreakpoint = null;
+				} else {
+					// TODO: Condition check
+					shouldPause = true;
+					hitBreakpoint = bp;
+					bp.hitCount = (bp.hitCount || 0) + 1;
+				}
 			}
 		}
 
@@ -189,7 +200,6 @@ export class Debugger {
 		}
 
 		if (shouldPause) {
-			console.log("Debugger pausing at", line);
 			this.setState("paused");
 			this.vm.vmStop("debug", 70); // Force stop with high priority
 			this.emit({

@@ -183,6 +183,7 @@ export interface IController {
     fnPrettyLowercaseVars: () => void
     fnArrayBounds: () => void
     fnTrace: () => void
+    fnDebug: () => void
     fnSpeed: () => void
 
     fnDragElementsActive: (enabled: boolean) => void

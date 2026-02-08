@@ -215,52 +215,52 @@ export * from "./Debugger";
 ## Checklist
 
 ### Types
-- [ ] Create `src/DebuggerTypes.ts` with all interfaces above
-- [ ] Export from `src/index.ts`
+- [x] Create `src/DebuggerTypes.ts` with all interfaces above
+- [x] Export from `src/index.ts`
 
 ### Debugger class
-- [ ] Create `src/Debugger.ts` with constructor taking `CpcVm`
-- [ ] Implement `state` property and `DebugState` transitions
-- [ ] Implement `onLine()` — initial version: just check `state` and step-into
-- [ ] Implement `pause()` / `resume()` / `stepInto()`
-- [ ] Implement `reset()`
-- [ ] Implement `setSpeed()`
-- [ ] Implement `getSnapshot()`, `getCallStack()`, `getVariables()`
-- [ ] Implement `on()` / `off()` event listener management
-- [ ] Implement `emit()` private helper
-- [ ] Export from `src/index.ts`
+- [x] Create `src/Debugger.ts` with constructor taking `CpcVm`
+- [x] Implement `state` property and `DebugState` transitions
+- [x] Implement `onLine()` — initial version: just check `state` and step-into
+- [x] Implement `pause()` / `resume()` / `stepInto()`
+- [x] Implement `reset()`
+- [x] Implement `setSpeed()`
+- [x] Implement `getSnapshot()`, `getCallStack()`, `getVariables()`
+- [x] Implement `on()` / `off()` event listener management
+- [x] Implement `emit()` private helper
+- [x] Export from `src/index.ts`
 
 ### CpcVm integration
-- [ ] Add `debuggerRef` property to `CpcVm`
-- [ ] Add `vmSetDebugger()` method
-- [ ] Add `vmDebugHook()` method
-- [ ] Add `vmGetGosubStack()` method
-- [ ] Ensure `vmDebugHook` respects existing `tronFlag1`
+- [x] Add `debuggerRef` property to `CpcVm`
+- [x] Add `vmSetDebugger()` method
+- [x] Add `vmDebugHook()` method
+- [x] Add `vmGetGosubStack()` method
+- [x] Ensure `vmDebugHook` respects existing `tronFlag1`
 
 ### CodeGeneratorJs integration
-- [ ] Add `debug` option to `CodeGeneratorJsOptions`
-- [ ] Modify per-line emission: emit `o.vmDebugHook()` when `debug` is true
-- [ ] When both `trace` and `debug` are on, emit only `vmDebugHook`
+- [x] Add `debug` option to `CodeGeneratorJsOptions`
+- [x] Modify per-line emission: emit `o.vmDebugHook()` when `debug` is true
+- [x] When both `trace` and `debug` are on, emit only `vmDebugHook`
 
 ### Controller integration
-- [ ] Instantiate `Debugger` in Controller constructor
-- [ ] Call `vm.vmSetDebugger(this.debugger)` during init
-- [ ] Add `"debug"` to `handlers` map — pauses the run loop
-- [ ] Add `getDebugger()` to IController
-- [ ] Call `invalidateScript()` when debug mode is toggled
-- [ ] Pass `debug` option through to CodeGeneratorJs
+- [x] Instantiate `Debugger` in Controller constructor
+- [x] Call `vm.vmSetDebugger(this.debugger)` during init
+- [x] Add `"debug"` to `handlers` map — pauses the run loop
+- [x] Add `getDebugger()` to IController
+- [x] Call `invalidateScript()` when debug mode is toggled
+- [x] Pass `debug` option through to CodeGeneratorJs
 
 ### Model / Constants
-- [ ] Add `ModelPropID.debug` mode (or repurpose existing `debug` property) for debug-enabled flag
-- [ ] Distinguish between `debug` (numeric log level) and `debugMode` (boolean debugger active)
+- [x] Add `ModelPropID.debug` mode (or repurpose existing `debug` property) for debug-enabled flag
+- [x] Distinguish between `debug` (numeric log level) and `debugMode` (boolean debugger active)
 
 ### Unit tests (see also doc 08)
-- [ ] Test Debugger construction with mock CpcVm
-- [ ] Test state transitions: idle -> running -> paused -> running
-- [ ] Test `onLine()` triggers pause when `state === "stepping"` and `stepMode === "into"`
-- [ ] Test `onLine()` does nothing when `state === "idle"`
-- [ ] Test event emission on pause/resume
-- [ ] Test `vmDebugHook()` calls `debugger.onLine()` when debugger is set
-- [ ] Test `vmDebugHook()` still prints trace when `tronFlag1` is on
-- [ ] Test CodeGeneratorJs emits `vmDebugHook` when `debug: true`
-- [ ] Test CodeGeneratorJs emits `vmTrace` when only `trace: true`
+- [x] Test Debugger construction with mock CpcVm
+- [x] Test state transitions: idle -> running -> paused -> running
+- [x] Test `onLine()` triggers pause when `state === "stepping"` and `stepMode === "into"`
+- [x] Test `onLine()` does nothing when `state === "idle"`
+- [x] Test event emission on pause/resume
+- [x] Test `vmDebugHook()` calls `debugger.onLine()` when debugger is set
+- [x] Test `vmDebugHook()` still prints trace when `tronFlag1` is on
+- [x] Test CodeGeneratorJs emits `vmDebugHook` when `debug: true`
+- [x] Test CodeGeneratorJs emits `vmTrace` when only `trace: true`
