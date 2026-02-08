@@ -100,8 +100,8 @@ export class UiDebugger {
 			// This is unreliable.
 
 			// blur and focus might work?
-			textArea.blur();
-			textArea.focus();
+			// textArea.blur();
+			// textArea.focus();
 		} else {
 			label.textContent = "Line: -";
 		}
