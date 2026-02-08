@@ -830,7 +830,7 @@ export class CodeGeneratorJs {
 			let value2 = nodeArgs[i];
 
 			if (value2 !== "") {
-				if (isTraceActive || isResumeNext || isResumeNoArgs) {
+				if (isTraceActive || isResumeNext || isResumeNoArgs || this.options.debug) {
 					const traceLabel = this.generateTraceLabel(node.args[i], this.line, i); // side effect: put position in source map
 
 					if (i > 0) { // only if not first statement in the line
