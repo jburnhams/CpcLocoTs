@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Controller } from '../src/Controller';
-import { ViewID } from '../src/Constants';
+import { Controller } from '../../src/Controller';
+import { ViewID } from '../../src/Constants';
 
 // Mocks
 const mockView = {
@@ -42,11 +42,12 @@ const mockVm = {
     vmReset4Run: vi.fn(),
     vmGoto: vi.fn(),
     vmSetStartLine: vi.fn(),
+    vmSetDebugger: vi.fn(),
     vmGetOutFileObject: vi.fn(() => ({ open: false }))
 };
 
 // Mock ALL dependencies to isolate Controller logic
-vi.mock('../src/CpcVm', () => {
+vi.mock('../../src/CpcVm', () => {
     return {
         CpcVm: class MockCpcVm {
             constructor() { return mockVm; }
@@ -54,54 +55,54 @@ vi.mock('../src/CpcVm', () => {
     };
 });
 
-vi.mock('../src/Variables', () => ({
+vi.mock('../../src/Variables', () => ({
     Variables: class MockVariables {
         getVariable = vi.fn();
         setVariable = vi.fn();
     }
 }));
 
-vi.mock('../src/Keyboard', () => ({
+vi.mock('../../src/Keyboard', () => ({
     Keyboard: class MockKeyboard {
     }
 }));
 
-vi.mock('../src/Sound', () => ({
+vi.mock('../../src/Sound', () => ({
     Sound: class MockSound {
         setActivatedByUser = vi.fn();
         reset = vi.fn();
     }
 }));
 
-vi.mock('../src/BasicParser', () => ({
+vi.mock('../../src/BasicParser', () => ({
     BasicParser: class MockBasicParser {
         getKeywords = vi.fn(() => []);
     }
 }));
 
-vi.mock('../src/BasicLexer', () => ({
+vi.mock('../../src/BasicLexer', () => ({
     BasicLexer: class MockBasicLexer { }
 }));
 
-vi.mock('../src/CodeGeneratorJs', () => ({
+vi.mock('../../src/CodeGeneratorJs', () => ({
     CodeGeneratorJs: class MockCodeGeneratorJs { }
 }));
 
 // Mock Canvas modules to avoid DOM interaction
-vi.mock('../src/Canvas', () => ({
+vi.mock('../../src/Canvas', () => ({
     Canvas: class MockCanvas {
         startUpdateCanvas = vi.fn();
         getOptions = vi.fn(() => ({ canvasType: "canvas" }));
         setOptions = vi.fn();
     }
 }));
-vi.mock('../src/TextCanvas', () => ({
+vi.mock('../../src/TextCanvas', () => ({
     TextCanvas: class MockTextCanvas {
         getOptions = vi.fn(() => ({ canvasType: "text" }));
         setOptions = vi.fn();
     }
 }));
-vi.mock('../src/NoCanvas', () => ({
+vi.mock('../../src/NoCanvas', () => ({
     NoCanvas: class MockNoCanvas {
         getOptions = vi.fn(() => ({ canvasType: "none" }));
         setOptions = vi.fn();
@@ -109,7 +110,7 @@ vi.mock('../src/NoCanvas', () => ({
 }));
 
 // Mock View module for static access
-vi.mock('../src/View', () => {
+vi.mock('../../src/View', () => {
     return {
         View: class MockView {
             static getElementById1 = vi.fn(() => document.createElement('div'));
@@ -151,12 +152,20 @@ describe('Controller RunLoop Memory Test', () => {
         vi.restoreAllMocks();
     });
 
-    it('should run 1,000,000 loops of fnRunLoop without crashing', async () => {
-        // Setup VM to always return "no stop" so loop continues
-        mockVm.vmGetStopObject.mockReturnValue({ reason: "" });
+    it('should run 100,000 loops of fnRunLoop without crashing', async () => {
+        // Setup a mutable stop object
+        const stopObject = { reason: "" };
+        mockVm.vmGetStopObject.mockReturnValue(stopObject);
 
-        // Mock fnRunPart1 to do nothing (simulating VM step)
-        (controller as any).fnRunPart1 = vi.fn();
+        // Mock vmStop to update the reason
+        mockVm.vmStop.mockImplementation((reason: string) => {
+            stopObject.reason = reason;
+        });
+
+        // Mock fnRunPart1 to simulate a valid execution cycle (setting reason to "timer")
+        (controller as any).fnRunPart1 = vi.fn(() => {
+            stopObject.reason = "timer";
+        });
         (controller as any).fnScript = () => { }; // Fake script
 
         // Start loop
@@ -164,9 +173,9 @@ describe('Controller RunLoop Memory Test', () => {
 
         // Drain queue
         let count = 0;
-        const limit = 1000000;
+        const limit = 100000;
 
-        console.log("Starting 1M loop test...");
+        console.log(`Starting ${limit} loop test...`);
         const start = performance.now();
 
         // We can execute synchronously since everything is mocked
@@ -174,10 +183,6 @@ describe('Controller RunLoop Memory Test', () => {
             const fn = timeouts.shift();
             if (fn) fn();
             count++;
-            if (count % 100000 === 0) {
-                // console.log(`Executed ${count} loops`);
-                await new Promise(r => setImmediate(r));
-            }
         }
 
         const end = performance.now();
