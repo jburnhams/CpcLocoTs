@@ -55,6 +55,9 @@ describe('Canvas Isolated Memory Test', () => {
                     <button id="${ViewID.debugResumeButton}"></button>
                     <button id="${ViewID.debugStepIntoButton}"></button>
                     <input id="${ViewID.debugModeInput}" type="checkbox"></input>
+                    <div id="${ViewID.debugBreakpointList}"></div>
+                    <input id="${ViewID.debugBreakpointInput}"></input>
+                    <button id="${ViewID.debugAddBreakpointButton}"></button>
                 </fieldset>
             </div>
         `;
@@ -137,6 +140,9 @@ describe('Canvas Isolated Memory Test', () => {
                         <button id="${ViewID.debugResumeButton}"></button>
                         <button id="${ViewID.debugStepIntoButton}"></button>
                         <input id="${ViewID.debugModeInput}" type="checkbox"></input>
+                        <div id="${ViewID.debugBreakpointList}"></div>
+                        <input id="${ViewID.debugBreakpointInput}"></input>
+                        <button id="${ViewID.debugAddBreakpointButton}"></button>
                     </fieldset>
                 </div>
             `;

@@ -28,6 +28,65 @@ if (typeof document !== 'undefined') {
         }
         return el;
     };
+
+    // Helper to setup DOM elements required by tests
+    const setupDom = () => {
+        const elements = [
+            { id: "debugPauseButton", tag: "button" },
+            { id: "debugResumeButton", tag: "button" },
+            { id: "debugStepIntoButton", tag: "button" },
+            { id: "debugSpeedInput", tag: "input" },
+            { id: "debugModeInput", tag: "input" },
+            { id: "debugAddBreakpointButton", tag: "button" },
+            { id: "debugBreakpointInput", tag: "input" },
+            { id: "debugBreakpointList", tag: "div" },
+            { id: "debugLineLabel", tag: "span" },
+            { id: "debugArea", tag: "fieldset" },
+            { id: "cpcCanvas", tag: "canvas" },
+            { id: "noCanvas", tag: "div" },
+            { id: "textText", tag: "textarea" },
+            { id: "cpcArea", tag: "div" },
+            { id: "showCpcInput", tag: "input" },
+            { id: "galleryAreaItems", tag: "div" },
+            { id: "dropZone", tag: "div" },
+            { id: "fileInput", tag: "input" },
+            { id: "inputText", tag: "textarea" },
+            { id: "outputText", tag: "textarea" },
+            { id: "resultText", tag: "textarea" },
+            { id: "inp2Text", tag: "textarea" },
+            { id: "varSelect", tag: "select" },
+            { id: "varText", tag: "textarea" },
+            { id: "directorySelect", tag: "select" },
+            { id: "exampleSelect", tag: "select" },
+            { id: "databaseSelect", tag: "select" },
+            { id: "disassText", tag: "textarea" },
+            { id: "consoleLogText", tag: "textarea" },
+            { id: "renumNewInput", tag: "input" },
+            { id: "renumStartInput", tag: "input" },
+            { id: "renumStepInput", tag: "input" },
+            { id: "renumKeepInput", tag: "input" },
+            { id: "exportFileSelect", tag: "select" },
+            { id: "exportDSKFormatSelect", tag: "select" },
+            { id: "exportTokenizedInput", tag: "input" },
+            { id: "exportDSKInput", tag: "input" },
+            { id: "exportDSKStripEmptyInput", tag: "input" },
+            { id: "exportBase64Input", tag: "input" },
+            { id: "prettySpaceInput", tag: "input" },
+            { id: "prettyBracketsInput", tag: "input" },
+            { id: "prettyColonsInput", tag: "input" },
+            { id: "prettyLowercaseVarsInput", tag: "input" }
+        ];
+
+        elements.forEach(el => {
+            if (!document.getElementById(el.id)) {
+                const element = document.createElement(el.tag);
+                element.id = el.id;
+                document.body.appendChild(element);
+            }
+        });
+    };
+    setupDom();
+
 } else {
     console.warn("document not found in global scope!");
 }

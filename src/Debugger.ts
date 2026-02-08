@@ -1,6 +1,8 @@
 import { CpcVm } from "./CpcVm";
 import { Breakpoint, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange } from "./DebuggerTypes";
 
+export type ConditionEvaluator = (condition: string) => boolean;
+
 export class Debugger {
 	private readonly vm: CpcVm;
 	private state: DebugState = "idle";
@@ -17,6 +19,7 @@ export class Debugger {
 	private speedConfig: SpeedConfig = { linesPerChunk: Infinity, delayMs: 0 };
 	public nextDelay = 0;
 	private sourceMap: Record<string, number[]> = {};
+	private conditionEvaluator?: ConditionEvaluator;
 
 	constructor(vm: CpcVm) {
 		this.vm = vm;
@@ -32,6 +35,10 @@ export class Debugger {
 				snapshot: this.getSnapshot()
 			});
 		}
+	}
+
+	setConditionEvaluator(evaluator: ConditionEvaluator): void {
+		this.conditionEvaluator = evaluator;
 	}
 
 	// Execution Control
@@ -220,10 +227,21 @@ export class Debugger {
 				if (this.skipBreakpoint === line) {
 					this.skipBreakpoint = null;
 				} else {
-					// TODO: Condition check
-					shouldPause = true;
-					hitBreakpoint = bp;
-					bp.hitCount = (bp.hitCount || 0) + 1;
+					let conditionMet = true;
+					if (bp.condition && this.conditionEvaluator) {
+						try {
+							conditionMet = this.conditionEvaluator(bp.condition);
+						} catch (e) {
+							console.warn("Condition evaluation error:", e);
+							conditionMet = false; // Treat error as false
+						}
+					}
+
+					if (conditionMet) {
+						shouldPause = true;
+						hitBreakpoint = bp;
+						bp.hitCount = (bp.hitCount || 0) + 1;
+					}
 				}
 			}
 		}

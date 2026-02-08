@@ -1,4 +1,4 @@
-import { Controller, DebugEvent, DebugState, View, ViewID } from "cpclocots";
+import { Breakpoint, Controller, DebugEvent, DebugState, View, ViewID } from "cpclocots";
 
 export class UiDebugger {
 	private readonly controller: Controller;
@@ -17,10 +17,12 @@ export class UiDebugger {
 		const stepBtn = View.getElementById1(ViewID.debugStepIntoButton);
 		const speedInput = View.getElementById1(ViewID.debugSpeedInput) as HTMLInputElement;
 		const debugModeInput = View.getElementById1(ViewID.debugModeInput) as HTMLInputElement;
+		const addBpBtn = View.getElementById1(ViewID.debugAddBreakpointButton);
 
 		pauseBtn.addEventListener("click", () => this.controller.getDebugger().pause());
 		resumeBtn.addEventListener("click", () => this.controller.getDebugger().resume());
 		stepBtn.addEventListener("click", () => this.controller.getDebugger().stepInto());
+		addBpBtn.addEventListener("click", () => this.addBreakpointFromInput());
 
 		speedInput.addEventListener("input", () => {
 			const speed = Number(speedInput.value);
@@ -37,6 +39,70 @@ export class UiDebugger {
 		// Initial state
 		this.updateVisibility();
 		this.updateControls("idle");
+		this.updateBreakpointList();
+	}
+
+	private addBreakpointFromInput() {
+		const input = View.getElementById1(ViewID.debugBreakpointInput) as HTMLInputElement;
+		// Format: "line" or "line if condition"
+		const value = input.value.trim();
+		let line = 0;
+		let condition: string | undefined;
+
+		const match = value.match(/^(\d+)(?:\s+(?:if\s+)?(.+))?$/i);
+		if (match) {
+			line = parseInt(match[1], 10);
+			if (match[2]) {
+				condition = match[2];
+			}
+		}
+
+		if (!isNaN(line) && line > 0) {
+			this.controller.getDebugger().addBreakpoint(line, condition);
+			input.value = "";
+			this.updateBreakpointList();
+		}
+	}
+
+	private updateBreakpointList() {
+		const list = View.getElementById1(ViewID.debugBreakpointList);
+		list.innerHTML = "";
+		const breakpoints = this.controller.getDebugger().getBreakpoints();
+
+		// Sort by line number
+		breakpoints.sort((a, b) => a.line - b.line);
+
+		breakpoints.forEach(bp => {
+			const div = document.createElement("div");
+			// div.className = "debug-bp-item";
+
+			const toggleCb = document.createElement("input");
+			toggleCb.type = "checkbox";
+			toggleCb.checked = bp.enabled;
+			toggleCb.title = "Enable/Disable";
+			toggleCb.addEventListener("change", () => {
+				this.controller.getDebugger().toggleBreakpoint(bp.line);
+			});
+
+			const span = document.createElement("span");
+			span.textContent = " " + bp.line + (bp.condition ? " if " + bp.condition : "") + " ";
+			if (bp.hitCount && bp.hitCount > 0) {
+				span.textContent += "(" + bp.hitCount + ") ";
+			}
+
+			const btn = document.createElement("button");
+			btn.textContent = "x";
+			btn.title = "Remove breakpoint";
+			btn.addEventListener("click", () => {
+				this.controller.getDebugger().removeBreakpoint(bp.line);
+				this.updateBreakpointList();
+			});
+
+			div.appendChild(toggleCb);
+			div.appendChild(span);
+			div.appendChild(btn);
+			list.appendChild(div);
+		});
 	}
 
 	private onDebugEvent(event: DebugEvent) {
@@ -45,7 +111,11 @@ export class UiDebugger {
 		}
 
 		if (event.type === "step" || event.type === "paused" || event.type === "breakpoint") {
-			this.updateLineHighlight();
+			this.updateLineHighlight(event.breakpoint);
+		}
+
+		if (event.type === "breakpoint") {
+			this.updateBreakpointList(); // update hit count
 		}
 	}
 
@@ -69,12 +139,16 @@ export class UiDebugger {
 		}
 	}
 
-	private updateLineHighlight() {
+	private updateLineHighlight(hitBp?: Breakpoint) {
 		const range = this.controller.getDebugger().getCurrentLineRange();
 		const label = View.getElementById1(ViewID.debugLineLabel);
 
 		if (range) {
-			label.textContent = "Line: " + range.line;
+			let text = "Line: " + range.line;
+			if (hitBp) {
+				text += " (Breakpoint)";
+			}
+			label.textContent = text;
 			this.view.setAreaSelection(ViewID.inputText, range.startPos, range.endPos);
 		} else {
 			label.textContent = "Line: -";

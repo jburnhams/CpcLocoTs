@@ -51,7 +51,9 @@ describe('UiController', () => {
                 add: vi.fn(),
             },
             value: "100", // for speed input
-            checked: false // for checkbox
+            checked: false, // for checkbox
+            innerHTML: "",
+            appendChild: vi.fn()
         });
 
         // Setup mocks
@@ -104,6 +106,10 @@ describe('UiController', () => {
                 setSpeed: vi.fn(),
                 on: vi.fn(),
                 getCurrentLineRange: vi.fn(),
+                getBreakpoints: vi.fn().mockReturnValue([]),
+                addBreakpoint: vi.fn(),
+                removeBreakpoint: vi.fn(),
+                toggleBreakpoint: vi.fn()
             }),
         };
 

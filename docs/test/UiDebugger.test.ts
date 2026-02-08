@@ -29,7 +29,9 @@ describe("UiDebugger", () => {
                         add: vi.fn()
                     },
                     textContent: "",
-                    checked: false
+                    checked: false,
+                    innerHTML: "",
+                    appendChild: vi.fn()
                 };
             }
             return elements[id];
@@ -41,7 +43,11 @@ describe("UiDebugger", () => {
             stepInto: vi.fn(),
             setSpeed: vi.fn(),
             on: vi.fn(),
-            getCurrentLineRange: vi.fn().mockReturnValue(null)
+            getCurrentLineRange: vi.fn().mockReturnValue(null),
+            getBreakpoints: vi.fn().mockReturnValue([]),
+            addBreakpoint: vi.fn(),
+            removeBreakpoint: vi.fn(),
+            toggleBreakpoint: vi.fn()
         };
 
         controller = {
@@ -55,6 +61,7 @@ describe("UiDebugger", () => {
         // Check if event listeners are attached
         expect(elements[ViewID.debugPauseButton].addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
         expect(elements[ViewID.debugSpeedInput].addEventListener).toHaveBeenCalledWith("input", expect.any(Function));
+        expect(elements[ViewID.debugAddBreakpointButton].addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
         expect(debuggerMock.on).toHaveBeenCalled();
     });
 
