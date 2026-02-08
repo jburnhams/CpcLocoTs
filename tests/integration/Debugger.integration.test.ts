@@ -32,14 +32,13 @@ describe("Debugger Integration", () => {
 
         // Mock View methods
         view = new View();
+        const areaValues: Record<string, string> = {};
+
         vi.spyOn(view, "getAreaValue").mockImplementation((id) => {
-            if (id === ViewID.inputText) return "";
-            return "";
+            return areaValues[id] || "";
         });
         vi.spyOn(view, "setAreaValue").mockImplementation((id, val) => {
-            if (id === ViewID.outputText || id === ViewID.resultText) {
-                // console.log(`View ${id} set to:`, val);
-            }
+            areaValues[id] = val;
         });
         vi.spyOn(view, "setDisabled").mockImplementation(() => {});
         vi.spyOn(view, "setHidden").mockImplementation(() => {});
@@ -84,10 +83,7 @@ describe("Debugger Integration", () => {
             30 a = 3
         `;
 
-        vi.spyOn(view, "getAreaValue").mockImplementation((id) => {
-            if (id === ViewID.inputText) return script;
-            return "";
-        });
+        view.setAreaValue(ViewID.inputText, script);
 
         const debuggerInstance = controller.getDebugger();
         debuggerInstance.addBreakpoint(20);
@@ -103,7 +99,8 @@ describe("Debugger Integration", () => {
         expect(snapshot.line).toBe(20);
 
         // Check variable 'a' (should be 1 because line 20 not executed yet)
-        expect(snapshot.variables["v.a"]).toBe(1);
+        // Variable 'a' (real) is compiled to 'aR'
+        expect(snapshot.variables["aR"]).toBe(1);
 
         // Resume
         debuggerInstance.resume(); // Set state to running
@@ -115,6 +112,6 @@ describe("Debugger Integration", () => {
         const snapshot2 = debuggerInstance.getSnapshot();
 
         // But we can check variables. a should be 3.
-        expect(snapshot2.variables["v.a"]).toBe(3);
+        expect(snapshot2.variables["aR"]).toBe(3);
     });
 });

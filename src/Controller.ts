@@ -192,6 +192,7 @@ export class Controller implements IController {
 			lexer: this.basicLexer,
 			parser: this.basicParser,
 			trace: model.getProperty<boolean>(ModelPropID.trace),
+			debug: model.getProperty<boolean>(ModelPropID.debug),
 			implicitLines: model.getProperty<boolean>(ModelPropID.implicitLines),
 			integerOverflow: model.getProperty<boolean>(ModelPropID.integerOverflow)
 		});
@@ -1891,6 +1892,8 @@ export class Controller implements IController {
 		this.nextLoopTimeOut = this.initialLoopTimeout;
 		if (!stop.reason && this.fnScript) {
 			this.fnRunPart1(this.fnScript); // could change reason
+		} else if (!stop.reason) {
+			Utils.console.warn("runLoop: No fnScript!");
 		}
 
 		if (stop.reason in this.handlers) {
@@ -2000,7 +2003,7 @@ export class Controller implements IController {
 		this.view.setDisabled(ViewID.runButton, true);
 		this.view.setDisabled(ViewID.stopButton, false);
 		this.view.setDisabled(ViewID.continueButton, true);
-		if (stop.reason === "break" || stop.reason === "escape" || stop.reason === "stop" || stop.reason === "direct") {
+		if (stop.reason === "break" || stop.reason === "escape" || stop.reason === "stop" || stop.reason === "direct" || stop.reason === "debug") {
 			if (savedStop.paras && !(savedStop.paras as VmInputParas).fnInputCallback) { // no keyboard callback? make sure no handler is set (especially for direct->continue)
 				this.removeKeyBoardHandler();
 			}
@@ -2542,6 +2545,15 @@ export class Controller implements IController {
 		this.codeGeneratorJs.setOptions({
 			trace: trace
 		});
+	}
+
+	fnDebug(): void {
+		const debug = this.model.getProperty<boolean>(ModelPropID.debug);
+
+		this.codeGeneratorJs.setOptions({
+			debug: debug
+		});
+		this.invalidateScript();
 	}
 
 	fnSpeed(): void {
