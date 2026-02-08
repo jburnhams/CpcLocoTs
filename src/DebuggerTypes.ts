@@ -33,3 +33,14 @@ export interface DebugEvent {
 }
 
 export type DebugListener = (event: DebugEvent) => void;
+
+export interface SpeedConfig {
+	linesPerChunk: number;   // how many lines to run before yielding
+	delayMs: number;         // setTimeout delay between chunks
+}
+
+export interface LineRange {
+	line: number | string;       // BASIC line number/label
+	startPos: number;            // character offset in source
+	endPos: number;              // character offset in source
+}

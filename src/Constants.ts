@@ -12,6 +12,7 @@ export const enum ModelPropID { // eslint-disable-line no-shadow
 	databaseDirs = "databaseDirs",
 	database = "database",
 	debug = "debug",
+	debugMode = "debugMode",
 	example = "example",
 	exampleIndex = "exampleIndex",
 	implicitLines = "implicitLines",
@@ -62,7 +63,14 @@ export const enum ViewID { // eslint-disable-line no-shadow
 	cpcArea = "cpcArea",
 	cpcCanvas = "cpcCanvas",
 	databaseSelect = "databaseSelect",
+	debugArea = "debugArea",
 	debugInput = "debugInput",
+	debugLineLabel = "debugLineLabel",
+	debugModeInput = "debugModeInput",
+	debugPauseButton = "debugPauseButton",
+	debugResumeButton = "debugResumeButton",
+	debugSpeedInput = "debugSpeedInput",
+	debugStepIntoButton = "debugStepIntoButton",
 	directorySelect = "directorySelect",
 	disassArea = "disassArea",
 	disassInput = "disassInput",
@@ -162,6 +170,3 @@ export const enum ViewID { // eslint-disable-line no-shadow
 	viewButton = "viewButton",
 	window = "window" // for window.document
 }
-
-
-

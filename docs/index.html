@@ -92,6 +92,9 @@
 							<legend title="Debug Settings">Debug</legend>
 							<input id="debugInput" type="number" min="0" max="99" value="0" title="Debug Level">
 							<label for="debugInput" title="Debug Level">Debug</label>
+							<br>
+							<input id="debugModeInput" type="checkbox" title="Debug Mode">
+							<label for="debugModeInput" title="Debug Mode">Debug Mode</label>
 						</fieldset>
 						<span>
 							<button id="reloadButton" class="popoverElement" title="Reload page with URL parameter settings">Reload</button>
@@ -228,6 +231,15 @@
 	</div>
 
 	<div id="cpcVert2Box" class="vertFlexBox">
+
+		<fieldset id="debugArea" class="displayNone">
+			<legend>Debug</legend>
+			<label>Speed: <input id="debugSpeedInput" type="range" min="0" max="100" value="100"></label>
+			<span id="debugLineLabel">Line: -</span>
+			<button id="debugPauseButton">Pause</button>
+			<button id="debugResumeButton">Continue</button>
+			<button id="debugStepIntoButton">Step</button>
+		</fieldset>
 
 		<div id="inputArea" class="flexBox">
 			<div class="toolbarLine">
