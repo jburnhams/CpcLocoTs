@@ -2003,7 +2003,7 @@ export class Controller implements IController {
 		this.view.setDisabled(ViewID.runButton, true);
 		this.view.setDisabled(ViewID.stopButton, false);
 		this.view.setDisabled(ViewID.continueButton, true);
-		if (stop.reason === "break" || stop.reason === "escape" || stop.reason === "stop" || stop.reason === "direct" || stop.reason === "debug") {
+if (["break", "escape", "stop", "direct", "debug"].includes(stop.reason)) {
 			if (savedStop.paras && !(savedStop.paras as VmInputParas).fnInputCallback) { // no keyboard callback? make sure no handler is set (especially for direct->continue)
 				this.removeKeyBoardHandler();
 			}
