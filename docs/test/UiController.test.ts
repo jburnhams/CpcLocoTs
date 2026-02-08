@@ -42,6 +42,18 @@ describe('UiController', () => {
         // Reset mocks
         vi.clearAllMocks();
 
+        // Setup View mock static method
+        (View as any).getElementById1 = vi.fn().mockReturnValue({
+            addEventListener: vi.fn(),
+            disabled: false,
+            classList: {
+                remove: vi.fn(),
+                add: vi.fn(),
+            },
+            value: "100", // for speed input
+            checked: false // for checkbox
+        });
+
         // Setup mocks
         mockCoreModel = {
             getProperty: vi.fn(),
@@ -85,6 +97,14 @@ describe('UiController', () => {
             loadFileContinue: vi.fn(),
             setInputText: vi.fn(),
             startMainLoop: vi.fn(),
+            getDebugger: vi.fn().mockReturnValue({
+                pause: vi.fn(),
+                resume: vi.fn(),
+                stepInto: vi.fn(),
+                setSpeed: vi.fn(),
+                on: vi.fn(),
+                getCurrentLineRange: vi.fn(),
+            }),
         };
 
         uiController = new UiController(mockController, mockModel, mockView);
@@ -98,26 +118,9 @@ describe('UiController', () => {
     });
 
     it('should handle directory listing combining storage and examples', () => {
-        // Access private method or simulate call via registered handler?
-        // Since we cannot easily access bound private method from outside alias,
-        // we can test the logic if we expose it or use `any` cast.
-        // But better: we test that it was registered and then call the registered function?
-        // But we passed `this.onDirectoryHandler.bind(this)`.
-
-        // Let's call fnDoStart to register, capturing the callback.
         uiController.fnDoStart();
         const dirHandler = mockController.setExternalDirectoryHandler.mock.calls[0][0];
 
-        // Setup data
-        // Mock Controller static method? mocking specific static method on class mock is tricky in vitest depending on how it's exported.
-        // In our mock above, we returned Controller as vi.fn().
-        // We need to attach static methods to it.
-        // We didn't mock static fnGetStorageDirectoryEntries.
-        // Let's adjust usage or mock setup.
-
-        // We can just spy on Controller.fnGetStorageDirectoryEntries if it was real, 
-        // but we mocked the whole module.
-        // So we need to assign the static method to the mocked class.
         (Controller as any).fnGetStorageDirectoryEntries = vi.fn().mockReturnValue(['local.bas']);
 
         mockModel.getAllExamples.mockReturnValue({
@@ -130,7 +133,6 @@ describe('UiController', () => {
         // Logic: combines local.bas and ex1.bas
         expect(result).toContain('local.bas');
         expect(result).toContain('ex1.bas');
-        // Check duplication logic if we add duplicate
     });
 
     it('should load example externally', () => {
@@ -156,9 +158,6 @@ describe('UiController', () => {
 
         // Setup Utils.loadScript callback invocation
         (Utils.loadScript as any).mockImplementation((url: string, onLoad: any, onError: any) => {
-            // Simulate load
-            // We need to update model mock to return loaded example now?
-            // The callback calls `this.model.getExample(key)` again.
             mockModel.getExample.mockReturnValue({ ...example, loaded: true, script: 'loaded script' });
             onLoad(url, 'ex2');
         });
@@ -166,8 +165,6 @@ describe('UiController', () => {
         loadHandler('ex2');
 
         expect(Utils.loadScript).toHaveBeenCalled();
-        // expect(mockController.loadFileContinue).toHaveBeenCalledWith('loaded script'); 
-        // Note: checking this requires the mock impl to run synchronously which it does.
     });
     it('should update example property on selection change', () => {
         uiController.fnDoStart();

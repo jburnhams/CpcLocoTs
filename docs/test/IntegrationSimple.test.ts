@@ -46,6 +46,15 @@ describe('Integration Simple: Initialization with Real Canvas', () => {
                 <button id="${ViewID.redoButton2}"></button>
                 <div id="${ViewID.resultText}"></div>
                 <textarea id="${ViewID.outputText}"></textarea>
+                <!-- Debug elements -->
+                <fieldset id="${ViewID.debugArea}" class="displayNone">
+                    <input id="${ViewID.debugSpeedInput}" type="range"></input>
+                    <span id="${ViewID.debugLineLabel}"></span>
+                    <button id="${ViewID.debugPauseButton}"></button>
+                    <button id="${ViewID.debugResumeButton}"></button>
+                    <button id="${ViewID.debugStepIntoButton}"></button>
+                    <input id="${ViewID.debugModeInput}" type="checkbox"></input>
+                </fieldset>
             </div>
         `;
 

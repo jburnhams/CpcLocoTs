@@ -47,6 +47,15 @@ describe('Canvas Isolated Memory Test', () => {
                 <button id="${ViewID.undoButton2}"></button>
                 <button id="${ViewID.redoButton}"></button>
                 <button id="${ViewID.redoButton2}"></button>
+                <!-- Debug elements -->
+                <fieldset id="${ViewID.debugArea}" class="displayNone">
+                    <input id="${ViewID.debugSpeedInput}" type="range"></input>
+                    <span id="${ViewID.debugLineLabel}"></span>
+                    <button id="${ViewID.debugPauseButton}"></button>
+                    <button id="${ViewID.debugResumeButton}"></button>
+                    <button id="${ViewID.debugStepIntoButton}"></button>
+                    <input id="${ViewID.debugModeInput}" type="checkbox"></input>
+                </fieldset>
             </div>
         `;
 
@@ -120,6 +129,15 @@ describe('Canvas Isolated Memory Test', () => {
                     <button id="${ViewID.redoButton}"></button>
                     <button id="${ViewID.redoButton2}"></button>
                     <textarea id="${ViewID.disassText}"></textarea>
+                    <!-- Debug elements -->
+                    <fieldset id="${ViewID.debugArea}" class="displayNone">
+                        <input id="${ViewID.debugSpeedInput}" type="range"></input>
+                        <span id="${ViewID.debugLineLabel}"></span>
+                        <button id="${ViewID.debugPauseButton}"></button>
+                        <button id="${ViewID.debugResumeButton}"></button>
+                        <button id="${ViewID.debugStepIntoButton}"></button>
+                        <input id="${ViewID.debugModeInput}" type="checkbox"></input>
+                    </fieldset>
                 </div>
             `;
 

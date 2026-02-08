@@ -57,6 +57,15 @@ describe('Integration: BOMBER.BAS', () => {
                 <div id="${ViewID.undoButton2}"></div>
                 <div id="${ViewID.redoButton}"></div>
                 <div id="${ViewID.redoButton2}"></div>
+                <!-- Debug elements -->
+                <fieldset id="${ViewID.debugArea}" class="displayNone">
+                    <input id="${ViewID.debugSpeedInput}" type="range"></input>
+                    <span id="${ViewID.debugLineLabel}"></span>
+                    <button id="${ViewID.debugPauseButton}"></button>
+                    <button id="${ViewID.debugResumeButton}"></button>
+                    <button id="${ViewID.debugStepIntoButton}"></button>
+                    <input id="${ViewID.debugModeInput}" type="checkbox"></input>
+                </fieldset>
             </div>
         `;
 
