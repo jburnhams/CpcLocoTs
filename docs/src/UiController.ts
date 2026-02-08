@@ -3,16 +3,19 @@
 import { Controller, ModelPropID, View, ViewID, Utils, FileHandler, FileSelect, DiskImage, FileMeta, SelectOptionElement, AreaInputElement, ICpcVmRsx } from "cpclocots";
 import { UiModel } from "./UiModel";
 import { cpcconfig } from "./cpcconfig";
+import { UiDebugger } from "./UiDebugger";
 
 export class UiController {
 	public readonly model: UiModel;
 	public readonly view: View;
 	public readonly controller: Controller;
+	private readonly uiDebugger: UiDebugger;
 
 	constructor(controller: Controller, model: UiModel, view: View) {
 		this.controller = controller;
 		this.model = model;
 		this.view = view;
+		this.uiDebugger = new UiDebugger(controller);
 	}
 
 	// Proxy methods
@@ -40,6 +43,8 @@ export class UiController {
 	fnPrettyLowercaseVars() { this.controller.fnPrettyLowercaseVars(); }
 	fnSpeed() { this.controller.fnSpeed(); }
 	fnTrace() { this.controller.fnTrace(); }
+	fnDebugMode() { this.controller.fnDebugMode(); }
+	getDebugger() { return this.controller.getDebugger(); }
 
 	onWindowClick(event: Event) { this.controller.onWindowClick(event); }
 	onCpcCanvasClick(event: MouseEvent) { this.controller.onCpcCanvasClick(event); }

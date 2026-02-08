@@ -60,6 +60,15 @@ describe('Integration: Small Tests', () => {
                 <button id="${ViewID.continueButton}"></button>
                 <button id="${ViewID.resetButton}"></button>
                 <button id="${ViewID.parseRunButton}"></button>
+                <!-- Debug elements -->
+                <fieldset id="${ViewID.debugArea}" class="displayNone">
+                    <input id="${ViewID.debugSpeedInput}" type="range"></input>
+                    <span id="${ViewID.debugLineLabel}"></span>
+                    <button id="${ViewID.debugPauseButton}"></button>
+                    <button id="${ViewID.debugResumeButton}"></button>
+                    <button id="${ViewID.debugStepIntoButton}"></button>
+                    <input id="${ViewID.debugModeInput}" type="checkbox"></input>
+                </fieldset>
             </div>
         `;
 

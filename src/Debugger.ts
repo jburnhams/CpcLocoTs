@@ -1,5 +1,5 @@
 import { CpcVm } from "./CpcVm";
-import { Breakpoint, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode } from "./DebuggerTypes";
+import { Breakpoint, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange } from "./DebuggerTypes";
 
 export class Debugger {
 	private readonly vm: CpcVm;
@@ -12,6 +12,11 @@ export class Debugger {
 	private skipBreakpoint: number | null = null;
 	private currentLine: number | string = 0;
 	private listeners: DebugListener[] = [];
+
+	private lineCounter = 0;
+	private speedConfig: SpeedConfig = { linesPerChunk: Infinity, delayMs: 0 };
+	public nextDelay = 0;
+	private sourceMap: Record<string, number[]> = {};
 
 	constructor(vm: CpcVm) {
 		this.vm = vm;
@@ -81,6 +86,29 @@ export class Debugger {
 
 	setSpeed(speed: number): void {
 		this.speed = Math.max(0, Math.min(100, speed));
+		if (this.speed === 100) {
+			this.speedConfig = { linesPerChunk: Infinity, delayMs: 0 };
+		} else if (this.speed === 0) {
+			this.speedConfig = { linesPerChunk: 1, delayMs: 0 }; // effectively paused
+		} else {
+			// Map 1-99 to delay and chunk size
+			// Slower speed -> higher delay, smaller chunk
+			// Faster speed -> lower delay, larger chunk
+			// Example:
+			// 50 -> delay 100ms, lines 11
+			// 99 -> delay 2ms, lines 20
+			// 1 -> delay 198ms, lines 1
+			const delay = Math.floor((100 - this.speed) * 2); // 2ms to 198ms
+			const lines = Math.floor(this.speed / 5) + 1; // 1 to 20 lines
+			this.speedConfig = {
+				linesPerChunk: lines,
+				delayMs: delay
+			};
+		}
+	}
+
+	getSpeed(): number {
+		return this.speed;
 	}
 
 	// Breakpoints
@@ -138,6 +166,22 @@ export class Debugger {
 		return this.vm.vmGetAllVariables();
 	}
 
+	setSourceMap(map: Record<string, number[]>): void {
+		this.sourceMap = map;
+	}
+
+	getCurrentLineRange(): LineRange | null {
+		const entry = this.sourceMap[String(this.currentLine)];
+		if (entry) {
+			return {
+				line: this.currentLine,
+				startPos: entry[0],
+				endPos: entry[0] + entry[1]
+			};
+		}
+		return null;
+	}
+
 	// Events
 
 	on(listener: DebugListener): void {
@@ -156,6 +200,7 @@ export class Debugger {
 
 	onLine(line: number | string): void {
 		this.currentLine = line;
+		this.nextDelay = 0; // Reset delay
 
 		if (this.state === "idle") {
 			return;
@@ -199,6 +244,28 @@ export class Debugger {
 			}
 		}
 
+		// 3. Check speed throttle
+		if (!shouldPause && this.speed < 100) {
+			if (this.speed === 0) {
+				shouldPause = true; // Paused
+			} else {
+				this.lineCounter += 1;
+				if (this.lineCounter >= this.speedConfig.linesPerChunk) {
+					this.lineCounter = 0;
+					this.nextDelay = this.speedConfig.delayMs;
+
+					// Throttle pause
+					this.vm.vmStop("debug", 70);
+					// Emit step event to update UI (highlight)
+					this.emit({
+						type: "step",
+						snapshot: this.getSnapshot()
+					});
+					return; // Return, do not set state to paused
+				}
+			}
+		}
+
 		if (shouldPause) {
 			this.setState("paused");
 			this.vm.vmStop("debug", 70); // Force stop with high priority
@@ -207,12 +274,6 @@ export class Debugger {
 				snapshot: this.getSnapshot(),
 				breakpoint: hitBreakpoint
 			});
-		} else {
-			// Throttle if speed < 100
-			if (this.speed < 100) {
-				// Simple delay logic or request VM to wait
-				// For now, just continue
-			}
 		}
 	}
 }

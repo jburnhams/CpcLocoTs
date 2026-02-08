@@ -34,5 +34,7 @@ export * from "./RsxAmsdos";
 export * from "./RsxCpcLoco";
 export * from "./Snapshot";
 export * from "./ZipFile";
+export * from "./Debugger";
+export * from "./DebuggerTypes";
 
 // We don't export CpcLoco class anymore as it was the app entry point.

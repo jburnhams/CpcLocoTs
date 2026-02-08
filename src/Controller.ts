@@ -192,7 +192,7 @@ export class Controller implements IController {
 			lexer: this.basicLexer,
 			parser: this.basicParser,
 			trace: model.getProperty<boolean>(ModelPropID.trace),
-			debug: model.getProperty<boolean>(ModelPropID.debug),
+			debug: model.getProperty<boolean>(ModelPropID.debugMode),
 			implicitLines: model.getProperty<boolean>(ModelPropID.implicitLines),
 			integerOverflow: model.getProperty<boolean>(ModelPropID.integerOverflow)
 		});
@@ -1523,6 +1523,7 @@ export class Controller implements IController {
 		} else {
 			outputString = output.text;
 			this.vm.vmSetSourceMap(this.codeGeneratorJs.getSourceMap());
+			this.debugger.setSourceMap(this.codeGeneratorJs.getSourceMap());
 
 			// optional: tokenize to put tokens into memory...
 			const tokens = this.encodeTokenizedBasic(input);
@@ -2547,13 +2548,20 @@ if (["break", "escape", "stop", "direct", "debug"].includes(stop.reason)) {
 		});
 	}
 
-	fnDebug(): void {
-		const debug = this.model.getProperty<boolean>(ModelPropID.debug);
+	fnDebugMode(): void {
+		const debug = this.model.getProperty<boolean>(ModelPropID.debugMode);
 
 		this.codeGeneratorJs.setOptions({
 			debug: debug
 		});
 		this.invalidateScript();
+	}
+
+	private fnDebugHandler() {
+		if (this.debugger.nextDelay > 0) {
+			this.nextLoopTimeOut = this.debugger.nextDelay;
+			this.vm.vmStop("", 0, true); // Continue execution (clears stop reason)
+		}
 	}
 
 	fnSpeed(): void {
@@ -2576,7 +2584,7 @@ if (["break", "escape", "stop", "direct", "debug"].includes(stop.reason)) {
 		error: Controller.fnDummy,
 		onError: this.fnOnError,
 		stop: Controller.fnDummy,
-		debug: Controller.fnDummy,
+		debug: this.fnDebugHandler,
 		"break": Controller.fnDummy,
 		escape: Controller.fnDummy,
 		renumLines: this.fnRenumLines,

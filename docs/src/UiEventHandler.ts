@@ -637,6 +637,13 @@ export class UiEventHandler implements EventListenerObject {
 						func: this.onDebugInputChange
 					},
 					{
+						id: ViewID.debugModeInput,
+						viewType: "checked",
+						property: ModelPropID.debugMode,
+						func: this.onCheckedChange,
+						controllerFunc: this.controller.fnDebugMode
+					},
+					{
 						id: ViewID.directorySelect,
 						controllerFunc: this.controller.onDirectorySelectChange
 					},

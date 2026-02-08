@@ -49,7 +49,8 @@ describe("Debugger Integration", () => {
         vi.spyOn(view, "getInputValue").mockImplementation(() => "");
 
         model = new Model({
-            [ModelPropID.debug]: true,
+            [ModelPropID.debugMode]: true,
+            [ModelPropID.debug]: 0,
             [ModelPropID.trace]: false,
             [ModelPropID.implicitLines]: true,
             [ModelPropID.integerOverflow]: false,
