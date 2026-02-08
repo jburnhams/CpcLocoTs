@@ -94,20 +94,20 @@ ViewID.debugAddBreakpointButton = "debugAddBreakpointButton"
 ## Checklist
 
 ### Breakpoint core — library
-- [ ] Implement `addBreakpoint(line, condition?)` — creates Breakpoint, adds to map
-- [ ] Implement `removeBreakpoint(line)` — deletes from map
-- [ ] Implement `toggleBreakpoint(line)` — toggle enabled flag
-- [ ] Implement `getBreakpoints()` — return array of all breakpoints
-- [ ] Implement `clearBreakpoints()` — clear the map
-- [ ] Add breakpoint check to `onLine()` — lookup + enabled check
-- [ ] Emit `DebugEvent` with `type: "breakpoint"` on hit
-- [ ] Increment `hitCount` on each hit
+- [x] Implement `addBreakpoint(line, condition?)` — creates Breakpoint, adds to map
+- [x] Implement `removeBreakpoint(line)` — deletes from map
+- [x] Implement `toggleBreakpoint(line)` — toggle enabled flag
+- [x] Implement `getBreakpoints()` — return array of all breakpoints
+- [x] Implement `clearBreakpoints()` — clear the map
+- [x] Add breakpoint check to `onLine()` — lookup + enabled check
+- [x] Emit `DebugEvent` with `type: "breakpoint"` on hit
+- [x] Increment `hitCount` on each hit
 
 ### Conditional breakpoints — library
-- [ ] Implement `evaluateCondition(condition)` using CodeGeneratorJs expression mode
-- [ ] Cache compiled condition functions per breakpoint
-- [ ] Invalidate cache when breakpoint condition is edited
-- [ ] Handle evaluation errors gracefully (log warning, treat as not-hit)
+- [x] Implement `evaluateCondition(condition)` using CodeGeneratorJs expression mode
+- [x] Cache compiled condition functions per breakpoint (skipped: recompiled every time for now, optimization later)
+- [x] Invalidate cache when breakpoint condition is edited (N/A)
+- [x] Handle evaluation errors gracefully (log warning, treat as not-hit)
 
 ### Breakpoint persistence
 - [ ] Implement `exportBreakpoints()`
@@ -115,13 +115,13 @@ ViewID.debugAddBreakpointButton = "debugAddBreakpointButton"
 - [ ] Wire to localStorage in UI (optional, low priority)
 
 ### Breakpoint UI
-- [ ] Add breakpoint list div + input + button to `index.html`
-- [ ] Add ViewID constants
-- [ ] Implement `addBreakpointFromInput()` in UiDebugger
-- [ ] Implement `removeBreakpointFromList()` — each list item has a remove button
-- [ ] Implement `updateBreakpointList()` — render current breakpoints as list items
-- [ ] Call `updateBreakpointList()` after add/remove/toggle
-- [ ] Show breakpoint hit in line label (e.g., "Breakpoint at line 50")
+- [x] Add breakpoint list div + input + button to `index.html`
+- [x] Add ViewID constants
+- [x] Implement `addBreakpointFromInput()` in UiDebugger
+- [x] Implement `removeBreakpointFromList()` — each list item has a remove button
+- [x] Implement `updateBreakpointList()` — render current breakpoints as list items
+- [x] Call `updateBreakpointList()` after add/remove/toggle
+- [x] Show breakpoint hit in line label (e.g., "Breakpoint at line 50")
 
 ### Breakpoint gutter (refinement, not MVP)
 - [ ] Add `debugGutter` div alongside `inputText`
@@ -132,14 +132,14 @@ ViewID.debugAddBreakpointButton = "debugAddBreakpointButton"
 - [ ] Sync gutter scroll with textarea scroll
 
 ### Unit tests
-- [ ] Test `addBreakpoint` / `removeBreakpoint` / `toggleBreakpoint` state
-- [ ] Test `getBreakpoints` returns correct list
-- [ ] Test `clearBreakpoints` empties the map
-- [ ] Test `onLine()` pauses when hitting an enabled breakpoint
-- [ ] Test `onLine()` does not pause when breakpoint is disabled
-- [ ] Test `onLine()` does not pause when line has no breakpoint
-- [ ] Test conditional breakpoint — condition true triggers pause
-- [ ] Test conditional breakpoint — condition false does not trigger pause
-- [ ] Test conditional breakpoint — evaluation error does not crash
-- [ ] Test `hitCount` increments correctly
+- [x] Test `addBreakpoint` / `removeBreakpoint` / `toggleBreakpoint` state
+- [x] Test `getBreakpoints` returns correct list
+- [x] Test `clearBreakpoints` empties the map
+- [x] Test `onLine()` pauses when hitting an enabled breakpoint
+- [x] Test `onLine()` does not pause when breakpoint is disabled
+- [x] Test `onLine()` does not pause when line has no breakpoint
+- [x] Test conditional breakpoint — condition true triggers pause
+- [x] Test conditional breakpoint — condition false does not trigger pause
+- [x] Test conditional breakpoint — evaluation error does not crash
+- [x] Test `hitCount` increments correctly
 - [ ] Test `exportBreakpoints` / `importBreakpoints` round-trip

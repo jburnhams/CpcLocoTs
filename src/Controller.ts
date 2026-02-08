@@ -76,6 +76,7 @@ export class Controller implements IController {
 	private readonly basicParser: BasicParser;
 
 	private readonly codeGeneratorJs: CodeGeneratorJs;
+	private readonly codeGeneratorExpression: CodeGeneratorJs;
 
 	private readonly canvases: Record<string, ICanvas> = {};
 	private canvas: ICanvas;
@@ -196,6 +197,16 @@ export class Controller implements IController {
 			implicitLines: model.getProperty<boolean>(ModelPropID.implicitLines),
 			integerOverflow: model.getProperty<boolean>(ModelPropID.integerOverflow)
 		});
+
+		this.codeGeneratorExpression = new CodeGeneratorJs({
+			lexer: this.basicLexer,
+			parser: this.basicParser,
+			implicitLines: false,
+			noCodeFrame: true,
+			quiet: true
+		});
+
+		this.debugger.setConditionEvaluator(this.fnEvaluateCondition.bind(this));
 
 		if (model.getProperty<boolean>(ModelPropID.sound)) { // activate sound needs user action
 			this.setSoundActive(); // activate in waiting state
@@ -1479,6 +1490,38 @@ export class Controller implements IController {
 
 			this.outputError(error);
 			this.vm.vmStop("stop", 60, true);
+		}
+	}
+
+	private fnEvaluateCondition(condition: string): boolean {
+		this.basicLexer.setOptions({
+			keepWhiteSpace: false
+		});
+		this.basicParser.setOptions(Controller.codeGenJsBasicParserOptions);
+
+		const tempVar = "evaltempvar%";
+		const tempVarName = "evaltempvarI";
+		const input = "1 " + tempVar + "=" + condition;
+
+		const output = this.codeGeneratorExpression.generate(input, this.variables); // implicitLines=false (default for this instance)
+		if (output.error) {
+			console.log("Evaluate compile error:", output.error);
+			return false;
+		}
+
+		const code = output.text;
+
+		try {
+			const fn = new Function("o", "v", code); // eslint-disable-line no-new-func
+			fn(this.vm, this.variables.getAllVariables());
+
+			const v = this.variables.getAllVariables();
+			const result = v[tempVarName];
+			delete v[tempVarName];
+
+			return Boolean(result);
+		} catch (e) {
+			return false;
 		}
 	}
 
