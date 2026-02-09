@@ -15,6 +15,8 @@ export class UiDebugger {
 		const pauseBtn = View.getElementById1(ViewID.debugPauseButton);
 		const resumeBtn = View.getElementById1(ViewID.debugResumeButton);
 		const stepBtn = View.getElementById1(ViewID.debugStepIntoButton);
+		const stepOverBtn = View.getElementById1(ViewID.debugStepOverButton);
+		const stepOutBtn = View.getElementById1(ViewID.debugStepOutButton);
 		const speedInput = View.getElementById1(ViewID.debugSpeedInput) as HTMLInputElement;
 		const debugModeInput = View.getElementById1(ViewID.debugModeInput) as HTMLInputElement;
 		const addBpBtn = View.getElementById1(ViewID.debugAddBreakpointButton);
@@ -22,6 +24,8 @@ export class UiDebugger {
 		pauseBtn.addEventListener("click", () => this.controller.getDebugger().pause());
 		resumeBtn.addEventListener("click", () => this.controller.getDebugger().resume());
 		stepBtn.addEventListener("click", () => this.controller.getDebugger().stepInto());
+		stepOverBtn.addEventListener("click", () => this.controller.getDebugger().stepOver());
+		stepOutBtn.addEventListener("click", () => this.controller.getDebugger().stepOut());
 		addBpBtn.addEventListener("click", () => this.addBreakpointFromInput());
 
 		speedInput.addEventListener("input", () => {
@@ -112,6 +116,7 @@ export class UiDebugger {
 
 		if (event.type === "step" || event.type === "paused" || event.type === "breakpoint") {
 			this.updateLineHighlight(event.breakpoint);
+			this.updateCallStack();
 		}
 
 		if (event.type === "breakpoint") {
@@ -123,20 +128,46 @@ export class UiDebugger {
 		const pauseBtn = View.getElementById1(ViewID.debugPauseButton) as HTMLButtonElement;
 		const resumeBtn = View.getElementById1(ViewID.debugResumeButton) as HTMLButtonElement;
 		const stepBtn = View.getElementById1(ViewID.debugStepIntoButton) as HTMLButtonElement;
+		const stepOverBtn = View.getElementById1(ViewID.debugStepOverButton) as HTMLButtonElement;
+		const stepOutBtn = View.getElementById1(ViewID.debugStepOutButton) as HTMLButtonElement;
 
 		if (state === "running") {
 			pauseBtn.disabled = false;
 			resumeBtn.disabled = true;
 			stepBtn.disabled = true;
+			stepOverBtn.disabled = true;
+			stepOutBtn.disabled = true;
 		} else if (state === "paused" || state === "stepping") {
 			pauseBtn.disabled = true;
 			resumeBtn.disabled = false;
 			stepBtn.disabled = false;
+			stepOverBtn.disabled = false;
+			stepOutBtn.disabled = false;
 		} else { // idle
 			pauseBtn.disabled = true;
 			resumeBtn.disabled = true;
 			stepBtn.disabled = true;
+			stepOverBtn.disabled = true;
+			stepOutBtn.disabled = true;
 		}
+	}
+
+	private updateCallStack() {
+		const list = View.getElementById1(ViewID.debugCallStackList);
+		list.innerHTML = "";
+		const stack = this.controller.getDebugger().getCallStack();
+
+		stack.forEach((frame, index) => {
+			const li = document.createElement("li");
+			let text = "";
+			if (index === 0) {
+				text += "Line " + frame.returnLabel + " (current)";
+			} else {
+				text += "return to line " + frame.returnLabel;
+			}
+			li.textContent = text;
+			list.appendChild(li);
+		});
 	}
 
 	private updateLineHighlight(hitBp?: Breakpoint) {

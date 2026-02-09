@@ -2,6 +2,11 @@ export type DebugState = "idle" | "running" | "paused" | "stepping";
 
 export type StepMode = "into" | "over" | "out";
 
+export interface StackFrame {
+	returnLabel: number | string;   // where RETURN will go
+	depth: number;                  // 0-based index in stack
+}
+
 export interface Breakpoint {
 	id: number;
 	line: number;                  // BASIC line number

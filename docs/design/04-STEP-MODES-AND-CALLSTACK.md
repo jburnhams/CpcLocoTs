@@ -143,44 +143,44 @@ ViewID.debugStepOutButton = "debugStepOutButton"
 ## Checklist
 
 ### Step-over — library
-- [ ] Implement `stepOver()` — record stack depth, set mode, resume
-- [ ] Add `stepMode === "over"` check in `onLine()` — pause when depth <= recorded
-- [ ] Handle edge case: step-over at top level (empty stack) behaves as step-into
+- [x] Implement `stepOver()` — record stack depth, set mode, resume
+- [x] Add `stepMode === "over"` check in `onLine()` — pause when depth <= recorded
+- [x] Handle edge case: step-over at top level (empty stack) behaves as step-into
 
 ### Step-out — library
-- [ ] Implement `stepOut()` — record stack depth, set mode, resume
-- [ ] Add `stepMode === "out"` check in `onLine()` — pause when depth < recorded
-- [ ] Handle edge case: step-out at top level — run to end or warn
+- [x] Implement `stepOut()` — record stack depth, set mode, resume
+- [x] Add `stepMode === "out"` check in `onLine()` — pause when depth < recorded
+- [x] Handle edge case: step-out at top level — run to end or warn
 
 ### Call stack — library
-- [ ] Add `StackFrame` interface to `DebuggerTypes.ts`
-- [ ] Implement `getCallStack()` — map gosubStack to StackFrame array
-- [ ] Include `vm.line` as top-of-stack frame
+- [x] Add `StackFrame` interface to `DebuggerTypes.ts`
+- [x] Implement `getCallStack()` — map gosubStack to StackFrame array
+- [x] Include `vm.line` as top-of-stack frame
 
 ### Call stack — UI
-- [ ] Add call stack div and ordered list to `index.html`
-- [ ] Add ViewID constants
-- [ ] Implement `updateCallStack()` in UiDebugger
-- [ ] Call `updateCallStack()` on pause/step events
+- [x] Add call stack div and ordered list to `index.html`
+- [x] Add ViewID constants
+- [x] Implement `updateCallStack()` in UiDebugger
+- [x] Call `updateCallStack()` on pause/step events
 - [ ] Click-to-navigate stack frames to source (nice-to-have)
 
 ### Step buttons — UI
-- [ ] Add step-over and step-out buttons to `index.html`
-- [ ] Add ViewID constants
-- [ ] Wire click handlers to `debugger.stepOver()` / `debugger.stepOut()`
-- [ ] Disable step buttons when not paused
+- [x] Add step-over and step-out buttons to `index.html`
+- [x] Add ViewID constants
+- [x] Wire click handlers to `debugger.stepOver()` / `debugger.stepOut()`
+- [x] Disable step buttons when not paused
 
 ### Unit tests
-- [ ] Test step-over: GOSUB on current line → runs subroutine → pauses after RETURN
-- [ ] Test step-over: no GOSUB on current line → behaves like step-into
-- [ ] Test step-over at top level (empty stack) → step-into behaviour
-- [ ] Test step-out: inside GOSUB → runs to RETURN → pauses at caller
-- [ ] Test step-out at top level → runs to end
-- [ ] Test `getCallStack()` returns correct frames for known GOSUB nesting
+- [x] Test step-over: GOSUB on current line → runs subroutine → pauses after RETURN
+- [x] Test step-over: no GOSUB on current line → behaves like step-into
+- [x] Test step-over at top level (empty stack) → step-into behaviour
+- [x] Test step-out: inside GOSUB → runs to RETURN → pauses at caller
+- [x] Test step-out at top level → runs to end
+- [x] Test `getCallStack()` returns correct frames for known GOSUB nesting
 - [ ] Test timer handler stack frames appear in call stack
 - [ ] Test ON GOSUB stack frames appear correctly
 
 ### Integration tests
-- [ ] Run program with nested GOSUBs, verify step-over skips subroutine body
-- [ ] Run program with nested GOSUBs, verify step-out returns to caller
-- [ ] Verify call stack display updates on each pause
+- [x] Run program with nested GOSUBs, verify step-over skips subroutine body
+- [x] Run program with nested GOSUBs, verify step-out returns to caller
+- [x] Verify call stack display updates on each pause
