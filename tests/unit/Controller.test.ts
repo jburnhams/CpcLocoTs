@@ -89,7 +89,11 @@ describe('Controller Unit Tests', () => {
         expect((controller as any).initialLoopTimeout).toBe(0);
 
         // Change speed
-        mockModel.getProperty.mockReturnValue(50); // speed 50
+        mockModel.getProperty.mockImplementation((prop: string) => {
+            if (prop === ModelPropID.speed) return 50;
+            return 100; // Fallback or other defaults if needed, though only speed is called here
+        });
+
         controller.fnSpeed();
         // 1000 - 50*10 = 500
         expect((controller as any).initialLoopTimeout).toBe(500);
