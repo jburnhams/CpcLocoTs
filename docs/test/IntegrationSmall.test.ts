@@ -67,6 +67,11 @@ describe('Integration: Small Tests', () => {
                     <button id="${ViewID.debugPauseButton}"></button>
                     <button id="${ViewID.debugResumeButton}"></button>
                     <button id="${ViewID.debugStepIntoButton}"></button>
+                    <button id="${ViewID.debugStepOverButton}"></button>
+                    <button id="${ViewID.debugStepOutButton}"></button>
+                    <div id="${ViewID.debugCallStack}">
+                        <ol id="${ViewID.debugCallStackList}"></ol>
+                    </div>
                     <input id="${ViewID.debugModeInput}" type="checkbox"></input>
                     <div id="${ViewID.debugBreakpointList}"></div>
                     <input id="${ViewID.debugBreakpointInput}"></input>

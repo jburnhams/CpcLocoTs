@@ -202,7 +202,18 @@ describe("Debugger", () => {
 		it("should return call stack from VM", () => {
 			const stack = [10, 20];
 			vi.spyOn(mockVm, "vmGetGosubStack").mockReturnValue(stack);
-			expect(debuggerInstance.getCallStack()).toEqual(stack);
+
+			const frames = debuggerInstance.getCallStack();
+			expect(frames).toHaveLength(3);
+
+			// Frame 0: Current line
+			expect(frames[0]).toEqual({ returnLabel: 0, depth: 2 });
+
+			// Frame 1: Return to 20 (stack[1])
+			expect(frames[1]).toEqual({ returnLabel: 20, depth: 1 });
+
+			// Frame 2: Return to 10 (stack[0])
+			expect(frames[2]).toEqual({ returnLabel: 10, depth: 0 });
 		});
 	});
 

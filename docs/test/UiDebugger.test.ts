@@ -41,13 +41,16 @@ describe("UiDebugger", () => {
             pause: vi.fn(),
             resume: vi.fn(),
             stepInto: vi.fn(),
+            stepOver: vi.fn(),
+            stepOut: vi.fn(),
             setSpeed: vi.fn(),
             on: vi.fn(),
             getCurrentLineRange: vi.fn().mockReturnValue(null),
             getBreakpoints: vi.fn().mockReturnValue([]),
             addBreakpoint: vi.fn(),
             removeBreakpoint: vi.fn(),
-            toggleBreakpoint: vi.fn()
+            toggleBreakpoint: vi.fn(),
+            getCallStack: vi.fn().mockReturnValue([])
         };
 
         controller = {

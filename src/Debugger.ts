@@ -1,5 +1,5 @@
 import { CpcVm } from "./CpcVm";
-import { Breakpoint, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange } from "./DebuggerTypes";
+import { Breakpoint, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange, StackFrame } from "./DebuggerTypes";
 
 export type ConditionEvaluator = (condition: string) => boolean;
 
@@ -12,6 +12,7 @@ export class Debugger {
 	private stepMode: StepMode | null = null;
 	private stepDepth = 0;
 	private skipBreakpoint: number | null = null;
+	private skipStepCheck = false;
 	private currentLine: number | string = 0;
 	private listeners: DebugListener[] = [];
 
@@ -64,25 +65,31 @@ export class Debugger {
 		});
 	}
 
-	stepInto(): void {
+	private prepareStep(): void {
+		if (this.state === "paused" && typeof this.currentLine === "number") {
+			this.skipBreakpoint = this.currentLine;
+			this.skipStepCheck = true;
+		}
 		this.setState("stepping");
+		this.vm.vmStop("", 0, true);
+	}
+
+	stepInto(): void {
+		this.prepareStep();
 		this.stepMode = "into";
 		this.stepDepth = this.vm.vmGetGosubStack().length;
-		this.vm.vmStop("", 0, true); // Ensure loop continues if stopped
 	}
 
 	stepOver(): void {
-		this.setState("stepping");
+		this.prepareStep();
 		this.stepMode = "over";
 		this.stepDepth = this.vm.vmGetGosubStack().length;
-		this.vm.vmStop("", 0, true);
 	}
 
 	stepOut(): void {
-		this.setState("stepping");
+		this.prepareStep();
 		this.stepMode = "out";
 		this.stepDepth = this.vm.vmGetGosubStack().length;
-		this.vm.vmStop("", 0, true);
 	}
 
 	reset(): void {
@@ -165,8 +172,25 @@ export class Debugger {
 		};
 	}
 
-	getCallStack(): (number | string)[] {
-		return [...this.vm.vmGetGosubStack()];
+	getCallStack(): StackFrame[] {
+		const stack = this.vm.vmGetGosubStack();
+		const frames: StackFrame[] = [];
+
+		// Current line is the active frame
+		frames.push({
+			returnLabel: this.currentLine,
+			depth: stack.length
+		});
+
+		// Add stack frames in reverse order (most recent caller first)
+		for (let i = stack.length - 1; i >= 0; i--) {
+			frames.push({
+				returnLabel: stack[i],
+				depth: i
+			});
+		}
+
+		return frames;
 	}
 
 	getVariables(): Record<string, any> {
@@ -248,16 +272,20 @@ export class Debugger {
 
 		// 2. Check stepping
 		if (!shouldPause && this.state === "stepping") {
-			const currentDepth = this.vm.vmGetGosubStack().length;
-			if (this.stepMode === "into") {
-				shouldPause = true;
-			} else if (this.stepMode === "over") {
-				if (currentDepth <= this.stepDepth) {
+			if (this.skipStepCheck) {
+				this.skipStepCheck = false;
+			} else {
+				const currentDepth = this.vm.vmGetGosubStack().length;
+				if (this.stepMode === "into") {
 					shouldPause = true;
-				}
-			} else if (this.stepMode === "out") {
-				if (currentDepth < this.stepDepth) {
-					shouldPause = true;
+				} else if (this.stepMode === "over") {
+					if (currentDepth <= this.stepDepth) {
+						shouldPause = true;
+					}
+				} else if (this.stepMode === "out") {
+					if (currentDepth < this.stepDepth) {
+						shouldPause = true;
+					}
 				}
 			}
 		}
