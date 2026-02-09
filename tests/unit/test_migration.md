@@ -50,8 +50,11 @@ Edit the new `.test.ts` file:
 - [x] CodeGeneratorBasic
 - [x] CodeGeneratorJs
 - [x] CodeGeneratorToken
+- [x] Controller
 - [x] CpcVm
+- [x] Debugger
 - [x] Diff
+- [x] Keyboard
 - [x] Model
 - [x] Sound
 - [x] Variables
@@ -71,3 +74,6 @@ Edit the new `.test.ts` file:
 - **Variables**: Migrated standard tests and refactored data-driven tests `determineStaticVarType` to use simple loops generating `test` calls. Updated imports to `../../src/`.
 - **testParseExamples**: Implemented dynamic discovery of examples from `cpcconfig.databaseDirs`, mapping local paths and loading `0index.js` and example scripts via `eval` (simulating the legacy test environment). Added `TestModel` to support legacy `addDatabases`/`setExample` methods removed from `src/Model.ts`. Updated imports to `../../src/`.
 - **TestHelper**: Removed `TestHelper.ts` and `TestInput.ts` as they were legacy artifacts containing QUnit dependencies and are no longer used by the migrated tests. Deleted legacy `*.qunit.html` files.
+- **Controller**: Created new unit test `tests/unit/Controller.test.ts` to cover initialization and basic properties. Legacy QUnit tests were missing.
+- **Debugger**: Verified `tests/unit/Debugger.test.ts` exists and passes.
+- **Keyboard**: Verified `tests/unit/Keyboard.test.ts` exists and passes.
