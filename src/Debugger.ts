@@ -1,5 +1,5 @@
 import { CpcVm } from "./CpcVm";
-import { Breakpoint, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange, StackFrame } from "./DebuggerTypes";
+import { Breakpoint, BreakpointState, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange, StackFrame } from "./DebuggerTypes";
 
 export type ConditionEvaluator = (condition: string) => boolean;
 
@@ -158,6 +158,30 @@ export class Debugger {
 
 	clearBreakpoints(): void {
 		this.breakpoints.clear();
+	}
+
+	// Persistence
+
+	exportBreakpoints(): BreakpointState {
+		const breakpoints = Array.from(this.breakpoints.values()).map(bp => ({
+			line: bp.line,
+			enabled: bp.enabled,
+			condition: bp.condition
+		}));
+		return { breakpoints };
+	}
+
+	importBreakpoints(state: BreakpointState): void {
+		this.clearBreakpoints();
+		if (state && state.breakpoints) {
+			state.breakpoints.forEach(bp => {
+				this.addBreakpoint(bp.line, bp.condition);
+				const newBp = this.breakpoints.get(bp.line);
+				if (newBp) {
+					newBp.enabled = bp.enabled;
+				}
+			});
+		}
 	}
 
 	// Inspection
