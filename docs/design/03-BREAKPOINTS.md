@@ -110,8 +110,8 @@ ViewID.debugAddBreakpointButton = "debugAddBreakpointButton"
 - [x] Handle evaluation errors gracefully (log warning, treat as not-hit)
 
 ### Breakpoint persistence
-- [ ] Implement `exportBreakpoints()`
-- [ ] Implement `importBreakpoints()`
+- [x] Implement `exportBreakpoints()`
+- [x] Implement `importBreakpoints()`
 - [ ] Wire to localStorage in UI (optional, low priority)
 
 ### Breakpoint UI
@@ -142,4 +142,4 @@ ViewID.debugAddBreakpointButton = "debugAddBreakpointButton"
 - [x] Test conditional breakpoint — condition false does not trigger pause
 - [x] Test conditional breakpoint — evaluation error does not crash
 - [x] Test `hitCount` increments correctly
-- [ ] Test `exportBreakpoints` / `importBreakpoints` round-trip
+- [x] Test `exportBreakpoints` / `importBreakpoints` round-trip

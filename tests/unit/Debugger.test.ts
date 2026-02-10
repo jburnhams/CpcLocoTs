@@ -243,4 +243,44 @@ describe("Debugger", () => {
 			expect(debuggerInstance.getCurrentLineRange()).toBeNull();
 		});
 	});
+
+	describe("Persistence", () => {
+		it("should export breakpoints correctly", () => {
+			debuggerInstance.addBreakpoint(10);
+			debuggerInstance.addBreakpoint(20, "x > 5");
+			const bp = debuggerInstance.getBreakpoints().find(b => b.line === 10);
+			if (bp) bp.enabled = false;
+
+			const state = debuggerInstance.exportBreakpoints();
+
+			expect(state.breakpoints).toHaveLength(2);
+			expect(state.breakpoints).toContainEqual({ line: 10, enabled: false, condition: undefined });
+			expect(state.breakpoints).toContainEqual({ line: 20, enabled: true, condition: "x > 5" });
+		});
+
+		it("should import breakpoints correctly", () => {
+			const state = {
+				breakpoints: [
+					{ line: 30, enabled: true, condition: undefined },
+					{ line: 40, enabled: false, condition: "y < 10" }
+				]
+			};
+
+			debuggerInstance.addBreakpoint(10); // Should be cleared
+			debuggerInstance.importBreakpoints(state);
+
+			const breakpoints = debuggerInstance.getBreakpoints();
+			expect(breakpoints).toHaveLength(2);
+
+			const bp30 = breakpoints.find(b => b.line === 30);
+			expect(bp30).toBeDefined();
+			expect(bp30?.enabled).toBe(true);
+			expect(bp30?.condition).toBeUndefined();
+
+			const bp40 = breakpoints.find(b => b.line === 40);
+			expect(bp40).toBeDefined();
+			expect(bp40?.enabled).toBe(false);
+			expect(bp40?.condition).toBe("y < 10");
+		});
+	});
 });

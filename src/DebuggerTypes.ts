@@ -49,3 +49,7 @@ export interface LineRange {
 	startPos: number;            // character offset in source
 	endPos: number;              // character offset in source
 }
+
+export interface BreakpointState {
+	breakpoints: { line: number; enabled: boolean; condition?: string }[];
+}
