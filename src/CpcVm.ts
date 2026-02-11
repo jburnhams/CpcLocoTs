@@ -197,6 +197,7 @@ export class CpcVm implements ICpcVm {
 	private readonly rsx = new CpcVmRsx();
 
 	private debuggerRef?: Debugger;
+	private errorCallback?: (err: CustomError) => boolean;
 
 	private static readonly frameTimeMs = 1000 / 50; // 50 Hz => 20 ms
 	private static readonly timerCount = 4; // number of timers
@@ -1222,6 +1223,10 @@ export class CpcVm implements ICpcVm {
 		this.debuggerRef = dbg;
 	}
 
+	vmOnError(callback: ((err: CustomError) => boolean) | undefined): void {
+		this.errorCallback = callback;
+	}
+
 	vmDebugHook(): void {
 		if (this.tronFlag1) {
 			// existing trace output
@@ -2122,7 +2127,20 @@ export class CpcVm implements ICpcVm {
 		const errorWithInfo = errorString + " in " + this.errorLine + (errInfo ? (": " + errInfo) : "");
 		let hidden = false; // hide errors wich are catched
 
-		if (this.errorGotoLine && !this.errorResumeLine) {
+		// pre-error hook (debugger)
+		if (this.errorCallback && this.errorCallback({
+			name: "CpcVm",
+			message: errorWithInfo,
+			errCode: err,
+			value: errInfo,
+			pos: 0, // will be set later
+			len: 0,
+			line: this.line as number,
+			hidden: false
+		} as CustomError)) {
+			this.vmStop("debug", 70);
+			hidden = true;
+		} else if (this.errorGotoLine && !this.errorResumeLine) {
 			this.errorResumeLine = this.errorLine;
 			this.vmGoto(this.errorGotoLine, "onError");
 			this.vmStop("onError", 50);

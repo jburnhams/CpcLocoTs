@@ -11,7 +11,8 @@ describe("Debugger Speed Control", () => {
 			vmStop: vi.fn(),
 			vmGetGosubStack: vi.fn().mockReturnValue([]),
 			vmGetAllVariables: vi.fn().mockReturnValue({}),
-			vmSetDebugger: vi.fn()
+			vmSetDebugger: vi.fn(),
+			vmOnError: vi.fn()
 		} as unknown as CpcVm;
 		debuggerInstance = new Debugger(mockVm);
 		debuggerInstance.resume(); // Set state to running

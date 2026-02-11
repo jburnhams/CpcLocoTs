@@ -13,6 +13,7 @@ describe("Debugger", () => {
 			vmGetGosubStack: vi.fn().mockReturnValue([]),
 			vmGetAllVariables: vi.fn().mockReturnValue({}),
 			vmSetDebugger: vi.fn(),
+			vmOnError: vi.fn(),
 		} as unknown as CpcVm;
 
 		debuggerInstance = new Debugger(mockVm);

@@ -10,7 +10,8 @@ describe('Debugger Breakpoints', () => {
 		vm = {
 			vmGetGosubStack: vi.fn().mockReturnValue([]),
 			vmStop: vi.fn(),
-			vmGetAllVariables: vi.fn().mockReturnValue({})
+			vmGetAllVariables: vi.fn().mockReturnValue({}),
+			vmOnError: vi.fn()
 		} as any;
 		dbg = new Debugger(vm);
 	});

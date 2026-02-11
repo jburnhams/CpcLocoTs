@@ -1,4 +1,4 @@
-import { Breakpoint, Controller, DebugEvent, DebugState, View, ViewID } from "cpclocots";
+import { Breakpoint, Controller, DebugEvent, DebugState, ErrorInfo, View, ViewID } from "cpclocots";
 
 export class UiDebugger {
 	private readonly controller: Controller;
@@ -19,6 +19,7 @@ export class UiDebugger {
 		const stepOutBtn = View.getElementById1(ViewID.debugStepOutButton);
 		const speedInput = View.getElementById1(ViewID.debugSpeedInput) as HTMLInputElement;
 		const debugModeInput = View.getElementById1(ViewID.debugModeInput) as HTMLInputElement;
+		const breakOnErrorInput = View.getElementById1(ViewID.debugBreakOnErrorInput) as HTMLInputElement;
 		const addBpBtn = View.getElementById1(ViewID.debugAddBreakpointButton);
 
 		pauseBtn.addEventListener("click", () => this.controller.getDebugger().pause());
@@ -36,6 +37,10 @@ export class UiDebugger {
 		debugModeInput.addEventListener("change", () => {
 			this.updateVisibility();
 			// We assume UiEventHandler or UiController handles the actual property update and fnDebugMode call
+		});
+
+		breakOnErrorInput.addEventListener("change", () => {
+			this.controller.getDebugger().setBreakOnError(breakOnErrorInput.checked);
 		});
 
 		this.controller.getDebugger().on(this.onDebugEvent.bind(this));
@@ -114,9 +119,12 @@ export class UiDebugger {
 			this.updateControls(event.snapshot.state);
 		}
 
-		if (event.type === "step" || event.type === "paused" || event.type === "breakpoint") {
+		if (event.type === "step" || event.type === "paused" || event.type === "breakpoint" || event.type === "error") {
 			this.updateLineHighlight(event.breakpoint);
 			this.updateCallStack();
+			this.updateErrorDisplay(event.snapshot.error);
+		} else {
+			this.updateErrorDisplay(undefined);
 		}
 
 		if (event.type === "breakpoint") {
@@ -183,6 +191,23 @@ export class UiDebugger {
 			this.view.setAreaSelection(ViewID.inputText, range.startPos, range.endPos);
 		} else {
 			label.textContent = "Line: -";
+		}
+	}
+
+	private updateErrorDisplay(error: ErrorInfo | undefined) {
+		const div = View.getElementById1(ViewID.debugErrorInfo);
+		const span = View.getElementById1(ViewID.debugErrorText);
+
+		if (error) {
+			div.classList.remove("displayNone");
+			span.textContent = error.message + " (" + error.code + ")" + (error.info ? ": " + error.info : "");
+
+			// Also update line label if we have error info
+			const label = View.getElementById1(ViewID.debugLineLabel);
+			label.textContent = "Error at line " + error.line;
+		} else {
+			div.classList.add("displayNone");
+			span.textContent = "";
 		}
 	}
 
