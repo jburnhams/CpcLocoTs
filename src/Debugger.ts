@@ -283,7 +283,9 @@ export class Debugger {
 			code: err.errCode !== undefined ? err.errCode : -1,
 			message: err.message,
 			line: errorLine,
-			info: String(err.value || "")
+			info: String(err.value || ""),
+			pos: err.pos,
+			len: err.len
 		};
 
 		this.setState("paused");

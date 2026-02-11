@@ -20,6 +20,8 @@ export interface ErrorInfo {
 	message: string;       // Error message text
 	line: number | string; // BASIC line where error occurred
 	info: string;          // Additional context (e.g., which command)
+	pos?: number;          // Start position in source
+	len?: number;          // Length in source
 }
 
 export interface DebugSnapshot {

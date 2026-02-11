@@ -80,6 +80,7 @@ describe("Debugger Error Integration", () => {
         expect(snapshot.line).toBe(20);
         expect(snapshot.error).toBeDefined();
         expect(snapshot.error?.code).toBe(33);
+        expect(snapshot.error?.pos).toBeGreaterThan(0); // Should have a valid position
 
         // Variable a should be 1
         expect(snapshot.variables["aR"]).toBe(1);

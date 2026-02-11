@@ -2127,14 +2127,19 @@ export class CpcVm implements ICpcVm {
 		const errorWithInfo = errorString + " in " + this.errorLine + (errInfo ? (": " + errInfo) : "");
 		let hidden = false; // hide errors wich are catched
 
+		const traceLine = this.line,
+			sourceMapEntry = this.sourceMap[traceLine],
+			pos = sourceMapEntry && sourceMapEntry[0],
+			len = sourceMapEntry && sourceMapEntry[1];
+
 		// pre-error hook (debugger)
 		if (this.errorCallback && this.errorCallback({
 			name: "CpcVm",
 			message: errorWithInfo,
 			errCode: err,
 			value: errInfo,
-			pos: 0, // will be set later
-			len: 0,
+			pos: pos || 0,
+			len: len || 0,
 			line: this.line as number,
 			hidden: false
 		} as CustomError)) {
@@ -2151,10 +2156,6 @@ export class CpcVm implements ICpcVm {
 		if (!this.quiet) {
 			Utils.console.log("BASIC error(" + err + "):", errorWithInfo + (hidden ? " (hidden: " + hidden + ")" : ""));
 		}
-		const traceLine = this.line,
-			sourceMapEntry = this.sourceMap[traceLine],
-			pos = sourceMapEntry && sourceMapEntry[0],
-			len = sourceMapEntry && sourceMapEntry[1];
 
 		return Utils.composeError("CpcVm", error, errorString, errInfo, pos, len, this.line, hidden);
 	}

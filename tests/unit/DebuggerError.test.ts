@@ -40,7 +40,7 @@ describe('Debugger Error Handling', () => {
 
     it('should handle error if breakOnError is true', () => {
         debuggerInstance.setBreakOnError(true);
-        const error = { message: 'Test Error', errCode: 10, line: 100, value: 'Info' } as CustomError;
+        const error = { message: 'Test Error', errCode: 10, line: 100, value: 'Info', pos: 5, len: 10 } as CustomError;
 
         const listener = vi.fn();
         debuggerInstance.on(listener);
@@ -55,7 +55,9 @@ describe('Debugger Error Handling', () => {
                     code: 10,
                     message: 'Test Error',
                     line: 100,
-                    info: 'Info'
+                    info: 'Info',
+                    pos: 5,
+                    len: 10
                 })
             })
         }));
