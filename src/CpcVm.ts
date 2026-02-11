@@ -2128,13 +2128,13 @@ export class CpcVm implements ICpcVm {
 		let hidden = false; // hide errors wich are catched
 
 		// pre-error hook (debugger)
-if (this.errorCallback && this.errorCallback({
+		if (this.errorCallback && this.errorCallback({
 			name: "CpcVm",
 			message: errorWithInfo,
 			errCode: err,
 			value: errInfo,
-			pos: (this.sourceMap[this.line as number] || [])[0] || 0,
-			len: (this.sourceMap[this.line as number] || [])[1] || 0,
+			pos: 0, // will be set later
+			len: 0,
 			line: this.line as number,
 			hidden: false
 		} as CustomError)) {

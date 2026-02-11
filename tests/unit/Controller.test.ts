@@ -113,4 +113,10 @@ describe('Controller Unit Tests', () => {
         controller.fnTrace();
         expect(codeGen.getOptions().trace).toBe(true);
     });
+
+    it('should dispose debugger when disposed', () => {
+        const debuggerDisposeSpy = vi.spyOn(controller.getDebugger(), 'dispose');
+        controller.dispose();
+        expect(debuggerDisposeSpy).toHaveBeenCalled();
+    });
 });

@@ -106,6 +106,10 @@ export class Debugger {
 		this.stepDepth = 0;
 	}
 
+	dispose(): void {
+		this.vm.vmOnError(undefined);
+	}
+
 	setSpeed(speed: number): void {
 		this.speed = Math.max(0, Math.min(100, speed));
 		if (this.speed === 100) {

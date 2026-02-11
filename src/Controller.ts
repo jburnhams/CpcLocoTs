@@ -1976,6 +1976,7 @@ export class Controller implements IController {
 		this.stopMainLoop();
 		this.stopUpdateCanvas();
 		this.sound.dispose();
+		this.debugger.dispose();
 	}
 
 	private setStopObject(stop: VmStopEntry) {

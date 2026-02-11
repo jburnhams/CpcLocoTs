@@ -57,6 +57,11 @@ describe("Debugger", () => {
 			debuggerInstance.reset();
 			expect(debuggerInstance.getSnapshot().state).toBe("idle");
 		});
+
+		it("should unregister error handler when dispose() is called", () => {
+			debuggerInstance.dispose();
+			expect(mockVm.vmOnError).toHaveBeenCalledWith(undefined);
+		});
 	});
 
 	describe("Stepping", () => {
