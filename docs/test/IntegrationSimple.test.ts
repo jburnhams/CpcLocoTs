@@ -62,6 +62,10 @@ describe('Integration Simple: Initialization with Real Canvas', () => {
                     <div id="${ViewID.debugBreakpointList}"></div>
                     <input id="${ViewID.debugBreakpointInput}"></input>
                     <button id="${ViewID.debugAddBreakpointButton}"></button>
+                    <div id="${ViewID.debugErrorInfo}" class="displayNone">
+                        <strong>Error:</strong> <span id="${ViewID.debugErrorText}"></span>
+                    </div>
+                    <input id="${ViewID.debugBreakOnErrorInput}" type="checkbox"></input>
                 </fieldset>
             </div>
         `;
