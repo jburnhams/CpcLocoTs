@@ -127,44 +127,44 @@ ViewID.debugBreakOnErrorInput = "debugBreakOnErrorInput"
 ## Checklist
 
 ### Error hooking — CpcVm
-- [ ] Add `errorCallback` property to CpcVm
-- [ ] Implement `vmOnError(callback)` setter
-- [ ] In `vmComposeError()`: call `errorCallback` before throwing, respect return value
-- [ ] Ensure `vmOnError(undefined)` cleans up callback
+- [x] Add `errorCallback` property to CpcVm
+- [x] Implement `vmOnError(callback)` setter
+- [x] In `vmComposeError()`: call `errorCallback` before throwing, respect return value
+- [x] Ensure `vmOnError(undefined)` cleans up callback
 
 ### Break-on-error — Debugger
-- [ ] Add `breakOnError: boolean` property (default false)
-- [ ] Add `lastError: ErrorInfo | null` property
-- [ ] Implement `handleError(err)` — check `breakOnError`, build snapshot, emit event
-- [ ] Implement `setBreakOnError(enabled)` setter
-- [ ] Register/unregister error callback when attaching/detaching debugger
-- [ ] On resume after error: re-throw error to let normal CPC error flow continue
-- [ ] Clear `lastError` on resume
+- [x] Add `breakOnError: boolean` property (default false)
+- [x] Add `lastError: ErrorInfo | null` property
+- [x] Implement `handleError(err)` — check `breakOnError`, build snapshot, emit event
+- [x] Implement `setBreakOnError(enabled)` setter
+- [x] Register/unregister error callback when attaching/detaching debugger
+- [x] On resume after error: re-throw error to let normal CPC error flow continue
+- [x] Clear `lastError` on resume
 
 ### Error info in snapshot
-- [ ] Add `ErrorInfo` interface to `DebuggerTypes.ts`
-- [ ] Include `error` field in `DebugSnapshot` when paused due to error
+- [x] Add `ErrorInfo` interface to `DebuggerTypes.ts`
+- [x] Include `error` field in `DebugSnapshot` when paused due to error
 
 ### Error display — UI
-- [ ] Add error info div to `index.html`
-- [ ] Add break-on-error checkbox to debug panel
-- [ ] Add ViewID constants
-- [ ] Implement `updateErrorDisplay()` — show error code, message, line
-- [ ] Wire break-on-error checkbox to `debugger.setBreakOnError()`
-- [ ] Hide error display when no error / on resume
+- [x] Add error info div to `index.html`
+- [x] Add break-on-error checkbox to debug panel
+- [x] Add ViewID constants
+- [x] Implement `updateErrorDisplay()` — show error code, message, line
+- [x] Wire break-on-error checkbox to `debugger.setBreakOnError()`
+- [x] Hide error display when no error / on resume
 
 ### Unit tests
-- [ ] Test `vmOnError` callback is called when `vmComposeError` fires
-- [ ] Test callback returning `true` suppresses the throw
-- [ ] Test callback returning `false` allows normal error flow
-- [ ] Test `handleError` with `breakOnError = true` — pauses and emits event
-- [ ] Test `handleError` with `breakOnError = false` — returns false
-- [ ] Test error snapshot contains correct code, message, line
-- [ ] Test `lastError` is set on error, cleared on resume
-- [ ] Test resume after error re-throws for normal handling
+- [x] Test `vmOnError` callback is called when `vmComposeError` fires
+- [x] Test callback returning `true` suppresses the throw
+- [x] Test callback returning `false` allows normal error flow
+- [x] Test `handleError` with `breakOnError = true` — pauses and emits event
+- [x] Test `handleError` with `breakOnError = false` — returns false
+- [x] Test error snapshot contains correct code, message, line
+- [x] Test `lastError` is set on error, cleared on resume
+- [x] Test resume after error re-throws for normal handling
 
 ### Integration tests
-- [ ] Run program with deliberate error (e.g., division by zero), verify debugger pauses
-- [ ] Inspect variables at error point, verify they reflect state at error
-- [ ] Resume after error, verify normal error message appears
-- [ ] Run program with ON ERROR GOTO and breakOnError off — verify normal handling
+- [x] Run program with deliberate error (e.g., division by zero), verify debugger pauses
+- [x] Inspect variables at error point, verify they reflect state at error
+- [x] Resume after error, verify normal error message appears
+- [x] Run program with ON ERROR GOTO and breakOnError off — verify normal handling

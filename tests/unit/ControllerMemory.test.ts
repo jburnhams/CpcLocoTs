@@ -43,6 +43,7 @@ const mockVm = {
     vmGoto: vi.fn(),
     vmSetStartLine: vi.fn(),
     vmSetDebugger: vi.fn(),
+    vmOnError: vi.fn(),
     vmGetOutFileObject: vi.fn(() => ({ open: false }))
 };
 

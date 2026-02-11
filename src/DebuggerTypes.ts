@@ -15,12 +15,21 @@ export interface Breakpoint {
 	hitCount?: number;             // how many times hit so far
 }
 
+export interface ErrorInfo {
+	code: number;          // CPC error code (e.g., 5 = "Improper argument")
+	message: string;       // Error message text
+	line: number | string; // BASIC line where error occurred
+	info: string;          // Additional context (e.g., which command)
+	pos?: number;          // Start position in source
+	len?: number;          // Length in source
+}
+
 export interface DebugSnapshot {
 	line: number | string;         // current BASIC line
 	state: DebugState;
 	gosubStack: (number | string)[];  // copy of CpcVm.gosubStack
 	variables: Record<string, any>;   // snapshot from Variables.getAllVariables()
-	error?: { code: number; message: string; line: number | string };
+	error?: ErrorInfo;
 }
 
 export type DebugEventType =

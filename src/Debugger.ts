@@ -1,5 +1,6 @@
 import { CpcVm } from "./CpcVm";
-import { Breakpoint, BreakpointState, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange, StackFrame } from "./DebuggerTypes";
+import { Breakpoint, BreakpointState, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange, StackFrame, ErrorInfo } from "./DebuggerTypes";
+import { CustomError } from "./Utils";
 
 export type ConditionEvaluator = (condition: string) => boolean;
 
@@ -9,9 +10,11 @@ export class Debugger {
 	private readonly breakpoints: Map<number, Breakpoint> = new Map();
 	private speed = 100;
 	private breakOnError = false;
+	private lastError: ErrorInfo | null = null;
 	private stepMode: StepMode | null = null;
 	private stepDepth = 0;
 	private skipBreakpoint: number | null = null;
+	private skipErrorLine: number | string | null = null;
 	private skipStepCheck = false;
 	private currentLine: number | string = 0;
 	private listeners: DebugListener[] = [];
@@ -24,6 +27,7 @@ export class Debugger {
 
 	constructor(vm: CpcVm) {
 		this.vm = vm;
+		this.vm.vmOnError(this.handleError.bind(this));
 	}
 
 	// State Management
@@ -54,6 +58,10 @@ export class Debugger {
 	}
 
 	resume(): void {
+		if (this.lastError) {
+			this.skipErrorLine = this.lastError.line;
+			this.lastError = null;
+		}
 		if (this.state === "paused" && typeof this.currentLine === "number") {
 			this.skipBreakpoint = this.currentLine;
 		}
@@ -98,6 +106,10 @@ export class Debugger {
 		this.stepDepth = 0;
 	}
 
+	dispose(): void {
+		this.vm.vmOnError(undefined);
+	}
+
 	setSpeed(speed: number): void {
 		this.speed = Math.max(0, Math.min(100, speed));
 		if (this.speed === 100) {
@@ -123,6 +135,10 @@ export class Debugger {
 
 	getSpeed(): number {
 		return this.speed;
+	}
+
+	setBreakOnError(enabled: boolean): void {
+		this.breakOnError = enabled;
 	}
 
 	// Breakpoints
@@ -192,7 +208,7 @@ export class Debugger {
 			state: this.state,
 			gosubStack: [...this.vm.vmGetGosubStack()],
 			variables: this.vm.vmGetAllVariables(),
-			error: undefined // TODO: Get error from VM
+			error: this.lastError || undefined
 		};
 	}
 
@@ -251,6 +267,36 @@ export class Debugger {
 		this.listeners.forEach(l => l(event));
 	}
 
+	private handleError(err: CustomError): boolean {
+		if (!this.breakOnError) {
+			return false;
+		}
+
+		const errorLine = err.line || this.currentLine;
+
+		if (this.skipErrorLine !== null && this.skipErrorLine === errorLine) {
+			this.skipErrorLine = null;
+			return false;
+		}
+
+		this.lastError = {
+			code: err.errCode !== undefined ? err.errCode : -1,
+			message: err.message,
+			line: errorLine,
+			info: String(err.value || ""),
+			pos: err.pos,
+			len: err.len
+		};
+
+		this.setState("paused");
+		this.emit({
+			type: "error",
+			snapshot: this.getSnapshot()
+		});
+
+		return true;
+	}
+
 	// Core Hook
 
 	onLine(line: number | string): void {
@@ -263,6 +309,10 @@ export class Debugger {
 
 		let shouldPause = false;
 		let hitBreakpoint: Breakpoint | undefined;
+
+		if (this.skipErrorLine !== null && this.skipErrorLine !== line) {
+			this.skipErrorLine = null;
+		}
 
 		// 1. Check breakpoints
 		if (typeof line === "number") {

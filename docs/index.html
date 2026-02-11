@@ -241,6 +241,9 @@
 			<button id="debugStepIntoButton">Step</button>
 			<button id="debugStepOverButton" title="Step Over (skip GOSUB)">Over</button>
 			<button id="debugStepOutButton" title="Step Out (run to RETURN)">Out</button>
+			<div id="debugErrorInfo" class="displayNone">
+				<strong>Error:</strong> <span id="debugErrorText"></span>
+			</div>
 			<hr>
 			<div id="debugCallStack" class="debugPanel">
 				<strong>Call Stack</strong>
@@ -249,6 +252,9 @@
 			<div id="debugBreakpointList"></div>
 			<input id="debugBreakpointInput" type="text" placeholder="Line [if condition]">
 			<button id="debugAddBreakpointButton">Add BP</button>
+			<br>
+			<input id="debugBreakOnErrorInput" type="checkbox">
+			<label for="debugBreakOnErrorInput">Break on Error</label>
 		</fieldset>
 
 		<div id="inputArea" class="flexBox">

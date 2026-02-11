@@ -13,6 +13,7 @@ describe("Debugger", () => {
 			vmGetGosubStack: vi.fn().mockReturnValue([]),
 			vmGetAllVariables: vi.fn().mockReturnValue({}),
 			vmSetDebugger: vi.fn(),
+			vmOnError: vi.fn(),
 		} as unknown as CpcVm;
 
 		debuggerInstance = new Debugger(mockVm);
@@ -55,6 +56,11 @@ describe("Debugger", () => {
 			debuggerInstance.pause();
 			debuggerInstance.reset();
 			expect(debuggerInstance.getSnapshot().state).toBe("idle");
+		});
+
+		it("should unregister error handler when dispose() is called", () => {
+			debuggerInstance.dispose();
+			expect(mockVm.vmOnError).toHaveBeenCalledWith(undefined);
 		});
 	});
 
