@@ -47,19 +47,47 @@ export function setupIntegrationTest() {
     Utils.localStorage = localStorageMock as any; // Explicitly set it on the Utils class
 
     // Mock AudioContext
+    const mockAudioParam = {
+        value: 0,
+        setValueAtTime: vi.fn(),
+        linearRampToValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+    };
     const mockNode = {
         connect: vi.fn(),
         disconnect: vi.fn(),
-        gain: { value: 1 },
+        gain: mockAudioParam,
+        frequency: mockAudioParam,
+        start: vi.fn(),
+        stop: vi.fn(),
+        type: 'sine',
     };
-    (window as any).AudioContext = vi.fn().mockImplementation(() => ({
-        createGain: vi.fn().mockReturnValue(mockNode),
-        createChannelMerger: vi.fn().mockReturnValue(mockNode),
-        createOscillator: vi.fn().mockReturnValue(mockNode),
-        destination: mockNode,
-        state: 'suspended',
-        resume: vi.fn().mockResolvedValue(undefined),
-    }));
+    (window as any).AudioContext = vi.fn().mockImplementation(() => {
+        const startTime = Date.now();
+        return {
+            createGain: vi.fn().mockReturnValue(mockNode),
+            createChannelMerger: vi.fn().mockReturnValue(mockNode),
+            createOscillator: vi.fn().mockReturnValue(mockNode),
+            createBuffer: vi.fn().mockReturnValue({
+                getChannelData: vi.fn().mockReturnValue(new Float32Array(1000))
+            }),
+            createBufferSource: vi.fn().mockReturnValue({
+                buffer: null,
+                connect: vi.fn().mockReturnValue(mockNode),
+                start: vi.fn(),
+                stop: vi.fn()
+            }),
+            createBiquadFilter: vi.fn().mockReturnValue({
+                connect: vi.fn().mockReturnValue(mockNode),
+                type: '',
+                frequency: { value: 0 }
+            }),
+            destination: mockNode,
+            state: 'suspended',
+            resume: vi.fn().mockResolvedValue(undefined),
+            get currentTime() { return (Date.now() - startTime) / 1000; }
+        };
+    });
 
     // Mock HTML element offsetParent for visibility check
     Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
