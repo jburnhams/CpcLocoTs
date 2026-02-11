@@ -11,23 +11,64 @@ if (typeof document !== 'undefined') {
         const el = origCreateElement(tagName, options);
         if (tagName.toLowerCase() === 'canvas') {
             const canvasEl = el as HTMLCanvasElement;
+            (canvasEl as any)._uid = Math.random();
+            // Patch this specific instance
             canvasEl.getContext = function (type: string) {
+                if (type !== '2d') return null;
                 if (!this._context) {
                     this._napiCanvas = createCanvas(this.width || 300, this.height || 150);
-                    this._context = this._napiCanvas.getContext(type);
+                    this._context = this._napiCanvas.getContext('2d');
                 }
                 return this._context;
-            }.bind(canvasEl);
-
-            canvasEl.toDataURL = function () {
-                if (this._napiCanvas) {
-                    return this._napiCanvas.toDataURL();
-                }
-                return "";
-            }.bind(canvasEl);
+            };
         }
         return el;
     };
+
+    // Also patch prototype just in case
+    if (typeof HTMLCanvasElement !== 'undefined') {
+        const originalWidth = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width');
+        const originalHeight = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'height');
+
+        Object.defineProperty(HTMLCanvasElement.prototype, 'width', {
+            set: function (val) {
+                if (val !== (this as any)._lastWidth) {
+                    if (originalWidth && originalWidth.set) originalWidth.set.call(this, val);
+                    (this as any)._lastWidth = val;
+                    this._napiCanvas = null; // Force recreation
+                    this._context = null;
+                }
+            },
+            get: function () {
+                return originalWidth && originalWidth.get ? originalWidth.get.call(this) : (this._lastWidth || 0);
+            },
+            configurable: true
+        });
+
+        Object.defineProperty(HTMLCanvasElement.prototype, 'height', {
+            set: function (val) {
+                if (val !== (this as any)._lastHeight) {
+                    if (originalHeight && originalHeight.set) originalHeight.set.call(this, val);
+                    (this as any)._lastHeight = val;
+                    this._napiCanvas = null; // Force recreation
+                    this._context = null;
+                }
+            },
+            get: function () {
+                return originalHeight && originalHeight.get ? originalHeight.get.call(this) : (this._lastHeight || 0);
+            },
+            configurable: true
+        });
+
+        HTMLCanvasElement.prototype.getContext = function (type: string) {
+            if (type !== '2d') return null;
+            if (!this._context) {
+                this._napiCanvas = createCanvas(this.width || 300, this.height || 150);
+                this._context = this._napiCanvas.getContext('2d');
+            }
+            return this._context;
+        };
+    }
 
     // Helper to setup DOM elements required by tests
     const setupDom = () => {
@@ -88,6 +129,11 @@ if (typeof document !== 'undefined') {
             if (!document.getElementById(el.id)) {
                 const element = document.createElement(el.tag);
                 element.id = el.id;
+                const uid = Math.random();
+                (element as any)._uid = uid;
+                if (el.tag === 'canvas') {
+                    console.log(`DEBUG: setupDom created canvas ${el.id} with UID ${uid}`);
+                }
                 document.body.appendChild(element);
             }
         });
@@ -100,14 +146,18 @@ if (typeof document !== 'undefined') {
 
 // Mock AudioContext
 global.AudioContext = vi.fn().mockImplementation(() => ({
-    createGain: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), gain: { value: 0 } })),
+    createGain: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), gain: { value: 0, setValueAtTime: vi.fn() } })),
     createChannelMerger: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn() })),
-    createOscillator: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0 } })),
-    destination: {},
+    createOscillator: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0, setValueAtTime: vi.fn() } })),
+    createBuffer: vi.fn(() => ({ getChannelData: vi.fn(() => new Float32Array(100)) })),
+    createBufferSource: vi.fn(() => ({ connect: vi.fn(), start: vi.fn(), stop: vi.fn(), buffer: null })),
+    createBiquadFilter: vi.fn(() => ({ connect: vi.fn(), frequency: { value: 0 } })),
+    destination: { connect: vi.fn(), disconnect: vi.fn() },
     close: vi.fn().mockImplementation(() => Promise.resolve()),
     state: 'running',
     resume: vi.fn(),
-    currentTime: 0
+    currentTime: 0,
+    sampleRate: 44100
 }));
 
 global.window.AudioContext = global.AudioContext;

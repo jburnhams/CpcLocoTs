@@ -1,206 +1,96 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createCanvas } from '@napi-rs/canvas';
-import { ViewID, View, Keyboard, Utils } from 'cpclocots';
+import { ViewID } from 'cpclocots';
 import { CpcLoco } from '../src/main';
+import { setupIntegrationTest, startVm, stepExecution, flushCanvas, getPixels } from './IntegrationTestUtils';
 
-describe('Integration: Small Tests', () => {
-    let rsCanvas: any;
-    let rsCtx: any;
-    let originalLocalStorage: any;
-    let storageData: Record<string, string> = {};
+describe('Integration Small: Refactored', () => {
+    let testContext: any;
 
     beforeEach(() => {
-        storageData = {};
-        originalLocalStorage = Utils.localStorage;
-        Utils.localStorage = {
-            getItem: vi.fn((key: string) => storageData[key] || null),
-            setItem: vi.fn((key: string, value: string) => { storageData[key] = value; }),
-            removeItem: vi.fn((key: string) => { delete storageData[key]; }),
-            key: vi.fn((index: number) => Object.keys(storageData)[index] || null),
-            length: 0
-        } as any;
-
-        document.body.innerHTML = `
-            <div id="${ViewID.mainArea}">
-                <div id="${ViewID.cpcArea}" tabindex="0">
-                    <canvas id="${ViewID.cpcCanvas}" width="640" height="400"></canvas>
-                </div>
-                <!-- ... other elements ... -->
-                <div id="${ViewID.kbdArea}">
-                    <div id="${ViewID.kbdAreaInner}">
-                        <div id="${ViewID.kbdAlpha}"></div>
-                        <div id="${ViewID.kbdNum}"></div>
-                    </div>
-                </div>
-                <div id="${ViewID.outputArea}"></div>
-                <textarea id="${ViewID.outputText}"></textarea>
-                <div id="${ViewID.consoleLogText}"></div>
-                <textarea id="${ViewID.inputText}"></textarea>
-                <div id="${ViewID.statusText}"></div>
-                <button id="${ViewID.runButton}"></button>
-                <div id="${ViewID.dropZone}"></div>
-                <input type="file" id="${ViewID.fileInput}"></input>
-                <select id="${ViewID.databaseSelect}"></select>
-                <select id="${ViewID.directorySelect}"></select>
-                <select id="${ViewID.exampleSelect}"></select>
-                <div id="${ViewID.resultText}"></div>
-                <select id="${ViewID.varSelect}"></select>
-                <select id="${ViewID.varText}"></select>
-                <input id="${ViewID.renumNewInput}"></input>
-                <input id="${ViewID.renumStartInput}"></input>
-                <input id="${ViewID.renumStepInput}"></input>
-                <input id="${ViewID.renumKeepInput}"></input>
-                <textarea id="${ViewID.inp2Text}"></textarea>
-                <textarea id="${ViewID.disassText}"></textarea>
-                <button id="${ViewID.undoButton}"></button>
-                <button id="${ViewID.undoButton2}"></button>
-                <button id="${ViewID.redoButton}"></button>
-                <button id="${ViewID.redoButton2}"></button>
-                <button id="${ViewID.stopButton}"></button>
-                <button id="${ViewID.continueButton}"></button>
-                <button id="${ViewID.resetButton}"></button>
-                <button id="${ViewID.parseRunButton}"></button>
-                <!-- Debug elements -->
-                <fieldset id="${ViewID.debugArea}" class="displayNone">
-                    <input id="${ViewID.debugSpeedInput}" type="range"></input>
-                    <span id="${ViewID.debugLineLabel}"></span>
-                    <button id="${ViewID.debugPauseButton}"></button>
-                    <button id="${ViewID.debugResumeButton}"></button>
-                    <button id="${ViewID.debugStepIntoButton}"></button>
-                    <button id="${ViewID.debugStepOverButton}"></button>
-                    <button id="${ViewID.debugStepOutButton}"></button>
-                    <div id="${ViewID.debugCallStack}">
-                        <ol id="${ViewID.debugCallStackList}"></ol>
-                    </div>
-                    <input id="${ViewID.debugModeInput}" type="checkbox"></input>
-                    <div id="${ViewID.debugBreakpointList}"></div>
-                    <input id="${ViewID.debugBreakpointInput}"></input>
-                    <button id="${ViewID.debugAddBreakpointButton}"></button>
-                    <div id="${ViewID.debugErrorInfo}" class="displayNone">
-                        <strong>Error:</strong> <span id="${ViewID.debugErrorText}"></span>
-                    </div>
-                    <input id="${ViewID.debugBreakOnErrorInput}" type="checkbox"></input>
-                </fieldset>
-            </div>
-        `;
-
-        rsCanvas = createCanvas(640, 400);
-        rsCtx = rsCanvas.getContext('2d');
-
-        const cpcCanvas = document.getElementById(ViewID.cpcCanvas) as HTMLCanvasElement;
-        const originalGetContext = cpcCanvas.getContext;
-        cpcCanvas.getContext = ((type: string, options?: any) => {
-            if (type === '2d') {
-                return rsCtx as any;
-            }
-            return originalGetContext.call(cpcCanvas, type, options);
-        }) as any;
-        cpcCanvas.toDataURL = rsCanvas.toDataURL.bind(rsCanvas);
-
-        window.alert = vi.fn();
-        window.confirm = vi.fn(() => true);
-        window.AudioContext = vi.fn().mockImplementation(() => ({
-            createGain: vi.fn(() => ({ connect: vi.fn(), gain: { value: 0 } })),
-            createChannelMerger: vi.fn(() => ({ connect: vi.fn() })),
-            createOscillator: vi.fn(() => ({ connect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0 } })),
-            destination: {},
-            close: vi.fn(),
-            state: 'running',
-            resume: vi.fn(),
-            currentTime: 0
-        })) as any;
-
-        CpcLoco.fnDoStart();
-
-        // Patch requestAnimationFrame
-        vi.stubGlobal('requestAnimationFrame', (fn: any) => {
-            return setTimeout(fn, 0);
-        });
-
-        // Patch VM logic
-        const coreControllerValid = CpcLoco.controller.controller;
-        const vm = coreControllerValid.getVm();
-
-        // Dont stop on frame
-        vi.spyOn(vm, 'frame').mockImplementation(() => { });
-
-        // Force next frame to be "now" always
-        vi.spyOn(vm, 'vmGetTimeUntilFrame').mockReturnValue(0);
-
-        // Spy on vmStop to debug why it stops and ignore timer stops
-        const originalVmStop = vm.vmStop.bind(vm);
-        vi.spyOn(vm, 'vmStop').mockImplementation((reason, priority, force, paras) => {
-            if (reason === 'timer') return; // Ignore timer stops
-            if (reason === 'fileLoad') {
-                return;
-            }
-            if (reason === 'run') {
-                return;
-            }
-            originalVmStop(reason, priority, force, paras);
-        });
-
-        (vm as any).initialStop = 100000;
-        (vm as any).stopCount = 100000;
+        testContext = setupIntegrationTest();
     });
 
     afterEach(() => {
-        Utils.localStorage = originalLocalStorage;
-        vi.restoreAllMocks();
-        document.body.innerHTML = '';
-        (CpcLoco as any).model = undefined;
-        (CpcLoco as any).controller = undefined;
-        (CpcLoco as any).view = undefined;
+        testContext.clear();
     });
 
-    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    it('should draw graphics with PLOT and DRAW', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const { coreController } = startVm();
 
-    it('should run a simple BASIC program', async () => {
-        const simpleBasic = '10 a = 10\\n20 PRINT a';
+        const basicGraphics = '10 MODE 1\\n20 PLOT 0,0,1\\n30 DRAW 319,199,2';
+        (CpcLoco as any).view.setAreaValue(ViewID.inputText, basicGraphics.replace(/\\n/g, '\n'));
 
-        // Direct set
-        (CpcLoco as any).view.setAreaValue(ViewID.inputText, simpleBasic);
+        coreController.startParseRun();
 
-        CpcLoco.controller.controller.startParseRun();
+        for (let i = 0; i < 200; i++) {
+            await stepExecution(100);
+            flushCanvas();
+        }
 
-        await wait(1000);
+        const canvasElement = document.getElementById(ViewID.cpcCanvas) as HTMLCanvasElement;
+        const data = await getPixels(canvasElement);
 
-        expect(true).toBe(true);
+        let nonBlack = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i] !== 0 || data[i + 1] !== 0 || data[i + 2] !== 0) nonBlack++;
+        }
+        expect(nonBlack).toBeGreaterThan(100);
     });
 
-    it('should detect key press with INKEY$', async () => {
-        const inkeyBasic = '10 a$ = INKEY$\\n20 IF a$ = "" GOTO 10\\n30 b = 1';
+    it('should handle loops and conditional logic', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const { coreController, vm } = startVm();
 
-        (CpcLoco as any).view.setAreaValue(ViewID.inputText, inkeyBasic);
-        CpcLoco.controller.controller.startParseRun();
+        const basicLogic = '10 FOR i=1 TO 5\\n20 IF i MOD 2 = 0 THEN PRINT "EVEN";i ELSE PRINT "ODD";i\\n30 NEXT i';
+        (CpcLoco as any).view.setAreaValue(ViewID.inputText, basicLogic.replace(/\\n/g, '\n'));
 
-        await wait(500);
+        const printSpy = vi.spyOn(vm, 'print');
 
-        // Simulate key
-        const coreController = CpcLoco.controller.controller;
-        const keyboard = (coreController as any).keyboard as Keyboard;
-        keyboard.putKeyInBuffer("A");
+        coreController.startParseRun();
 
-        await wait(500);
+        for (let i = 0; i < 40; i++) {
+            await stepExecution(100);
+            flushCanvas();
+        }
 
-        expect(true).toBe(true);
+        const printedValues = printSpy.mock.calls.map(c => c.slice(1).map(arg => String(arg)).join(''));
+        console.log(`DEBUG: Printed logic values: ${JSON.stringify(printedValues)}`);
+
+        expect(printedValues.some(v => v.includes('ODD1'))).toBe(true);
+        expect(printedValues.some(v => v.includes('EVEN2'))).toBe(true);
+        expect(printedValues.some(v => v.includes('ODD3'))).toBe(true);
+        expect(printedValues.some(v => v.includes('EVEN4'))).toBe(true);
+        expect(printedValues.some(v => v.includes('ODD5'))).toBe(true);
     });
 
-    it('should change MODE', async () => {
-        const modeBasic = '10 MODE 2';
+    it('should handle keyboard input with INKEY$', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const { coreController, vm } = startVm();
 
-        (CpcLoco as any).view.setAreaValue(ViewID.inputText, modeBasic);
+        const inkeyProg = '10 a$ = INKEY$\\n20 IF a$ = "" GOTO 10\\n30 PRINT "KEY ";a$';
+        (CpcLoco as any).view.setAreaValue(ViewID.inputText, inkeyProg.replace(/\\n/g, '\n'));
 
-        const vm = CpcLoco.controller.controller.getVm();
-        const modeSpy = vi.spyOn(vm, 'mode');
+        const printSpy = vi.spyOn(vm, 'print');
 
-        CpcLoco.controller.controller.startParseRun();
+        coreController.startParseRun();
 
-        await wait(2000);
+        // Run a bit to enter the loop
+        for (let i = 0; i < 10; i++) {
+            await stepExecution(50);
+        }
 
-        const currentMode = (vm as any).modeValue;
+        // Simulate keypress
+        const keyboard = (coreController as any).keyboard;
+        keyboard.putKeyInBuffer('X');
 
-        expect(modeSpy).toHaveBeenCalledWith(2);
-        expect(currentMode).toBe(2);
+        // Run more to detect key and print
+        for (let i = 0; i < 10; i++) {
+            await stepExecution(50);
+            flushCanvas();
+        }
+
+        const printedValues = printSpy.mock.calls.map(c => c.slice(1).map(arg => String(arg)).join(''));
+        expect(printedValues.some(v => v.includes('KEY X'))).toBe(true);
     });
 });

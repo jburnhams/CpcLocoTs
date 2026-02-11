@@ -394,6 +394,7 @@ export class Canvas implements ICanvas {
 			data32[i] = pen2Color32[dataset8[i]];
 		}
 
+		console.log(`DEBUG: putImageData sample: ${this.imageData.data[0]},${this.imageData.data[1]},${this.imageData.data[2]},${this.imageData.data[3]}`);
 		this.ctx.putImageData(this.imageData, 0, 0);
 	}
 

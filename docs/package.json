@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.90",
+    "@napi-rs/canvas": "^0.1.91",
     "cpclocots": "file:.."
   },
   "devDependencies": {
