@@ -145,14 +145,7 @@ describe('Integration: BOMBER.BAS', () => {
 
             // Verify Visual Change
             const postBombData = await getPixels(canvas);
-            let changed = false;
-            for(let i=0; i<preBombData.length; i++) {
-                if (preBombData[i] !== postBombData[i]) {
-                    changed = true;
-                    break;
-                }
-            }
-            expect(changed).toBe(true);
+            expect(postBombData).not.toEqual(preBombData);
         }, { timeout: 5000, interval: 50 });
 
         console.log("Sound generation and visual change verified.");
