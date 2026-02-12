@@ -55,46 +55,116 @@ export class BasicLexer {
 	}
 
 	private static isOperatorOrStreamOrAddress(c: string) {
-		return (/[+\-*/^=()[\],;:?\\@#]/).test(c);
+		const code = c.charCodeAt(0);
+
+		switch (code) {
+			case 35: // #
+			case 40: // (
+			case 41: // )
+			case 42: // *
+			case 43: // +
+			case 44: // ,
+			case 45: // -
+			case 47: // /
+			case 58: // :
+			case 59: // ;
+			case 61: // =
+			case 63: // ?
+			case 64: // @
+			case 91: // [
+			case 92: // \
+			case 93: // ]
+			case 94: // ^
+				return true;
+			default:
+				return false;
+		}
 	}
+
 	private static isComparison(c: string) {
-		return (/[<>]/).test(c);
+		const code = c.charCodeAt(0);
+
+		return code === 60 || code === 62; // < >
 	}
+
 	private static isComparison2(c: string) {
-		return (/[<>=]/).test(c);
+		const code = c.charCodeAt(0);
+
+		return code === 60 || code === 61 || code === 62; // < = >
 	}
+
 	private static isDigit(c: string) {
-		return (/\d/).test(c);
+		const code = c.charCodeAt(0);
+
+		return code >= 48 && code <= 57;
 	}
+
 	private static isSign(c: string) {
-		return (/[+-]/).test(c);
+		const code = c.charCodeAt(0);
+
+		return code === 43 || code === 45; // + -
 	}
+
 	private static isBin(c: string) {
-		return (/[01]/).test(c);
+		const code = c.charCodeAt(0);
+
+		return code === 48 || code === 49; // 0 1
 	}
+
 	private static isHex(c: string) {
-		return (/[0-9A-Fa-f]/).test(c);
+		const code = c.charCodeAt(0);
+
+		return (code >= 48 && code <= 57) || (code >= 65 && code <= 70) || (code >= 97 && code <= 102);
 	}
+
 	private static isWhiteSpace(c: string) {
-		return (/[ \r]/).test(c);
+		const code = c.charCodeAt(0);
+
+		return code === 32 || code === 13; // space or \r
 	}
+
 	private static isNotQuotes(c: string) {
 		return c !== "" && c !== '"' && c !== "\n"; // quoted string must be in one line!
 	}
+
 	private static isIdentifierStart(c: string) {
-		return c !== "" && (/[A-Za-z]/).test(c); // cannot use complete [A-Za-z]+[\w]*[$%!]?
+		if (c === "") {
+			return false;
+		}
+		const code = c.charCodeAt(0);
+
+		return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
 	}
+
 	private static isIdentifierMiddle(c: string) {
-		return c !== "" && (/[A-Za-z0-9.]/).test(c);
+		if (c === "") {
+			return false;
+		}
+		const code = c.charCodeAt(0);
+
+		return (code >= 65 && code <= 90) || (code >= 97 && code <= 122) || (code >= 48 && code <= 57) || code === 46; // . is 46
 	}
+
 	private static isIdentifierEnd(c: string) {
-		return c !== "" && (/[$%!]/).test(c);
+		if (c === "") {
+			return false;
+		}
+		const code = c.charCodeAt(0);
+
+		return code === 36 || code === 37 || code === 33; // $ is 36, % is 37, ! is 33
 	}
+
 	private static isNotNewLine(c: string) {
 		return c !== "" && c !== "\n";
 	}
+
 	private static isUnquotedData(c: string) {
-		return c !== "" && (/[^:,\r\n]/).test(c);
+		if (c === "") {
+			return false;
+		}
+		const code = c.charCodeAt(0);
+
+		return code !== 58 && code !== 44 && code !== 13 && code !== 10; // : is 58, , is 44, \r is 13, \n is 10
 	}
 
 	private testChar(add: number) {
@@ -257,10 +327,11 @@ export class BasicLexer {
 		}
 	}
 
+	private static readonly reSpacesAtEnd = (/\s+$/);
+
 	private fnParseUnquoted(char: string, pos: number) {
-		const reSpacesAtEnd = new RegExp(/\s+$/);
 		let token = this.advanceWhile(char, BasicLexer.isUnquotedData);
-		const match = reSpacesAtEnd.exec(token),
+		const match = BasicLexer.reSpacesAtEnd.exec(token),
 			endingSpaces = (match && match[0]) || "";
 
 		token = token.trim(); // remove whitespace before and after; do we need this?
