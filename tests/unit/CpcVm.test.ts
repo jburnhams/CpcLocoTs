@@ -108,8 +108,8 @@ const allTests: AllTestsType = {
 	},
 	call: {
 		"0 ": "",
-		"0xbb00": "resetCpcKeysExpansions: , clearInput: , resetExpansionTokens:",
-		"0xbb03": "clearInput: , resetExpansionTokens:",
+		"0xbb00": "resetCpcKeysExpansions: , clearInput: , resetExpansionTokens: , resetSpeedKey:",
+		"0xbb03": "clearInput: , resetExpansionTokens: , resetSpeedKey:",
 		"0xbb06": "getKeyFromBuffer:",
 		"0xbb0c": 'putKeyInBuffer:"\\u0000",true',
 		"0xbb0c,1,1,1,1,1,1,1,1,1": 'putKeyInBuffer:"\\t",true',
@@ -1579,9 +1579,9 @@ const allTests: AllTestsType = {
 		"1,256": 'CpcVm: Improper argument in 0: SPEED INK 256 -- {"_key":"stop","reason":"error","priority":50,"paras":{}}'
 	},
 	speedKey: {
-		"10,10": "",
-		"1,1": "",
-		"255,255": "",
+		"10,10": "setSpeedKey:10,10",
+		"1,1": "setSpeedKey:1,1",
+		"255,255": "setSpeedKey:255,255",
 		"": 'CpcVm: Type mismatch in 0: SPEED KEY undefined -- {"_key":"stop","reason":"error","priority":50,"paras":{}}',
 		'""': 'CpcVm: Type mismatch in 0: SPEED KEY  -- {"_key":"stop","reason":"error","priority":50,"paras":{}}',
 		"0,1": 'CpcVm: Improper argument in 0: SPEED KEY 0 -- {"_key":"stop","reason":"error","priority":50,"paras":{}}',
@@ -2282,6 +2282,16 @@ const lastTestFunctions: Record<string, TestFunctionInputType[]>[] = [], // esli
 		resetExpansionTokens: function (...args) {
 			lastTestFunctions.push({
 				resetExpansionTokens: args
+			});
+		},
+		resetSpeedKey: function (...args) {
+			lastTestFunctions.push({
+				resetSpeedKey: args
+			});
+		},
+		setSpeedKey: function (...args) {
+			lastTestFunctions.push({
+				setSpeedKey: args
 			});
 		},
 		setCpcKeyExpansion: function (...args) {

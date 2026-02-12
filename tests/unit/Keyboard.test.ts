@@ -124,4 +124,25 @@ describe('Keyboard Unit Tests', () => {
         const key = keyboard.getKeyFromBuffer();
         expect(key.charCodeAt(0)).toBe(240);
     });
+
+    it('should set and reset speed key', () => {
+        keyboard.setSpeedKey(100, 10);
+        expect((keyboard as any).repeatDelay).toBe(100);
+        expect((keyboard as any).repeatPeriod).toBe(10);
+
+        keyboard.resetSpeedKey();
+        expect((keyboard as any).repeatDelay).toBe(60);
+        expect((keyboard as any).repeatPeriod).toBe(4);
+    });
+
+    it('should clear repeat flags on resetSpeedKey', () => {
+        keyboard.setCpcKeyExpansion({
+            cpcKey: 69,
+            repeat: 0,
+        });
+        expect((keyboard as any).cpcKeyExpansions.repeat[69]).toBe(0);
+
+        keyboard.resetSpeedKey();
+        expect((keyboard as any).cpcKeyExpansions.repeat[69]).toBeUndefined();
+    });
 });
