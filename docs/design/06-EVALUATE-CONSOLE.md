@@ -176,51 +176,51 @@ export * from "./Evaluator";
 ## Checklist
 
 ### Evaluator — library
-- [x] Create `src/Evaluator.ts`
-- [x] Implement `evaluate(expression, variables, vm)` — compile expression, execute, return result
-- [x] Implement `execute(statement, variables, vm)` — compile statement, execute, return result
-- [x] Handle compilation errors gracefully (return in `EvalResult.error`)
-- [x] Handle runtime errors gracefully
-- [x] Block GOTO/GOSUB/RUN/CHAIN in execute mode (check AST or generated code)
-- [x] Export from `src/index.ts`
+- [ ] Create `src/Evaluator.ts`
+- [ ] Implement `evaluate(expression, variables, vm)` — compile expression, execute, return result
+- [ ] Implement `execute(statement, variables, vm)` — compile statement, execute, return result
+- [ ] Handle compilation errors gracefully (return in `EvalResult.error`)
+- [ ] Handle runtime errors gracefully
+- [ ] Block GOTO/GOSUB/RUN/CHAIN in execute mode (check AST or generated code)
+- [ ] Export from `src/index.ts`
 
 ### Debugger integration
-- [x] Add `evaluator: Evaluator` property to Debugger (or create on demand)
-- [x] Implement `eval(expression)` convenience method
-- [x] Implement `exec(statement)` convenience method
-- [x] Only allow eval/exec when state is "paused"
+- [ ] Add `evaluator: Evaluator` property to Debugger (or create on demand)
+- [ ] Implement `eval(expression)` convenience method
+- [ ] Implement `exec(statement)` convenience method
+- [ ] Only allow eval/exec when state is "paused"
 
 ### Console — UI
-- [x] Add console area HTML to `index.html`
-- [x] Add ViewID constants
-- [x] Implement `evalConsoleInput()` — read input, distinguish expression vs statement
-- [x] Implement `appendToConsoleLog()` — format input + result
-- [x] Wire Enter key and Eval button
-- [x] Disable console input when not paused
+- [ ] Add console area HTML to `index.html`
+- [ ] Add ViewID constants
+- [ ] Implement `evalConsoleInput()` — read input, distinguish expression vs statement
+- [ ] Implement `appendToConsoleLog()` — format input + result
+- [ ] Wire Enter key and Eval button
+- [ ] Disable console input when not paused
 - [ ] Implement `clearConsoleLog()`
 - [ ] After exec that modifies variables, refresh variable display
 
 ### Memory viewer — UI
-- [x] Add memory area HTML to `index.html`
-- [x] Add ViewID constants
-- [x] Implement `getMemoryRange()` in Debugger
-- [x] Implement `refreshMemoryDump()` in UiDebugger
-- [x] Implement `formatHexDump()` — hex + ASCII columns
-- [x] Wire Refresh button
-- [x] Parse hex address input
+- [ ] Add memory area HTML to `index.html`
+- [ ] Add ViewID constants
+- [ ] Implement `getMemoryRange()` in Debugger
+- [ ] Implement `refreshMemoryDump()` in UiDebugger
+- [ ] Implement `formatHexDump()` — hex + ASCII columns
+- [ ] Wire Refresh button
+- [ ] Parse hex address input
 - [ ] Refresh memory on each pause event (optional)
 
 ### Unit tests
-- [x] Test `evaluate("1+2")` returns `{ value: 3 }`
-- [x] Test `evaluate("a$")` returns current string variable value
-- [x] Test `evaluate` with syntax error returns `EvalResult.error`
-- [x] Test `execute("LET x%=42")` modifies variable
-- [x] Test `execute("GOTO 100")` is rejected
-- [x] Test `execute("GOSUB 100")` is rejected
-- [x] Test `getMemoryRange(0, 16)` returns 16 bytes
-- [x] Test `eval()` only works when paused (throws/returns error otherwise)
+- [ ] Test `evaluate("1+2")` returns `{ value: 3 }`
+- [ ] Test `evaluate("a$")` returns current string variable value
+- [ ] Test `evaluate` with syntax error returns `EvalResult.error`
+- [ ] Test `execute("LET x%=42")` modifies variable
+- [ ] Test `execute("GOTO 100")` is rejected
+- [ ] Test `execute("GOSUB 100")` is rejected
+- [ ] Test `getMemoryRange(0, 16)` returns 16 bytes
+- [ ] Test `eval()` only works when paused (throws/returns error otherwise)
 
 ### Integration tests
-- [x] Pause program, evaluate expression referencing program variables, verify result
-- [x] Pause program, execute LET statement, verify variable changed
-- [x] Pause program, view memory at known address, verify values match POKE'd data
+- [ ] Pause program, evaluate expression referencing program variables, verify result
+- [ ] Pause program, execute LET statement, verify variable changed
+- [ ] Pause program, view memory at known address, verify values match POKE'd data

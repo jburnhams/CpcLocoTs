@@ -36,6 +36,5 @@ export * from "./Snapshot";
 export * from "./ZipFile";
 export * from "./Debugger";
 export * from "./DebuggerTypes";
-export * from "./Evaluator";
 
 // We don't export CpcLoco class anymore as it was the app entry point.
