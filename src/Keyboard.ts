@@ -57,6 +57,9 @@ export class Keyboard {
 
 	private simulatedNumLock?: boolean; // simulated num lock for Mac OS
 
+	private repeatDelay = 60;
+	private repeatPeriod = 4;
+
 	constructor(options: KeyboardOptions) {
 		this.fnKeydownOrKeyupHandler = this.onKeydownOrKeyup.bind(this);
 
@@ -286,6 +289,17 @@ export class Keyboard {
 		}
 	}
 
+	setSpeedKey(delay: number, period: number): void {
+		this.repeatDelay = delay;
+		this.repeatPeriod = period;
+	}
+
+	resetSpeedKey(): void {
+		this.repeatDelay = 60;
+		this.repeatPeriod = 4;
+		this.cpcKeyExpansions.repeat = {};
+	}
+
 	resetCpcKeysExpansions(): void {
 		const cpcKeyExpansions = this.cpcKeyExpansions;
 
@@ -310,7 +324,7 @@ export class Keyboard {
 			6: 12 + 128 // ctrl+Enter
 		};
 
-		cpcKeyExpansions.repeat = {};
+		this.resetSpeedKey();
 	}
 
 	setActive(active: boolean): void {

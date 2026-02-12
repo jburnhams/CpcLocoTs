@@ -1493,7 +1493,7 @@ export class CpcVm implements ICpcVm {
 			case 0xbb03: // KM Reset (ROM &1AE1)
 				this.clearInput();
 				this.keyboard.resetExpansionTokens();
-				// TODO: reset also speed key
+				this.keyboard.resetSpeedKey();
 				break;
 			case 0xbb0c: // KM Char Return (ROM &1A77), depending on number of args
 				this.keyboard.putKeyInBuffer(String.fromCharCode(args.length), true); // with trigger onkeydown
@@ -3962,7 +3962,8 @@ export class CpcVm implements ICpcVm {
 	speedKey(delay: number, repeat: number): void {
 		delay = this.vmInRangeRound(delay, 1, 255, "SPEED KEY");
 		repeat = this.vmInRangeRound(repeat, 1, 255, "SPEED KEY");
-		this.vmNotImplemented("SPEED KEY " + delay + " " + repeat);
+		this.keyboard.setSpeedKey(delay, repeat);
+		this.vmNotImplemented("SPEED KEY " + delay + " " + repeat + " (only values stored)");
 	}
 
 	speedWrite(n: number): void {
