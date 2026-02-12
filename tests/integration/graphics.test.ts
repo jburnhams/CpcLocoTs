@@ -136,15 +136,17 @@ describe('Graphics Integration with jsdom and @napi-rs/canvas', () => {
         // Force update logic
         (canvas as any).fnCopy2Canvas();
 
-        // EXTRA CHECK: Does getImageData also see it?
-        const readBack = rsCtx.getImageData(0, 0, 640, 400);
-        let nonZeroReadBack = 0;
-        for (let i = 0; i < readBack.data.length; i += 4) {
-            if (readBack.data[i] !== 0 || readBack.data[i + 1] !== 0 || readBack.data[i + 2] !== 0) {
-                nonZeroReadBack++;
+        // Verify captured content (using capture because putImageData readback is unreliable in this env)
+        expect(capturedImageData).toBeDefined();
+        const data = capturedImageData!.data;
+        let nonZero = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i] !== 0 || data[i + 1] !== 0 || data[i + 2] !== 0) {
+                nonZero++;
             }
         }
-        console.log(`DEBUG: getImageData found ${nonZeroReadBack} non-zero pixels`);
+        console.log(`DEBUG: capturedImageData found ${nonZero} non-zero pixels`);
+        expect(nonZero).toBeGreaterThan(0);
 
         // If capturedImageData is present and has content, we consider it a success,
         // even if getImageData readback fails in some CI environments due to canvas/JSDOM quirks.
@@ -155,12 +157,10 @@ describe('Graphics Integration with jsdom and @napi-rs/canvas', () => {
                     nonZeroCaptured++;
                 }
              }
-             if (nonZeroCaptured > 0) {
-                 nonZeroReadBack = nonZeroCaptured; // Use captured data as truth
-             }
+             expect(nonZeroCaptured).toBeGreaterThan(0);
         }
 
-        expect(nonZeroReadBack).toBeGreaterThan(0);
+        
     });
 
     test('Canvas fill operation', () => {
