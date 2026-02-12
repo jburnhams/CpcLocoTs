@@ -16,6 +16,7 @@ import { CodeGeneratorToken } from "./CodeGeneratorToken";
 import { cpcCharset } from "./cpcCharset";
 import { CpcVm, FileMeta, VmStopEntry } from "./CpcVm";
 import { Debugger } from "./Debugger";
+import { Evaluator } from "./Evaluator";
 import { Diff } from "./Diff";
 import { DiskImage } from "./DiskImage";
 import { FileHandler } from "./FileHandler";
@@ -188,6 +189,9 @@ export class Controller implements IController {
 		this.basicLexer = new BasicLexer({
 			keywords: this.basicParser.getKeywords()
 		});
+
+		const evaluator = new Evaluator(this.basicLexer, this.basicParser);
+		this.debugger.setEvaluator(evaluator);
 
 		this.codeGeneratorJs = new CodeGeneratorJs({
 			lexer: this.basicLexer,

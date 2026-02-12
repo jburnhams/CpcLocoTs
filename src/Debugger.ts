@@ -1,6 +1,7 @@
 import { CpcVm } from "./CpcVm";
 import { Breakpoint, BreakpointState, DebugEvent, DebugEventType, DebugListener, DebugSnapshot, DebugState, StepMode, SpeedConfig, LineRange, StackFrame, ErrorInfo } from "./DebuggerTypes";
 import { CustomError } from "./Utils";
+import { Evaluator, EvalResult } from "./Evaluator";
 
 export type ConditionEvaluator = (condition: string) => boolean;
 
@@ -24,9 +25,11 @@ export class Debugger {
 	public nextDelay = 0;
 	private sourceMap: Record<string, number[]> = {};
 	private conditionEvaluator?: ConditionEvaluator;
+	private evaluator?: Evaluator;
 
-	constructor(vm: CpcVm) {
+	constructor(vm: CpcVm, evaluator?: Evaluator) {
 		this.vm = vm;
+		this.evaluator = evaluator;
 		this.vm.vmOnError(this.handleError.bind(this));
 	}
 
@@ -44,6 +47,10 @@ export class Debugger {
 
 	setConditionEvaluator(evaluator: ConditionEvaluator): void {
 		this.conditionEvaluator = evaluator;
+	}
+
+	setEvaluator(evaluator: Evaluator): void {
+		this.evaluator = evaluator;
 	}
 
 	// Execution Control
@@ -251,6 +258,36 @@ export class Debugger {
 			};
 		}
 		return null;
+	}
+
+	// Evaluation / Execution
+
+	eval(expression: string): EvalResult {
+		if (!this.evaluator) {
+			return { error: "No evaluator attached" };
+		}
+		if (this.state !== "paused") {
+			return { error: "Must be paused to evaluate" };
+		}
+		return this.evaluator.evaluate(expression, this.vm.variables, this.vm);
+	}
+
+	exec(statement: string): EvalResult {
+		if (!this.evaluator) {
+			return { error: "No evaluator attached" };
+		}
+		if (this.state !== "paused") {
+			return { error: "Must be paused to execute" };
+		}
+		return this.evaluator.execute(statement, this.vm.variables, this.vm);
+	}
+
+	getMemoryRange(start: number, length: number): number[] {
+		const data: number[] = [];
+		for (let i = 0; i < length; i++) {
+			data.push(this.vm.peek(start + i));
+		}
+		return data;
 	}
 
 	// Events
