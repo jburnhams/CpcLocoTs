@@ -86,6 +86,7 @@ describe("Debugger Console Integration", () => {
         expect(debuggerInstance.getSnapshot().state).toBe("paused");
 
         const result = debuggerInstance.eval("a*2");
+        if (result.error) console.error("Eval error:", result.error);
         expect(result.value).toBe(20);
     });
 
@@ -103,9 +104,11 @@ describe("Debugger Console Integration", () => {
         vi.runAllTimers();
 
         const execResult = debuggerInstance.exec("let a=42");
+        if (execResult.error) console.error("Exec error:", execResult.error);
         expect(execResult.error).toBeUndefined();
 
         const evalResult = debuggerInstance.eval("a");
+        if (evalResult.error) console.error("Eval check error:", evalResult.error);
         expect(evalResult.value).toBe(42);
     });
 

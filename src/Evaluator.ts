@@ -24,6 +24,18 @@ export class Evaluator {
 	}
 
 	evaluate(expression: string, variables: Variables, vm: CpcVm): EvalResult {
+		// Ensure lexer and parser are in the correct state
+		const options = this.codeGenerator.getOptions();
+		options.lexer.setOptions({
+			keepWhiteSpace: false
+		});
+		options.parser.setOptions({
+			keepTokens: false,
+			keepBrackets: false,
+			keepColons: false,
+			keepDataComma: false
+		});
+
 		// wrap in assignment to capture result
 		// use a variable name that is unlikely to collide
 		let tempVar = "eval.result"; // eval.result becomes eval_result in JS
@@ -94,6 +106,18 @@ export class Evaluator {
 		if (/^(?:\d+\s+)?\s*(?:goto|gosub|run|chain|list|new|load|merge|save|edit|renum)\b/i.test(statement.trim())) {
 			return { error: "Command not allowed in console" };
 		}
+
+		// Ensure lexer and parser are in the correct state
+		const options = this.codeGenerator.getOptions();
+		options.lexer.setOptions({
+			keepWhiteSpace: false
+		});
+		options.parser.setOptions({
+			keepTokens: false,
+			keepBrackets: false,
+			keepColons: false,
+			keepDataComma: false
+		});
 
 		const input = "1 " + statement;
 		const output = this.codeGenerator.generate(input, variables);
