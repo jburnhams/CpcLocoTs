@@ -212,42 +212,42 @@ ViewID.debugMemoryDump = "debugMemoryDump"
 ## Checklist
 
 ### UiDebugger class
-- [ ] Create `docs/src/UiDebugger.ts`
-- [ ] Implement constructor — get debugger, register listener, bind DOM
-- [ ] Implement `onDebugEvent()` — dispatch to update methods
-- [ ] Implement `updateControls(state)` — enable/disable buttons per state
-- [ ] Implement `show()` / `hide()` — toggle debug panel visibility
+- [x] Create `docs/src/UiDebugger.ts`
+- [x] Implement constructor — get debugger, register listener, bind DOM
+- [x] Implement `onDebugEvent()` — dispatch to update methods
+- [x] Implement `updateControls(state)` — enable/disable buttons per state
+- [x] Implement `show()` / `hide()` — toggle debug panel visibility
 
 ### Line highlighting
-- [ ] Implement `updateLineHighlight(range)` — update label, scroll textarea
-- [ ] Clear highlight on resume
+- [x] Implement `updateLineHighlight(range)` — update label, scroll textarea
+- [x] Clear highlight on resume
 
 ### Variable display
-- [ ] Implement `refreshVariables()` — trigger existing variable display refresh
-- [ ] Implement `getChangedVariables()` — diff previous and current snapshots
-- [ ] Highlight changed variables in the list (bold or marker)
-- [ ] Store previous snapshot for diff on each pause
+- [x] Implement `refreshVariables()` — trigger existing variable display refresh
+- [x] Implement `getChangedVariables()` — diff previous and current snapshots
+- [x] Highlight changed variables in the list (bold or marker)
+- [x] Store previous snapshot for diff on each pause
 
 ### Keyboard shortcuts
-- [ ] Add `keydown` listener on document
-- [ ] Implement F5 (continue/run), F10 (step over), F11 (step into), Shift+F11 (step out)
-- [ ] Implement F9 (toggle breakpoint) — needs to determine current line from cursor position
-- [ ] Implement Escape (pause)
-- [ ] Only handle shortcuts when debug mode is active
-- [ ] Prevent default browser behaviour for handled keys
+- [x] Add `keydown` listener on document
+- [x] Implement F5 (continue/run), F10 (step over), F11 (step into), Shift+F11 (step out)
+- [x] Implement F9 (toggle breakpoint) — needs to determine current line from cursor position
+- [x] Implement Escape (pause)
+- [x] Only handle shortcuts when debug mode is active
+- [x] Prevent default browser behaviour for handled keys
 
 ### Layout and CSS
-- [ ] Add complete debug HTML to `index.html`
-- [ ] Add CSS rules to `CpcLoco.css`
-- [ ] Debug panel hidden by default, shown when debugMode is on
-- [ ] Responsive: panels stack vertically on narrow screens
-- [ ] Match existing visual style
+- [x] Add complete debug HTML to `index.html`
+- [x] Add CSS rules to `CpcLoco.css`
+- [x] Debug panel hidden by default, shown when debugMode is on
+- [x] Responsive: panels stack vertically on narrow screens
+- [x] Match existing visual style
 
 ### Integration
-- [ ] Instantiate `UiDebugger` in `main.ts` after Controller creation
-- [ ] Wire debugMode checkbox to show/hide debug panel + recompile
-- [ ] Verify all buttons, inputs, panels function together
-- [ ] Verify debug mode doesn't interfere with normal run mode (debug off)
+- [x] Instantiate `UiDebugger` in `main.ts` after Controller creation (Done in UiController)
+- [x] Wire debugMode checkbox to show/hide debug panel + recompile
+- [x] Verify all buttons, inputs, panels function together
+- [x] Verify debug mode doesn't interfere with normal run mode (debug off)
 
 ### UI tests (see doc 08 for details)
 - [ ] Test UiDebugger construction with mock controller

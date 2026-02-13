@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { UiDebugger } from "../src/UiDebugger";
 import { View, ViewID } from "cpclocots";
 
@@ -8,13 +8,18 @@ describe("UiDebugger", () => {
     let debuggerMock: any;
     let uiDebugger: UiDebugger;
     let elements: Record<string, any>;
+    let documentEvents: Record<string, Function> = {};
 
     beforeEach(() => {
         elements = {};
+        documentEvents = {};
 
         // Mock View methods
         view = {
             setAreaSelection: vi.fn(),
+            setSelectOptions: vi.fn(),
+            getSelectValue: vi.fn().mockReturnValue(""),
+            setAreaValue: vi.fn(),
         };
 
         // Mock static View methods
@@ -31,10 +36,16 @@ describe("UiDebugger", () => {
                     textContent: "",
                     checked: false,
                     innerHTML: "",
-                    appendChild: vi.fn()
+                    appendChild: vi.fn(),
+                    selectionStart: 0 // For textarea
                 };
             }
             return elements[id];
+        });
+
+        // Mock document.addEventListener
+        vi.spyOn(document, "addEventListener").mockImplementation((event, handler) => {
+            documentEvents[event] = handler as Function;
         });
 
         debuggerMock = {
@@ -50,14 +61,23 @@ describe("UiDebugger", () => {
             addBreakpoint: vi.fn(),
             removeBreakpoint: vi.fn(),
             toggleBreakpoint: vi.fn(),
-            getCallStack: vi.fn().mockReturnValue([])
+            getCallStack: vi.fn().mockReturnValue([]),
+            getSnapshot: vi.fn().mockReturnValue({ state: "idle", variables: {} }),
+            eval: vi.fn(),
+            exec: vi.fn(),
+            getMemoryRange: vi.fn().mockReturnValue([])
         };
 
         controller = {
-            getDebugger: () => debuggerMock
+            getDebugger: () => debuggerMock,
+            startRun: vi.fn()
         };
 
         uiDebugger = new UiDebugger(controller, view);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it("should initialize controls", () => {
@@ -65,6 +85,7 @@ describe("UiDebugger", () => {
         expect(elements[ViewID.debugPauseButton].addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
         expect(elements[ViewID.debugSpeedInput].addEventListener).toHaveBeenCalledWith("input", expect.any(Function));
         expect(elements[ViewID.debugAddBreakpointButton].addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
+        expect(document.addEventListener).toHaveBeenCalledWith("keydown", expect.any(Function));
         expect(debuggerMock.on).toHaveBeenCalled();
     });
 
@@ -73,7 +94,7 @@ describe("UiDebugger", () => {
         const onEvent = debuggerMock.on.mock.calls[0][0];
         onEvent({
             type: "stateChange",
-            snapshot: { state: "running" }
+            snapshot: { state: "running", variables: {} }
         });
 
         expect(elements[ViewID.debugPauseButton].disabled).toBe(false);
@@ -85,7 +106,7 @@ describe("UiDebugger", () => {
         const onEvent = debuggerMock.on.mock.calls[0][0];
         onEvent({
             type: "paused",
-            snapshot: { state: "paused" }
+            snapshot: { state: "paused", variables: {} }
         });
 
         expect(elements[ViewID.debugPauseButton].disabled).toBe(true);
@@ -103,7 +124,7 @@ describe("UiDebugger", () => {
         const onEvent = debuggerMock.on.mock.calls[0][0];
         onEvent({
             type: "step",
-            snapshot: { state: "paused" }
+            snapshot: { state: "paused", variables: {} }
         });
 
         expect(elements[ViewID.debugLineLabel].textContent).toBe("Line: 10");
@@ -118,5 +139,133 @@ describe("UiDebugger", () => {
         listener();
 
         expect(debuggerMock.setSpeed).toHaveBeenCalledWith(50);
+    });
+
+    it("should refresh variables with diff", () => {
+        const onEvent = debuggerMock.on.mock.calls[0][0];
+
+        // First snapshot (all new, so all marked changed)
+        onEvent({
+            type: "paused",
+            snapshot: {
+                state: "paused",
+                variables: { a: 1, b: 2 }
+            }
+        });
+
+        expect(view.setSelectOptions).toHaveBeenCalledWith(ViewID.varSelect, expect.arrayContaining([
+            expect.objectContaining({ value: "a", text: "a=1 *" }),
+            expect.objectContaining({ value: "b", text: "b=2 *" })
+        ]));
+
+        // Second snapshot with change
+        onEvent({
+            type: "step",
+            snapshot: {
+                state: "paused",
+                variables: { a: 1, b: 3 } // b changed
+            }
+        });
+
+        expect(view.setSelectOptions).toHaveBeenLastCalledWith(ViewID.varSelect, expect.arrayContaining([
+            expect.objectContaining({ value: "a", text: "a=1" }),
+            expect.objectContaining({ value: "b", text: "b=3 *" }) // Check for asterisk
+        ]));
+    });
+
+    it("should detect deleted variables", () => {
+        const onEvent = debuggerMock.on.mock.calls[0][0];
+
+        // First snapshot
+        onEvent({
+            type: "paused",
+            snapshot: {
+                state: "paused",
+                variables: { a: 1, b: 2 }
+            }
+        });
+
+        // Second snapshot (b deleted)
+        onEvent({
+            type: "step",
+            snapshot: {
+                state: "paused",
+                variables: { a: 1 }
+            }
+        });
+
+        expect(view.setSelectOptions).toHaveBeenLastCalledWith(ViewID.varSelect, expect.arrayContaining([
+            expect.objectContaining({ value: "a", text: "a=1" }),
+            expect.objectContaining({ value: "b", text: "b=undefined *" }) // b deleted
+        ]));
+    });
+
+    it("should handle keyboard shortcuts", () => {
+        // Enable debug mode
+        elements[ViewID.debugModeInput].checked = true;
+
+        // Mock getSnapshot for paused state
+        debuggerMock.getSnapshot.mockReturnValue({ state: "paused", variables: {} });
+
+        const onKeyDown = documentEvents["keydown"];
+        expect(onKeyDown).toBeDefined();
+
+        // Helper to simulate key press
+        const simulateKey = (key: string, shiftKey = false) => {
+            const event = {
+                key,
+                shiftKey,
+                preventDefault: vi.fn()
+            };
+            onKeyDown(event);
+            return event;
+        };
+
+        // F10: Step Over
+        simulateKey("F10");
+        expect(debuggerMock.stepOver).toHaveBeenCalled();
+
+        // F11: Step Into
+        simulateKey("F11");
+        expect(debuggerMock.stepInto).toHaveBeenCalled();
+
+        // Shift+F11: Step Out
+        simulateKey("F11", true);
+        expect(debuggerMock.stepOut).toHaveBeenCalled();
+
+        // F5: Resume
+        simulateKey("F5");
+        expect(debuggerMock.resume).toHaveBeenCalled();
+
+        // Change state to idle for Run test
+        debuggerMock.getSnapshot.mockReturnValue({ state: "idle", variables: {} });
+        simulateKey("F5");
+        expect(controller.startRun).toHaveBeenCalled();
+    });
+
+    it("should toggle breakpoint at cursor with F9", () => {
+        // Enable debug mode
+        elements[ViewID.debugModeInput].checked = true;
+
+        // Ensure inputText element exists
+        View.getElementById1(ViewID.inputText);
+        const input = elements[ViewID.inputText];
+        input.value = "10 PRINT 'Hello'\n20 GOTO 10";
+        input.selectionStart = 5; // Cursor on first line ("10 ...")
+
+        const onKeyDown = documentEvents["keydown"];
+        const event = {
+            key: "F9",
+            preventDefault: vi.fn()
+        };
+        onKeyDown(event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(debuggerMock.toggleBreakpoint).toHaveBeenCalledWith(10);
+
+        // Move cursor to second line
+        input.selectionStart = 20; // Cursor on second line ("20 ...")
+        onKeyDown(event);
+        expect(debuggerMock.toggleBreakpoint).toHaveBeenCalledWith(20);
     });
 });
