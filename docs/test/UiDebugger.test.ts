@@ -173,6 +173,33 @@ describe("UiDebugger", () => {
         ]));
     });
 
+    it("should detect deleted variables", () => {
+        const onEvent = debuggerMock.on.mock.calls[0][0];
+
+        // First snapshot
+        onEvent({
+            type: "paused",
+            snapshot: {
+                state: "paused",
+                variables: { a: 1, b: 2 }
+            }
+        });
+
+        // Second snapshot (b deleted)
+        onEvent({
+            type: "step",
+            snapshot: {
+                state: "paused",
+                variables: { a: 1 }
+            }
+        });
+
+        expect(view.setSelectOptions).toHaveBeenLastCalledWith(ViewID.varSelect, expect.arrayContaining([
+            expect.objectContaining({ value: "a", text: "a=1" }),
+            expect.objectContaining({ value: "b", text: "b=undefined *" }) // b deleted
+        ]));
+    });
+
     it("should handle keyboard shortcuts", () => {
         // Enable debug mode
         elements[ViewID.debugModeInput].checked = true;

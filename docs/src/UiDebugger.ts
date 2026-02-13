@@ -400,20 +400,20 @@ export class UiDebugger {
 
 	private getChangedVariables(current: Record<string, any>): string[] {
 		const changed: string[] = [];
-		for (const key in current) {
-			if (current.hasOwnProperty(key)) {
-				if (this.previousVariables[key] !== current[key]) {
-					changed.push(key);
-				}
+		const allKeys = new Set([...Object.keys(this.previousVariables), ...Object.keys(current)]);
+
+		allKeys.forEach(key => {
+			if (this.previousVariables[key] !== current[key]) {
+				changed.push(key);
 			}
-		}
+		});
 		return changed;
 	}
 
 	private refreshVariables(variables: Record<string, any>) {
 		const changed = this.getChangedVariables(variables);
 		const maxVarLength = 35;
-		const varNames = Object.keys(variables).sort();
+		const varNames = Array.from(new Set([...Object.keys(this.previousVariables), ...Object.keys(variables)])).sort();
 		const items: SelectOptionElement[] = [];
 
 		for (let i = 0; i < varNames.length; i += 1) {
@@ -445,15 +445,14 @@ export class UiDebugger {
 
 		// If current selection is in changed list, update text area
 		const currentSelection = this.view.getSelectValue(ViewID.varSelect);
-		if (changed.includes(currentSelection) || (currentSelection && variables[currentSelection] !== undefined)) {
-			// Update text area if variable exists (simple refresh)
-			// But maybe we should only update if it changed?
-			// Controller logic handles explicit selection change.
-			// Here we just want to ensure the value displayed matches the variable if it changed.
-			if (currentSelection) {
-				const val = variables[currentSelection];
-				this.view.setAreaValue(ViewID.varText, String(val));
-			}
+		// Check if selected variable changed (value update or deletion)
+		if (changed.includes(currentSelection)) {
+			const val = variables[currentSelection];
+			this.view.setAreaValue(ViewID.varText, String(val));
+		} else if (currentSelection && variables[currentSelection] !== undefined) {
+			// Update text area if variable exists and we just refreshed (to be safe)
+			const val = variables[currentSelection];
+			this.view.setAreaValue(ViewID.varText, String(val));
 		}
 
 		this.previousVariables = { ...variables };
