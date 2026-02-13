@@ -1,8 +1,9 @@
-import { Breakpoint, Controller, DebugEvent, DebugState, ErrorInfo, View, ViewID } from "cpclocots";
+import { Breakpoint, Controller, DebugEvent, DebugState, ErrorInfo, SelectOptionElement, View, ViewID } from "cpclocots";
 
 export class UiDebugger {
 	private readonly controller: Controller;
 	private readonly view: View;
+	private previousVariables: Record<string, any> = {};
 
 	constructor(controller: Controller, view: View) {
 		this.controller = controller;
@@ -60,6 +61,8 @@ export class UiDebugger {
 				this.refreshMemoryDump();
 			}
 		});
+
+		document.addEventListener("keydown", this.onKeyDown.bind(this));
 
 		this.controller.getDebugger().on(this.onDebugEvent.bind(this));
 
@@ -141,6 +144,7 @@ export class UiDebugger {
 			this.updateLineHighlight(event.breakpoint);
 			this.updateCallStack();
 			this.updateErrorDisplay(event.snapshot.error);
+			this.refreshVariables(event.snapshot.variables);
 		} else {
 			this.updateErrorDisplay(undefined);
 		}
@@ -320,5 +324,138 @@ export class UiDebugger {
 		} else {
 			debugArea.classList.add("displayNone");
 		}
+	}
+
+	private onKeyDown(event: KeyboardEvent) {
+		const debugModeInput = View.getElementById1(ViewID.debugModeInput) as HTMLInputElement;
+		if (!debugModeInput.checked) {
+			return;
+		}
+
+		const dbg = this.controller.getDebugger();
+		const state = dbg.getSnapshot().state;
+
+		switch (event.key) {
+			case "F5":
+				event.preventDefault();
+				if (state === "paused" || state === "stepping") {
+					dbg.resume();
+				} else if (state === "idle") {
+					this.controller.startRun();
+				}
+				break;
+			case "F10":
+				event.preventDefault();
+				if (state === "paused") {
+					dbg.stepOver();
+				}
+				break;
+			case "F11":
+				event.preventDefault();
+				if (state === "paused") {
+					if (event.shiftKey) {
+						dbg.stepOut();
+					} else {
+						dbg.stepInto();
+					}
+				}
+				break;
+			case "F9":
+				event.preventDefault();
+				this.toggleBreakpointAtCursor();
+				break;
+			case "Escape":
+				if (state === "running" || state === "stepping") {
+					event.preventDefault();
+					dbg.pause();
+				}
+				break;
+		}
+	}
+
+	private toggleBreakpointAtCursor() {
+		const input = View.getElementByIdAs<HTMLTextAreaElement>(ViewID.inputText);
+		const cursor = input.selectionStart;
+		const text = input.value;
+		// Count newlines before cursor
+		let lineIndex = 0;
+		for (let i = 0; i < cursor && i < text.length; i++) {
+			if (text[i] === "\n") {
+				lineIndex++;
+			}
+		}
+
+		// Find line number in that line
+		const lines = text.split("\n");
+		if (lineIndex < lines.length) {
+			const lineContent = lines[lineIndex];
+			const match = lineContent.match(/^\s*(\d+)/);
+			if (match) {
+				const lineNum = parseInt(match[1], 10);
+				this.controller.getDebugger().toggleBreakpoint(lineNum);
+				this.updateBreakpointList();
+			}
+		}
+	}
+
+	private getChangedVariables(current: Record<string, any>): string[] {
+		const changed: string[] = [];
+		for (const key in current) {
+			if (current.hasOwnProperty(key)) {
+				if (this.previousVariables[key] !== current[key]) {
+					changed.push(key);
+				}
+			}
+		}
+		return changed;
+	}
+
+	private refreshVariables(variables: Record<string, any>) {
+		const changed = this.getChangedVariables(variables);
+		const maxVarLength = 35;
+		const varNames = Object.keys(variables).sort();
+		const items: SelectOptionElement[] = [];
+
+		for (let i = 0; i < varNames.length; i += 1) {
+			const key = varNames[i];
+			const value = variables[key];
+			const title = key + "=" + value;
+
+			let strippedTitle = title.substring(0, maxVarLength);
+
+			if (title !== strippedTitle) {
+				strippedTitle += " ...";
+			}
+
+			if (changed.includes(key)) {
+				strippedTitle += " *"; // Indicate change
+			}
+
+			const item: SelectOptionElement = {
+				value: key,
+				text: strippedTitle,
+				title: strippedTitle,
+				selected: false
+			};
+
+			items.push(item);
+		}
+
+		this.view.setSelectOptions(ViewID.varSelect, items);
+
+		// If current selection is in changed list, update text area
+		const currentSelection = this.view.getSelectValue(ViewID.varSelect);
+		if (changed.includes(currentSelection) || (currentSelection && variables[currentSelection] !== undefined)) {
+			// Update text area if variable exists (simple refresh)
+			// But maybe we should only update if it changed?
+			// Controller logic handles explicit selection change.
+			// Here we just want to ensure the value displayed matches the variable if it changed.
+			if (currentSelection) {
+				const val = variables[currentSelection];
+				this.view.setAreaValue(ViewID.varText, String(val));
+			}
+		}
+
+		this.previousVariables = { ...variables };
 	}
 }

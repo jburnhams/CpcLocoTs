@@ -239,3 +239,49 @@ font-family: monospace;
 
 
 
+
+/* Debug panel styles */
+#debugArea {
+	margin: 2px;
+	padding: 4px;
+	background-color: #f0f0f0;
+	border: 1px solid #ccc;
+}
+
+.debugPanel {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	padding: 5px;
+	border: 1px solid #ddd;
+	background-color: white;
+}
+
+.consoleLog {
+	height: 150px;
+	overflow-y: scroll;
+	border: 1px solid #ccc;
+	padding: 4px;
+	font-family: monospace;
+	background-color: white;
+	white-space: pre-wrap;
+	margin-bottom: 4px;
+}
+
+.consoleInputRow {
+	display: flex;
+	gap: 4px;
+}
+
+.debugHighlight {
+	background-color: rgba(255, 255, 0, 0.3);
+}
+
+.breakpointMarker {
+	color: red;
+	font-weight: bold;
+}
+
+.changedVariable {
+	font-weight: bold;
+	color: blue;
+}
