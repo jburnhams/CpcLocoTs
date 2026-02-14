@@ -197,8 +197,8 @@ export * from "./Evaluator";
 - [x] Implement `appendToConsoleLog()` — format input + result
 - [x] Wire Enter key and Eval button
 - [x] Disable console input when not paused
-- [ ] Implement `clearConsoleLog()`
-- [ ] After exec that modifies variables, refresh variable display
+- [x] Implement `clearConsoleLog()`
+- [x] After exec that modifies variables, refresh variable display
 
 ### Memory viewer — UI
 - [x] Add memory area HTML to `index.html`

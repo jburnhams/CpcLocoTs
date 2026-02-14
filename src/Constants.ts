@@ -85,6 +85,7 @@ export const enum ViewID { // eslint-disable-line no-shadow
 	debugConsoleLog = "debugConsoleLog",
 	debugConsoleInput = "debugConsoleInput",
 	debugConsoleRunButton = "debugConsoleRunButton",
+	debugConsoleClearButton = "debugConsoleClearButton",
 	debugMemoryArea = "debugMemoryArea",
 	debugMemoryAddrInput = "debugMemoryAddrInput",
 	debugMemoryRefreshButton = "debugMemoryRefreshButton",
