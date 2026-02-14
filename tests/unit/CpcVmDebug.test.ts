@@ -43,16 +43,35 @@ describe("CpcVm Debug Integration", () => {
 	});
 
 	it("vmSetDebugger should store debugger reference", () => {
-		const dbg = {} as Debugger;
+		const dbg = {
+			onLine: vi.fn()
+		} as unknown as Debugger;
+
 		vm.vmSetDebugger(dbg);
-		// Access private property or verify via behavior
-		// Since debuggerRef is private, we can verify vmDebugHook behavior
+		vm.line = 123;
+		vm.vmDebugHook();
+
+		expect(dbg.onLine).toHaveBeenCalledWith(123);
 	});
 
 	it("vmSetDebugger(undefined) should clear reference", () => {
-		const dbg = {} as Debugger;
+		const dbg = {
+			onLine: vi.fn()
+		} as unknown as Debugger;
+
 		vm.vmSetDebugger(dbg);
+		vm.line = 123;
+
+		// Verify it is set first
+		vm.vmDebugHook();
+		expect(dbg.onLine).toHaveBeenCalledWith(123);
+		vi.mocked(dbg.onLine).mockClear();
+
+		// Clear reference
 		vm.vmSetDebugger(undefined);
+		vm.vmDebugHook();
+
+		expect(dbg.onLine).not.toHaveBeenCalled();
 	});
 
 	it("vmDebugHook should call debugger.onLine", () => {
