@@ -1240,7 +1240,7 @@ export class CpcVm implements ICpcVm {
 	}
 
 	vmGetGosubStack(): (number | string)[] {
-		return this.gosubStack;
+		return this.gosubStack.slice();
 	}
 
 	vmTrace(): void {

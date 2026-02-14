@@ -23,6 +23,7 @@ export class UiDebugger {
 		const breakOnErrorInput = View.getElementById1(ViewID.debugBreakOnErrorInput) as HTMLInputElement;
 		const addBpBtn = View.getElementById1(ViewID.debugAddBreakpointButton);
 		const consoleRunBtn = View.getElementById1(ViewID.debugConsoleRunButton);
+		const consoleClearBtn = View.getElementById1(ViewID.debugConsoleClearButton);
 		const consoleInput = View.getElementById1(ViewID.debugConsoleInput) as HTMLInputElement;
 		const memoryRefreshBtn = View.getElementById1(ViewID.debugMemoryRefreshButton);
 		const memoryAddrInput = View.getElementById1(ViewID.debugMemoryAddrInput) as HTMLInputElement;
@@ -49,6 +50,7 @@ export class UiDebugger {
 		});
 
 		consoleRunBtn.addEventListener("click", () => this.evalConsoleInput());
+		consoleClearBtn.addEventListener("click", () => this.clearConsoleLog());
 		consoleInput.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {
 				this.evalConsoleInput();
@@ -257,6 +259,7 @@ export class UiDebugger {
 				}
 			} else {
 				output = "OK";
+				this.refreshVariables(this.controller.getDebugger().getVariables());
 			}
 		} else {
 			output = String(result.value);
@@ -275,6 +278,11 @@ export class UiDebugger {
 		div.textContent = "> " + input + "\n" + result;
 		log.appendChild(div);
 		log.scrollTop = log.scrollHeight;
+	}
+
+	private clearConsoleLog() {
+		const log = View.getElementById1(ViewID.debugConsoleLog);
+		log.innerHTML = "";
 	}
 
 	private refreshMemoryDump() {
