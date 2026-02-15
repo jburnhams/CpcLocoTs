@@ -250,7 +250,7 @@ ViewID.debugMemoryDump = "debugMemoryDump"
 - [x] Verify debug mode doesn't interfere with normal run mode (debug off)
 
 ### UI tests (see doc 08 for details)
-- [ ] Test UiDebugger construction with mock controller
-- [ ] Test button state changes on debug events
-- [ ] Test keyboard shortcut dispatch
-- [ ] Test variable diff detection
+- [x] Test UiDebugger construction with mock controller
+- [x] Test button state changes on debug events
+- [x] Test keyboard shortcut dispatch
+- [x] Test variable diff detection

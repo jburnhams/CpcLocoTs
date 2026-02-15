@@ -254,7 +254,7 @@ Run coverage: `npm run coverage`
 - [x] Create `tests/integration/DebuggerUI.test.ts` — browser bundle exports + basic session
 
 ### Coverage
-- [ ] Run `npm run coverage` after all tests are written
-- [ ] Verify Debugger.ts meets 90% coverage
-- [ ] Verify Evaluator.ts meets 85% coverage
-- [ ] Address any gaps
+- [x] Run `npm run coverage` after all tests are written
+- [x] Verify Debugger.ts meets 90% coverage
+- [x] Verify Evaluator.ts meets 85% coverage
+- [x] Address any gaps
