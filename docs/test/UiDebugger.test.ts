@@ -37,7 +37,8 @@ describe("UiDebugger", () => {
                     checked: false,
                     innerHTML: "",
                     appendChild: vi.fn(),
-                    selectionStart: 0 // For textarea
+                    selectionStart: 0, // For textarea
+                    scrollTop: 0
                 };
             }
             return elements[id];
@@ -267,5 +268,73 @@ describe("UiDebugger", () => {
         input.selectionStart = 20; // Cursor on second line ("20 ...")
         onKeyDown(event);
         expect(debuggerMock.toggleBreakpoint).toHaveBeenCalledWith(20);
+    });
+
+    it("should update gutter with breakpoints", () => {
+        const input = elements[ViewID.inputText];
+        const gutter = elements[ViewID.debugGutter];
+
+        input.value = "10 PRINT 'A'\n20 GOTO 10";
+        debuggerMock.getBreakpoints.mockReturnValue([
+            { line: 10, enabled: true },
+            { line: 20, enabled: false }
+        ]);
+
+        // Trigger gutter update (e.g. via input event)
+        const onInput = input.addEventListener.mock.calls.find((c: any[]) => c[0] === "input")[1];
+
+        // Clear previous calls from init
+        gutter.appendChild.mockClear();
+
+        onInput();
+
+        // Check that a DocumentFragment was appended
+        expect(gutter.appendChild).toHaveBeenCalledTimes(1);
+        const fragment = gutter.appendChild.mock.calls[0][0];
+        expect(fragment).toBeInstanceOf(DocumentFragment);
+
+        // Check children of fragment
+        expect(fragment.children.length).toBe(2);
+
+        const line10Div = fragment.children[0] as HTMLElement;
+        expect(line10Div.getAttribute("data-line")).toBe("10");
+        expect(line10Div.classList.contains("breakpoint")).toBe(true);
+        expect(line10Div.title).toContain("Breakpoint at 10");
+
+        const line20Div = fragment.children[1] as HTMLElement;
+        expect(line20Div.getAttribute("data-line")).toBe("20");
+        expect(line20Div.classList.contains("breakpoint")).toBe(false);
+    });
+
+    it("should toggle breakpoint when clicking gutter (delegation)", () => {
+        const gutter = elements[ViewID.debugGutter];
+
+        // Mock a click event on a child element
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "gutterLine";
+        lineDiv.setAttribute("data-line", "10");
+
+        // Simulate event delegation
+        // Find the click handler attached to gutter
+        const clickHandler = gutter.addEventListener.mock.calls.find((c: any[]) => c[0] === "click")[1];
+
+        // Call it with a mock event
+        clickHandler({
+            target: lineDiv
+        });
+
+        expect(debuggerMock.toggleBreakpoint).toHaveBeenCalledWith(10);
+    });
+
+    it("should sync gutter scroll", () => {
+        const input = elements[ViewID.inputText];
+        const gutter = elements[ViewID.debugGutter];
+
+        input.scrollTop = 100;
+
+        const onScroll = input.addEventListener.mock.calls.find((c: any[]) => c[0] === "scroll")[1];
+        onScroll();
+
+        expect(gutter.scrollTop).toBe(100);
     });
 });

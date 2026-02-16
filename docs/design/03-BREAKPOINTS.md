@@ -124,12 +124,12 @@ ViewID.debugAddBreakpointButton = "debugAddBreakpointButton"
 - [x] Show breakpoint hit in line label (e.g., "Breakpoint at line 50")
 
 ### Breakpoint gutter (refinement, not MVP)
-- [ ] Add `debugGutter` div alongside `inputText`
-- [ ] Parse BASIC source to extract line numbers
-- [ ] Render one marker per line in gutter, positioned to align with textarea lines
-- [ ] Click handler toggles breakpoint at that line
-- [ ] Active breakpoints shown as red dot
-- [ ] Sync gutter scroll with textarea scroll
+- [x] Add `debugGutter` div alongside `inputText`
+- [x] Parse BASIC source to extract line numbers
+- [x] Render one marker per line in gutter, positioned to align with textarea lines
+- [x] Click handler toggles breakpoint at that line
+- [x] Active breakpoints shown as red dot
+- [x] Sync gutter scroll with textarea scroll
 
 ### Unit tests
 - [x] Test `addBreakpoint` / `removeBreakpoint` / `toggleBreakpoint` state
