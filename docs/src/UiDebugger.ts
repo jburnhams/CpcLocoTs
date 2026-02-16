@@ -74,6 +74,19 @@ export class UiDebugger {
 			debugGutter.scrollTop = inputText.scrollTop;
 		});
 
+		const debugGutter = View.getElementById1(ViewID.debugGutter);
+		debugGutter.addEventListener("click", (event: MouseEvent) => {
+			const target = event.target as HTMLElement;
+			const lineDiv = target.closest(".gutterLine");
+			if (lineDiv) {
+				const lineNum = Number(lineDiv.getAttribute("data-line"));
+				if (!isNaN(lineNum)) {
+					this.controller.getDebugger().toggleBreakpoint(lineNum);
+					this.updateBreakpointList();
+				}
+			}
+		});
+
 		document.addEventListener("keydown", this.onKeyDown.bind(this));
 
 		this.controller.getDebugger().on(this.onDebugEvent.bind(this));
@@ -164,6 +177,8 @@ export class UiDebugger {
 		const bpMap = new Map<number, Breakpoint>();
 		breakpoints.forEach(bp => bpMap.set(bp.line, bp));
 
+		const fragment = document.createDocumentFragment();
+
 		lines.forEach((lineContent) => {
 			const div = document.createElement("div");
 			div.className = "gutterLine";
@@ -172,6 +187,7 @@ export class UiDebugger {
 			const match = lineContent.match(/^\s*(\d+)/);
 			if (match) {
 				const lineNum = parseInt(match[1], 10);
+				div.setAttribute("data-line", String(lineNum));
 
 				if (bpMap.has(lineNum)) {
 					const bp = bpMap.get(lineNum);
@@ -180,19 +196,16 @@ export class UiDebugger {
 						div.title = "Breakpoint at " + lineNum;
 					} else {
 						div.title = "Disabled breakpoint at " + lineNum;
-						// Could add a different class for disabled breakpoint
 					}
+				} else {
+					div.title = "Toggle breakpoint at " + lineNum;
 				}
-
-				// Click to toggle
-				div.addEventListener("click", () => {
-					this.controller.getDebugger().toggleBreakpoint(lineNum);
-					this.updateBreakpointList(); // This calls updateGutter
-				});
 			}
 
-			debugGutter.appendChild(div);
+			fragment.appendChild(div);
 		});
+
+		debugGutter.appendChild(fragment);
 
 		// Ensure scroll sync
 		debugGutter.scrollTop = inputText.scrollTop;
