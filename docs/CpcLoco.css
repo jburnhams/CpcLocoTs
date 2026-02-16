@@ -285,3 +285,55 @@ font-family: monospace;
 	font-weight: bold;
 	color: blue;
 }
+
+/* Debugger Gutter */
+#inputContainer {
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    border: 1px solid #7A7A7A; /* Match area style */
+}
+
+#debugGutter {
+    width: 40px;
+    background-color: #f0f0f0;
+    border-right: 1px solid #ccc;
+    font-family: monospace;
+    overflow: hidden;
+    text-align: right;
+    padding-right: 4px;
+    user-select: none;
+    box-sizing: border-box;
+    line-height: 1.2em; /* Sync line height */
+    padding-top: 2px; /* Match textarea padding */
+}
+
+#inputText {
+    flex-grow: 1;
+    border: none;
+    margin: 0;
+    padding: 2px;
+    line-height: 1.2em;
+    overflow-x: auto;
+    white-space: pre;
+    resize: none;
+    outline: none;
+}
+
+.gutterLine {
+    height: 1.2em;
+    cursor: pointer;
+    color: #888;
+}
+
+.gutterLine:hover {
+    background-color: #e0e0e0;
+}
+
+.gutterLine.breakpoint::after {
+    content: "●";
+    color: red;
+    margin-left: 2px;
+    font-size: 0.8em;
+    vertical-align: middle;
+}

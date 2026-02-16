@@ -28,6 +28,9 @@ export class UiDebugger {
 		const memoryRefreshBtn = View.getElementById1(ViewID.debugMemoryRefreshButton);
 		const memoryAddrInput = View.getElementById1(ViewID.debugMemoryAddrInput) as HTMLInputElement;
 
+		// Gutter setup
+		const inputText = View.getElementById1(ViewID.inputText) as HTMLTextAreaElement;
+
 		pauseBtn.addEventListener("click", () => this.controller.getDebugger().pause());
 		resumeBtn.addEventListener("click", () => this.controller.getDebugger().resume());
 		stepBtn.addEventListener("click", () => this.controller.getDebugger().stepInto());
@@ -64,6 +67,13 @@ export class UiDebugger {
 			}
 		});
 
+		// Gutter events
+		inputText.addEventListener("input", () => this.updateGutter());
+		inputText.addEventListener("scroll", () => {
+			const debugGutter = View.getElementById1(ViewID.debugGutter);
+			debugGutter.scrollTop = inputText.scrollTop;
+		});
+
 		document.addEventListener("keydown", this.onKeyDown.bind(this));
 
 		this.controller.getDebugger().on(this.onDebugEvent.bind(this));
@@ -72,6 +82,7 @@ export class UiDebugger {
 		this.updateVisibility();
 		this.updateControls("idle");
 		this.updateBreakpointList();
+		this.updateGutter();
 	}
 
 	private addBreakpointFromInput() {
@@ -135,6 +146,56 @@ export class UiDebugger {
 			div.appendChild(btn);
 			list.appendChild(div);
 		});
+
+		this.updateGutter();
+	}
+
+	private updateGutter() {
+		const debugGutter = View.getElementById1(ViewID.debugGutter);
+		const inputText = View.getElementById1(ViewID.inputText) as HTMLTextAreaElement;
+
+		debugGutter.innerHTML = "";
+
+		const text = inputText.value;
+		const lines = text.split("\n");
+		const breakpoints = this.controller.getDebugger().getBreakpoints();
+
+		// Optimize by creating map
+		const bpMap = new Map<number, Breakpoint>();
+		breakpoints.forEach(bp => bpMap.set(bp.line, bp));
+
+		lines.forEach((lineContent) => {
+			const div = document.createElement("div");
+			div.className = "gutterLine";
+
+			// Try to find BASIC line number
+			const match = lineContent.match(/^\s*(\d+)/);
+			if (match) {
+				const lineNum = parseInt(match[1], 10);
+
+				if (bpMap.has(lineNum)) {
+					const bp = bpMap.get(lineNum);
+					if (bp && bp.enabled) {
+						div.classList.add("breakpoint");
+						div.title = "Breakpoint at " + lineNum;
+					} else {
+						div.title = "Disabled breakpoint at " + lineNum;
+						// Could add a different class for disabled breakpoint
+					}
+				}
+
+				// Click to toggle
+				div.addEventListener("click", () => {
+					this.controller.getDebugger().toggleBreakpoint(lineNum);
+					this.updateBreakpointList(); // This calls updateGutter
+				});
+			}
+
+			debugGutter.appendChild(div);
+		});
+
+		// Ensure scroll sync
+		debugGutter.scrollTop = inputText.scrollTop;
 	}
 
 	private onDebugEvent(event: DebugEvent) {
@@ -152,7 +213,7 @@ export class UiDebugger {
 		}
 
 		if (event.type === "breakpoint") {
-			this.updateBreakpointList(); // update hit count
+			this.updateBreakpointList(); // update hit count & gutter
 		}
 	}
 
@@ -326,11 +387,15 @@ export class UiDebugger {
 	public updateVisibility() {
 		const debugModeInput = View.getElementById1(ViewID.debugModeInput) as HTMLInputElement;
 		const debugArea = View.getElementById1(ViewID.debugArea);
+		const debugGutter = View.getElementById1(ViewID.debugGutter); // Get debug gutter
 
 		if (debugModeInput.checked) {
 			debugArea.classList.remove("displayNone");
+			debugGutter.classList.remove("displayNone"); // Show gutter
+			this.updateGutter(); // Refresh gutter when showing
 		} else {
 			debugArea.classList.add("displayNone");
+			debugGutter.classList.add("displayNone"); // Hide gutter
 		}
 	}
 
