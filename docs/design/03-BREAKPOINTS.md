@@ -112,7 +112,7 @@ ViewID.debugAddBreakpointButton = "debugAddBreakpointButton"
 ### Breakpoint persistence
 - [x] Implement `exportBreakpoints()`
 - [x] Implement `importBreakpoints()`
-- [ ] Wire to localStorage in UI (optional, low priority)
+- [x] Wire to localStorage in UI (optional, low priority)
 
 ### Breakpoint UI
 - [x] Add breakpoint list div + input + button to `index.html`

@@ -66,7 +66,9 @@ describe("UiDebugger", () => {
             getSnapshot: vi.fn().mockReturnValue({ state: "idle", variables: {} }),
             eval: vi.fn(),
             exec: vi.fn(),
-            getMemoryRange: vi.fn().mockReturnValue([])
+            getMemoryRange: vi.fn().mockReturnValue([]),
+            exportBreakpoints: vi.fn().mockReturnValue({ breakpoints: [] }),
+            importBreakpoints: vi.fn()
         };
 
         controller = {

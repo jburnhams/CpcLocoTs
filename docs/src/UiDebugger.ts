@@ -92,10 +92,28 @@ export class UiDebugger {
 		this.controller.getDebugger().on(this.onDebugEvent.bind(this));
 
 		// Initial state
+		this.loadBreakpoints();
 		this.updateVisibility();
 		this.updateControls("idle");
 		this.updateBreakpointList();
 		this.updateGutter();
+	}
+
+	private loadBreakpoints() {
+		const json = localStorage.getItem("cpc_breakpoints");
+		if (json) {
+			try {
+				const state = JSON.parse(json);
+				this.controller.getDebugger().importBreakpoints(state);
+			} catch (e) {
+				console.error("Failed to load breakpoints", e);
+			}
+		}
+	}
+
+	private saveBreakpoints() {
+		const state = this.controller.getDebugger().exportBreakpoints();
+		localStorage.setItem("cpc_breakpoints", JSON.stringify(state));
 	}
 
 	private addBreakpointFromInput() {
@@ -121,6 +139,7 @@ export class UiDebugger {
 	}
 
 	private updateBreakpointList() {
+		this.saveBreakpoints();
 		const list = View.getElementById1(ViewID.debugBreakpointList);
 		list.innerHTML = "";
 		const breakpoints = this.controller.getDebugger().getBreakpoints();
