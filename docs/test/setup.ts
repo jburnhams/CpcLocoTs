@@ -162,5 +162,39 @@ global.AudioContext = vi.fn().mockImplementation(() => ({
 
 global.window.AudioContext = global.AudioContext;
 
+// Mock localStorage if not present or buggy
+if (!global.localStorage || typeof global.localStorage.getItem !== 'function') {
+    const localStorageMock = (function() {
+      let store: Record<string, string> = {};
+      return {
+        getItem: function(key: string) {
+          return store[key] || null;
+        },
+        setItem: function(key: string, value: string) {
+          store[key] = value.toString();
+        },
+        removeItem: function(key: string) {
+          delete store[key];
+        },
+        clear: function() {
+          store = {};
+        }
+      };
+    })();
+
+    // vitest jsdom might have localStorage as a non-writable property, so try defineProperty
+    Object.defineProperty(global, 'localStorage', {
+        value: localStorageMock,
+        writable: true
+    });
+
+    if (global.window) {
+        Object.defineProperty(global.window, 'localStorage', {
+            value: localStorageMock,
+            writable: true
+        });
+    }
+}
+
 // Mock other browser APIs if missing
 global.jest = vi;
