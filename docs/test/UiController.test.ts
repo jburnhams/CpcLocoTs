@@ -109,7 +109,9 @@ describe('UiController', () => {
                 getBreakpoints: vi.fn().mockReturnValue([]),
                 addBreakpoint: vi.fn(),
                 removeBreakpoint: vi.fn(),
-                toggleBreakpoint: vi.fn()
+                toggleBreakpoint: vi.fn(),
+                exportBreakpoints: vi.fn().mockReturnValue({ breakpoints: [] }),
+                importBreakpoints: vi.fn()
             }),
         };
 
