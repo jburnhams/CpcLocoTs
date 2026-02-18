@@ -177,7 +177,7 @@ ViewID.debugStepOutButton = "debugStepOutButton"
 - [x] Test step-out: inside GOSUB → runs to RETURN → pauses at caller
 - [x] Test step-out at top level → runs to end
 - [x] Test `getCallStack()` returns correct frames for known GOSUB nesting
-- [x] Test timer handler stack frames appear in call stack (Implemented in `DebuggerCallStack.integration.test.ts` but skipped due to test environment limitations)
+- [x] Test timer handler stack frames appear in call stack (Implemented in `DebuggerCallStack.integration.test.ts`)
 - [x] Test ON GOSUB stack frames appear correctly (Implemented in `DebuggerCallStack.integration.test.ts`)
 
 ### Integration tests

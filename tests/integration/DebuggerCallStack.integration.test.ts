@@ -58,7 +58,7 @@ describe("Debugger Call Stack Integration", () => {
             [ModelPropID.showKbd]: false,
             [ModelPropID.sound]: false,
             [ModelPropID.bench]: 0,
-            [ModelPropID.speed]: 100,
+            [ModelPropID.speed]: 50, // Use 50 to ensure large timeout (100ms) for better timer control in tests
             [ModelPropID.basicVersion]: "CPC6128",
             [ModelPropID.processFileImports]: false,
             [ModelPropID.prettyLowercaseVars]: false,
@@ -90,6 +90,7 @@ describe("Debugger Call Stack Integration", () => {
 
         const debuggerInstance = controller.getDebugger();
         debuggerInstance.addBreakpoint(100);
+        debuggerInstance.setSpeed(50); // Set debugger speed to < 100 to ensure throttling breaks the infinite loop
 
         // Start run
         controller.startParseRun();
@@ -114,13 +115,12 @@ describe("Debugger Call Stack Integration", () => {
         expect(parseInt(returnLabel, 10)).toBe(20);
     });
 
-    // Timer test skipped due to issues with vitest fake timers and infinite loop simulation
-    it.skip("should display call stack correctly for timer (EVERY)", () => {
+    it("should display call stack correctly for timer (EVERY)", () => {
         const script = `
             10 EVERY 5,1 GOSUB 100
-            20 i = 0
-            30 i = i + 1
-            40 GOTO 30
+            20 FOR i=1 TO 1000
+            30 NEXT i
+            40 END
             100 PRINT "Timer"
             110 RETURN
         `;
@@ -129,21 +129,16 @@ describe("Debugger Call Stack Integration", () => {
 
         const debuggerInstance = controller.getDebugger();
         debuggerInstance.addBreakpoint(100);
+        debuggerInstance.setSpeed(50); // Set debugger speed to < 100 to ensure throttling (100ms delay)
 
         // Start run
         controller.startParseRun();
 
-        // Initial run (compilation + first loop)
-        vi.runOnlyPendingTimers(); // Compile
-        vi.runOnlyPendingTimers(); // Start loop
-
-        // Run loop until breakpoint, advancing time manually to allow timer check
-        let cycles = 0;
-        while (debuggerInstance.getSnapshot().state !== "paused" && cycles < 50) {
-            vi.advanceTimersByTime(20); // Advance 20ms (one frame)
-            vi.runOnlyPendingTimers();
-            cycles++;
-        }
+        // Use runAllTimers to execute the loop.
+        // With speed 50, the VM yields every few lines with a 100ms delay.
+        // runAllTimers will advance the clock by 100ms steps.
+        // The timer (EVERY 5 -> 100ms) should trigger during this execution.
+        vi.runAllTimers();
 
         const snapshot = debuggerInstance.getSnapshot();
         expect(snapshot.state).toBe("paused");
