@@ -208,7 +208,7 @@ export * from "./Evaluator";
 - [x] Implement `formatHexDump()` — hex + ASCII columns
 - [x] Wire Refresh button
 - [x] Parse hex address input
-- [ ] Refresh memory on each pause event (optional)
+- [x] Refresh memory on each pause event (optional)
 
 ### Unit tests
 - [x] Test `evaluate("1+2")` returns `{ value: 3 }`
