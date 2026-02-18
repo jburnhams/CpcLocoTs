@@ -240,6 +240,7 @@ export class UiDebugger {
 			this.updateCallStack();
 			this.updateErrorDisplay(event.snapshot.error);
 			this.refreshVariables(event.snapshot.variables);
+			this.refreshMemoryDump();
 		} else {
 			this.updateErrorDisplay(undefined);
 		}

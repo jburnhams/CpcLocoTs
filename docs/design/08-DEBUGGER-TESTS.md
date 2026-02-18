@@ -19,6 +19,7 @@ Tests follow the existing project structure:
 | `tests/unit/CodeGeneratorJsDebug.test.ts` | Debug hook emission in generated code | Unit |
 | `tests/integration/Debugger.test.ts` | Full debug session scenarios | Integration |
 | `tests/integration/DebuggerUI.test.ts` | UI panel behaviour with browser bundle | Integration |
+| `tests/integration/DebuggerCallStack.integration.test.ts` | Call stack scenarios (ON GOSUB, Timer) | Integration |
 
 ## Test helpers
 
