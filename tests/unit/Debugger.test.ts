@@ -134,6 +134,7 @@ describe("Debugger", () => {
 
 		it("should not pause if running and no breakpoint", () => {
 			debuggerInstance.resume();
+			(mockVm.vmStop as any).mockClear();
 			debuggerInstance.onLine(10);
 			expect(mockVm.vmStop).not.toHaveBeenCalled();
 		});
