@@ -134,6 +134,7 @@ describe("Debugger", () => {
 
 		it("should not pause if running and no breakpoint", () => {
 			debuggerInstance.resume();
+			(mockVm.vmStop as any).mockClear();
 			debuggerInstance.onLine(10);
 			expect(mockVm.vmStop).not.toHaveBeenCalled();
 		});
@@ -241,12 +242,25 @@ describe("Debugger", () => {
 			});
 		});
 
+		it("should return correct range for any line via getLineRange", () => {
+			const map = { "10": [0, 5], "20": [6, 10] };
+			debuggerInstance.setSourceMap(map);
+
+			const range = debuggerInstance.getLineRange(20);
+			expect(range).toEqual({
+				line: 20,
+				startPos: 6,
+				endPos: 16
+			});
+		});
+
 		it("should return null for non-existent line", () => {
 			const map = { "10": [0, 5] };
 			debuggerInstance.setSourceMap(map);
 			debuggerInstance.onLine(30);
 
 			expect(debuggerInstance.getCurrentLineRange()).toBeNull();
+			expect(debuggerInstance.getLineRange(99)).toBeNull();
 		});
 	});
 

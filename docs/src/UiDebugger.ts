@@ -32,10 +32,22 @@ export class UiDebugger {
 		const inputText = View.getElementById1(ViewID.inputText) as HTMLTextAreaElement;
 
 		pauseBtn.addEventListener("click", () => this.controller.getDebugger().pause());
-		resumeBtn.addEventListener("click", () => this.controller.getDebugger().resume());
-		stepBtn.addEventListener("click", () => this.controller.getDebugger().stepInto());
-		stepOverBtn.addEventListener("click", () => this.controller.getDebugger().stepOver());
-		stepOutBtn.addEventListener("click", () => this.controller.getDebugger().stepOut());
+		resumeBtn.addEventListener("click", () => {
+			this.controller.getDebugger().resume();
+			this.controller.startMainLoop();
+		});
+		stepBtn.addEventListener("click", () => {
+			this.controller.getDebugger().stepInto();
+			this.controller.startMainLoop();
+		});
+		stepOverBtn.addEventListener("click", () => {
+			this.controller.getDebugger().stepOver();
+			this.controller.startMainLoop();
+		});
+		stepOutBtn.addEventListener("click", () => {
+			this.controller.getDebugger().stepOut();
+			this.controller.startMainLoop();
+		});
 		addBpBtn.addEventListener("click", () => this.addBreakpointFromInput());
 
 		speedInput.addEventListener("input", () => {
@@ -292,6 +304,21 @@ export class UiDebugger {
 				text += "return to line " + frame.returnLabel;
 			}
 			li.textContent = text;
+			li.classList.add("debug-stack-frame");
+			li.style.cursor = "pointer";
+			li.title = "Click to show source";
+
+			li.addEventListener("click", () => {
+				const range = this.controller.getDebugger().getLineRange(frame.returnLabel);
+				if (range) {
+					this.view.setAreaSelection(ViewID.inputText, range.startPos, range.endPos);
+					const textArea = View.getElementById1(ViewID.inputText) as HTMLTextAreaElement;
+					textArea.focus();
+					// setAreaSelection sets selection, but focus ensures it's active.
+					// Browser behavior typically scrolls to selection on focus/selection change.
+				}
+			});
+
 			list.appendChild(li);
 		});
 	}
@@ -446,6 +473,7 @@ export class UiDebugger {
 				event.preventDefault();
 				if (state === "paused" || state === "stepping") {
 					dbg.resume();
+					this.controller.startMainLoop();
 				} else if (state === "idle") {
 					this.controller.startRun();
 				}
@@ -454,6 +482,7 @@ export class UiDebugger {
 				event.preventDefault();
 				if (state === "paused") {
 					dbg.stepOver();
+					this.controller.startMainLoop();
 				}
 				break;
 			case "F11":
@@ -464,6 +493,7 @@ export class UiDebugger {
 					} else {
 						dbg.stepInto();
 					}
+					this.controller.startMainLoop();
 				}
 				break;
 			case "F9":

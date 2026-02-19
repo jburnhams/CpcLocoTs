@@ -16,6 +16,7 @@ describe("Debugger Speed Control", () => {
 		} as unknown as CpcVm;
 		debuggerInstance = new Debugger(mockVm);
 		debuggerInstance.resume(); // Set state to running
+		(mockVm.vmStop as any).mockClear();
 	});
 
 	it("should run full speed when speed is 100", () => {
