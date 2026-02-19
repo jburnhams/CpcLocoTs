@@ -74,6 +74,7 @@ export class Debugger {
 		}
 		this.setState("running");
 		this.stepMode = null;
+		this.vm.vmStop("", 0, true); // Clear stop reason
 		this.emit({
 			type: "resumed",
 			snapshot: this.getSnapshot()
@@ -248,16 +249,20 @@ export class Debugger {
 		this.sourceMap = map;
 	}
 
-	getCurrentLineRange(): LineRange | null {
-		const entry = this.sourceMap[String(this.currentLine)];
+	getLineRange(line: number | string): LineRange | null {
+		const entry = this.sourceMap[String(line)];
 		if (entry) {
 			return {
-				line: this.currentLine,
+				line: line,
 				startPos: entry[0],
 				endPos: entry[0] + entry[1]
 			};
 		}
 		return null;
+	}
+
+	getCurrentLineRange(): LineRange | null {
+		return this.getLineRange(this.currentLine);
 	}
 
 	// Evaluation / Execution

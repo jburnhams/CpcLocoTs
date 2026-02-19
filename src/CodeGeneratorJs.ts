@@ -1146,6 +1146,13 @@ export class CodeGeneratorJs {
 		const nodeArgs = this.fnParseArgs(node.args),
 			label = this.fnGetGosubLabel();
 
+		if (this.options.debug) {
+			this.sourceMap[label] = [
+				node.pos,
+				node.len || node.value.length || 0
+			];
+		}
+
 		for (let i = 0; i < nodeArgs.length; i += 1) {
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 		}
