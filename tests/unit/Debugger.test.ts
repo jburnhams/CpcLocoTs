@@ -248,6 +248,27 @@ describe("Debugger", () => {
 
 			expect(debuggerInstance.getCurrentLineRange()).toBeNull();
 		});
+
+		it("should return correct range for any line using getLineRange", () => {
+			const map = { "10": [0, 5], "20": [6, 10] };
+			debuggerInstance.setSourceMap(map);
+
+			const range10 = debuggerInstance.getLineRange(10);
+			expect(range10).toEqual({
+				line: 10,
+				startPos: 0,
+				endPos: 5
+			});
+
+			const range20 = debuggerInstance.getLineRange(20);
+			expect(range20).toEqual({
+				line: 20,
+				startPos: 6,
+				endPos: 16 // 6 + 10
+			});
+
+			expect(debuggerInstance.getLineRange(30)).toBeNull();
+		});
 	});
 
 	describe("Persistence", () => {
