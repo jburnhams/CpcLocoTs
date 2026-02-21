@@ -59,4 +59,23 @@ describe("CodeGeneratorJs Debug", () => {
 		expect(output.text).not.toContain("o.vmDebugHook()");
 		expect(output.text).not.toContain("o.vmTrace()");
 	});
+
+	it("should include GOSUB return labels in sourceMap when debug is enabled", () => {
+		const codegen = new CodeGeneratorJs({
+			lexer,
+			parser,
+			debug: true
+		});
+
+		const output = codegen.generate("10 GOSUB 100\n100 RETURN", variables);
+		const map = codegen.getSourceMap();
+
+		// The label should be 10g0
+		expect(map).toHaveProperty("10g0");
+		const range = map["10g0"];
+		expect(range).toBeDefined();
+		// 10 GOSUB 100
+		expect(range[0]).toBeGreaterThan(0); // pos
+		expect(range[1]).toBe(5); // len of GOSUB
+	});
 });

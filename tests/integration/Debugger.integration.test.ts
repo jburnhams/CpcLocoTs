@@ -115,4 +115,39 @@ describe("Debugger Integration", () => {
         // But we can check variables. a should be 3.
         expect(snapshot2.variables["aR"]).toBe(3);
     });
+
+    it("should allow navigating to GOSUB source location via stack frame", () => {
+        const script = "10 GOSUB 100\n20 END\n100 PRINT \"sub\"\n110 RETURN";
+
+        view.setAreaValue(ViewID.inputText, script);
+
+        const debuggerInstance = controller.getDebugger();
+        debuggerInstance.addBreakpoint(110); // Pause at RETURN
+
+        controller.startParseRun();
+        vi.runAllTimers();
+
+        const snapshot = debuggerInstance.getSnapshot();
+        expect(snapshot.state).toBe("paused");
+        expect(snapshot.line).toBe(110);
+
+        const stack = debuggerInstance.getCallStack();
+        expect(stack.length).toBe(2);
+        // stack[0] is current line 110
+        // stack[1] is return address
+
+        const returnLabel = stack[1].returnLabel;
+        // It should be 10g0
+        expect(String(returnLabel)).toMatch(/10g0/);
+
+        // Check if we can get source range for it
+        const range = debuggerInstance.getLineRange(returnLabel);
+        expect(range).toBeDefined();
+        // 10 GOSUB 100.
+        // It should point to GOSUB statement.
+        // 10 is line number.
+        expect(range!.line).toBe(returnLabel);
+        expect(range!.startPos).toBeGreaterThan(0);
+        expect(range!.endPos).toBeGreaterThan(range!.startPos);
+    });
 });
