@@ -292,6 +292,14 @@ export class UiDebugger {
 				text += "return to line " + frame.returnLabel;
 			}
 			li.textContent = text;
+			li.className = "clickable";
+			li.title = "Go to line " + frame.returnLabel;
+			li.addEventListener("click", () => {
+				const range = this.controller.getDebugger().getLineRange(frame.returnLabel);
+				if (range) {
+					this.view.setAreaSelection(ViewID.inputText, range.startPos, range.endPos);
+				}
+			});
 			list.appendChild(li);
 		});
 	}

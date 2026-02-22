@@ -1146,6 +1146,13 @@ export class CodeGeneratorJs {
 		const nodeArgs = this.fnParseArgs(node.args),
 			label = this.fnGetGosubLabel();
 
+		if (this.options.debug) {
+			this.sourceMap[label] = [
+				node.pos,
+				node.len || node.value.length || 0
+			];
+		}
+
 		for (let i = 0; i < nodeArgs.length; i += 1) {
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 		}
@@ -1368,6 +1375,13 @@ export class CodeGeneratorJs {
 	private onGosubOnGoto(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args),
 			label = node.type === "onGosub" ? this.fnGetGosubLabel() : this.fnGetStopLabel();
+
+		if (this.options.debug && node.type === "onGosub") {
+			this.sourceMap[label] = [
+				node.pos,
+				node.len || node.value.length || 0
+			];
+		}
 
 		for (let i = 1; i < nodeArgs.length; i += 1) { // starting with 1
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
