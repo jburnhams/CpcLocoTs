@@ -249,10 +249,14 @@ export class Debugger {
 	}
 
 	getCurrentLineRange(): LineRange | null {
-		const entry = this.sourceMap[String(this.currentLine)];
+		return this.getLineRange(this.currentLine);
+	}
+
+	getLineRange(line: number | string): LineRange | null {
+		const entry = this.sourceMap[String(line)];
 		if (entry) {
 			return {
-				line: this.currentLine,
+				line: line,
 				startPos: entry[0],
 				endPos: entry[0] + entry[1]
 			};

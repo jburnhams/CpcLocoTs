@@ -58,6 +58,7 @@ describe("UiDebugger", () => {
             setSpeed: vi.fn(),
             on: vi.fn(),
             getCurrentLineRange: vi.fn().mockReturnValue(null),
+            getLineRange: vi.fn().mockReturnValue(null),
             getBreakpoints: vi.fn().mockReturnValue([]),
             addBreakpoint: vi.fn(),
             removeBreakpoint: vi.fn(),
@@ -338,5 +339,43 @@ describe("UiDebugger", () => {
         onScroll();
 
         expect(gutter.scrollTop).toBe(100);
+    });
+
+    it("should navigate to source line when clicking call stack frame", () => {
+        debuggerMock.getCallStack.mockReturnValue([
+            { returnLabel: 10, depth: 1 },
+            { returnLabel: 20, depth: 0 }
+        ]);
+
+        debuggerMock.getLineRange.mockImplementation((line: number) => {
+             if (line === 20) {
+                 return { line: 20, startPos: 100, endPos: 120 };
+             }
+             return null;
+        });
+
+        // Trigger update (e.g. paused event)
+        const onEvent = debuggerMock.on.mock.calls[0][0];
+        onEvent({
+            type: "paused",
+            snapshot: { state: "paused", variables: {} }
+        });
+
+        const list = elements[ViewID.debugCallStackList];
+        // Find the second li (return to line 20)
+        // elements[id].appendChild is a mock, so we check its calls
+        expect(list.appendChild).toHaveBeenCalledTimes(2);
+
+        // The argument to appendChild is the li element
+        const li20 = list.appendChild.mock.calls[1][0] as HTMLElement;
+
+        expect(li20.textContent).toContain("return to line 20");
+        expect(li20.className).toContain("clickable");
+
+        // Simulate click
+        li20.click();
+
+        expect(debuggerMock.getLineRange).toHaveBeenCalledWith(20);
+        expect(view.setAreaSelection).toHaveBeenCalledWith(ViewID.inputText, 100, 120);
     });
 });
