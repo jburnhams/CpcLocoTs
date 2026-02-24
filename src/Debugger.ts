@@ -248,16 +248,32 @@ export class Debugger {
 		this.sourceMap = map;
 	}
 
-	getCurrentLineRange(): LineRange | null {
-		const entry = this.sourceMap[String(this.currentLine)];
+	getLineRange(line: number | string): LineRange | null {
+		let entry = this.sourceMap[String(line)];
+		if (!entry && typeof line === "string") {
+			// Fallback: try to find the line number in the label (e.g. "10g0" -> 10)
+			const lineNum = parseInt(line, 10);
+			if (!isNaN(lineNum)) {
+				entry = this.sourceMap[String(lineNum)];
+				if (entry) {
+					// Use the found line number for the range
+					line = lineNum;
+				}
+			}
+		}
+
 		if (entry) {
 			return {
-				line: this.currentLine,
+				line: line,
 				startPos: entry[0],
 				endPos: entry[0] + entry[1]
 			};
 		}
 		return null;
+	}
+
+	getCurrentLineRange(): LineRange | null {
+		return this.getLineRange(this.currentLine);
 	}
 
 	// Evaluation / Execution

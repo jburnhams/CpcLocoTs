@@ -330,6 +330,15 @@ font-family: monospace;
     background-color: #e0e0e0;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    text-decoration: underline;
+    background-color: #e0e0e0;
+}
+
 .gutterLine.breakpoint::after {
     content: "●";
     color: red;

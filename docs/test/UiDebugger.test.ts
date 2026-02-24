@@ -57,6 +57,7 @@ describe("UiDebugger", () => {
             stepOut: vi.fn(),
             setSpeed: vi.fn(),
             on: vi.fn(),
+            getLineRange: vi.fn().mockReturnValue(null),
             getCurrentLineRange: vi.fn().mockReturnValue(null),
             getBreakpoints: vi.fn().mockReturnValue([]),
             addBreakpoint: vi.fn(),
@@ -338,5 +339,45 @@ describe("UiDebugger", () => {
         onScroll();
 
         expect(gutter.scrollTop).toBe(100);
+    });
+
+    it("should navigate to source line when clicking call stack frame", () => {
+        debuggerMock.getCallStack.mockReturnValue([
+            { returnLabel: 10, depth: 1 },
+            { returnLabel: 100, depth: 0 }
+        ]);
+
+        // Trigger updateCallStack via a debug event
+        const onEvent = debuggerMock.on.mock.calls[0][0];
+        onEvent({
+            type: "paused",
+            snapshot: { state: "paused", variables: {} }
+        });
+
+        const list = elements[ViewID.debugCallStackList];
+
+        // Should have created 2 LI elements
+        expect(list.appendChild).toHaveBeenCalledTimes(2);
+
+        // Get the LI element for the second frame (line 100)
+        // appendChild calls: call 0 -> frame 0 (line 10), call 1 -> frame 1 (line 100)
+        const li100 = list.appendChild.mock.calls[1][0] as HTMLElement;
+
+        expect(li100.textContent).toContain("line 100");
+        expect(li100.classList.contains("clickable")).toBe(true);
+
+        // Mock getLineRange response
+        debuggerMock.getLineRange.mockReturnValue({
+            line: 100,
+            startPos: 50,
+            endPos: 60
+        });
+
+        // Trigger click
+        li100.click();
+
+        expect(debuggerMock.getLineRange).toHaveBeenCalledWith(100);
+        expect(view.setAreaSelection).toHaveBeenCalledWith(ViewID.inputText, 50, 60);
+        expect(elements[ViewID.debugLineLabel].textContent).toBe("Line: 100 (stack)");
     });
 });
