@@ -68,7 +68,8 @@ describe("UiDebugger", () => {
             exec: vi.fn(),
             getMemoryRange: vi.fn().mockReturnValue([]),
             exportBreakpoints: vi.fn().mockReturnValue({ breakpoints: [] }),
-            importBreakpoints: vi.fn()
+            importBreakpoints: vi.fn(),
+            getLineRange: vi.fn() // Added getLineRange mock
         };
 
         controller = {
@@ -338,5 +339,42 @@ describe("UiDebugger", () => {
         onScroll();
 
         expect(gutter.scrollTop).toBe(100);
+    });
+
+    it("should navigate to source line when clicking call stack frame", () => {
+        // Ensure element exists in mock
+        View.getElementById1(ViewID.debugCallStackList);
+        const stackList = elements[ViewID.debugCallStackList];
+
+        debuggerMock.getCallStack.mockReturnValue([
+            { returnLabel: 20, depth: 1 },
+            { returnLabel: 10, depth: 0 }
+        ]);
+
+        debuggerMock.getLineRange.mockReturnValue({
+            line: 20,
+            startPos: 50,
+            endPos: 60
+        });
+
+        // Trigger update
+        const onEvent = debuggerMock.on.mock.calls[0][0];
+        onEvent({
+            type: "paused",
+            snapshot: { state: "paused", variables: {} }
+        });
+
+        // Verify items created
+        expect(stackList.appendChild).toHaveBeenCalledTimes(2);
+
+        // Get the first li (real JSDOM element)
+        const firstLi = stackList.appendChild.mock.calls[0][0];
+        expect(firstLi.textContent).toContain("Line 20");
+
+        // Simulate click
+        firstLi.click();
+
+        expect(debuggerMock.getLineRange).toHaveBeenCalledWith(20);
+        expect(view.setAreaSelection).toHaveBeenCalledWith(ViewID.inputText, 50, 60);
     });
 });

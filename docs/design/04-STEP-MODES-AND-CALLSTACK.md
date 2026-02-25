@@ -162,7 +162,7 @@ ViewID.debugStepOutButton = "debugStepOutButton"
 - [x] Add ViewID constants
 - [x] Implement `updateCallStack()` in UiDebugger
 - [x] Call `updateCallStack()` on pause/step events
-- [ ] Click-to-navigate stack frames to source (nice-to-have)
+- [x] Click-to-navigate stack frames to source (nice-to-have)
 
 ### Step buttons — UI
 - [x] Add step-over and step-out buttons to `index.html`
