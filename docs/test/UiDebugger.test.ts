@@ -74,7 +74,8 @@ describe("UiDebugger", () => {
 
         controller = {
             getDebugger: () => debuggerMock,
-            startRun: vi.fn()
+            startRun: vi.fn(),
+            startMainLoop: vi.fn()
         };
 
         uiDebugger = new UiDebugger(controller, view);
