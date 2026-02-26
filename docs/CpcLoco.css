@@ -337,3 +337,11 @@ font-family: monospace;
     font-size: 0.8em;
     vertical-align: middle;
 }
+
+.clickable {
+	cursor: pointer;
+}
+.clickable:hover {
+	text-decoration: underline;
+    background-color: #f0f8ff; /* AliceBlue */
+}
