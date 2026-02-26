@@ -260,6 +260,18 @@ export class Debugger {
 		return null;
 	}
 
+	getLineRange(line: number | string): LineRange | null {
+		const entry = this.sourceMap[String(line)];
+		if (entry) {
+			return {
+				line,
+				startPos: entry[0],
+				endPos: entry[0] + entry[1]
+			};
+		}
+		return null;
+	}
+
 	// Evaluation / Execution
 
 	eval(expression: string): EvalResult {

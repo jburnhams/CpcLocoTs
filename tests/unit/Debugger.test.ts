@@ -248,6 +248,26 @@ describe("Debugger", () => {
 
 			expect(debuggerInstance.getCurrentLineRange()).toBeNull();
 		});
+
+		it("should return correct range for arbitrary line", () => {
+			const map = { "10": [0, 5], "20": [6, 10] };
+			debuggerInstance.setSourceMap(map);
+
+			const range = debuggerInstance.getLineRange(20);
+			expect(range).toEqual({
+				line: 20,
+				startPos: 6,
+				endPos: 16
+			});
+		});
+
+		it("should return null range for arbitrary non-existent line", () => {
+			const map = { "10": [0, 5] };
+			debuggerInstance.setSourceMap(map);
+
+			const range = debuggerInstance.getLineRange(99);
+			expect(range).toBeNull();
+		});
 	});
 
 	describe("Persistence", () => {
