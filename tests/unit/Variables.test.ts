@@ -81,6 +81,21 @@ variables.initAllVariables();
 		expect(variables.getAllVariables()).toEqual({});
 	});
 
+	test("removeAllVariables does not affect varTypes", () => {
+		const variables = new Variables({});
+
+		variables.setVarType("a", "I");
+		variables.setVariable("aR", 1.5);
+
+		expect(variables.getVarType("a")).toBe("I");
+		expect(variables.getVariable("aR")).toBe(1.5);
+
+		variables.removeAllVariables();
+
+		expect(variables.getAllVariables()).toEqual({});
+		expect(variables.getVarType("a")).toBe("I");
+	});
+
 function createListOfItems<T>(item: T, length: number): T[] {
 		return new Array(length).fill(item);
 	}
