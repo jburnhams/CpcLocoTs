@@ -73,11 +73,7 @@ export class Variables {
 	}
 
 	removeAllVariables(): void {
-		const variables = this.variables;
-
-		for (const name in variables) { // eslint-disable-line guard-for-in
-			delete variables[name];
-		}
+		this.variables = {};
 	}
 
 	getAllVariables(): VariableMap {
