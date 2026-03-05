@@ -46,7 +46,7 @@ const allTests: AllTestsType = {
 		"a=&x2": "BasicLexer: Expected binary number at pos 2-4: &x",
 		"a": "BasicParser: Expected = at pos 1: (end)",
 		"1 a=": "BasicParser: Unexpected end of file in 1 at pos 4: ",
-		"1 5=7": "BasicParser: Bad expression statement in 1 at pos 2-3: 5",
+		"1 5=7": "BasicParser: Unexpected token in 15 at pos 3-4: =",
 		"1 let 5=7": "BasicParser: Expected variable in 1 at pos 6-7: 5"
 	},
 	strings: {

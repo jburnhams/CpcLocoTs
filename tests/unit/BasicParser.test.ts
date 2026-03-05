@@ -42,7 +42,7 @@ const allTests: AllTestsType = {
 		"a=&x2": '{"message":"Expected binary number at pos 2-4: &x","name":"BasicLexer","pos":2,"shortMessage":"Expected binary number at pos 2-4: &x","value":"&x"}',
 		"a": '{"len":0,"message":"Expected = at pos 1: (end)","name":"BasicParser","pos":1,"shortMessage":"Expected = at pos 1: (end)","value":"(end)"}',
 		"1 a=": '{"line":"1","message":"Unexpected end of file in 1 at pos 4: ","name":"BasicParser","pos":4,"shortMessage":"Unexpected end of file in 1: ","value":""}',
-		"1 5=7": '{"line":"1","message":"Bad expression statement in 1 at pos 2-3: 5","name":"BasicParser","pos":2,"shortMessage":"Bad expression statement in 1: 5","value":"5"}',
+		"1 5=7": '{"line":"15","message":"Unexpected token in 15 at pos 3-4: =","name":"BasicParser","pos":3,"shortMessage":"Unexpected token in 15: =","value":"="}',
 		"1 let 5=7": '{"line":"1","message":"Expected variable in 1 at pos 6-7: 5","name":"BasicParser","pos":6,"shortMessage":"Expected variable in 1: 5","value":"5"}'
 	},
 	strings: {

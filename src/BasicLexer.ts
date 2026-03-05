@@ -99,6 +99,10 @@ export class BasicLexer {
 		return code >= 48 && code <= 57;
 	}
 
+	private static isDigitOrSpace(c: string) {
+		return BasicLexer.isDigit(c) || c === " ";
+	}
+
 	private static isSign(c: string) {
 		const code = c.charCodeAt(0);
 
@@ -247,8 +251,8 @@ export class BasicLexer {
 				token += char; // take sign "+" or "-"
 				char = this.advance();
 			}
-			if (BasicLexer.isDigit(char)) {
-				token += this.advanceWhile(char, BasicLexer.isDigit);
+			if (BasicLexer.isDigitOrSpace(char)) {
+				token += this.advanceWhile(char, BasicLexer.isDigitOrSpace);
 			}
 		}
 		return token;
@@ -261,13 +265,13 @@ export class BasicLexer {
 			token = char;
 			char = this.advance();
 		}
-		token += this.advanceWhile(char, BasicLexer.isDigit); // TODO: isDigitOrSpace: numbers may contain spaces!
+		token += this.advanceWhile(char, BasicLexer.isDigitOrSpace);
 		char = this.getChar();
 		if (char === "." && !startsWithDot) {
 			token += char;
 			char = this.advance();
-			if (BasicLexer.isDigit(char)) { // digits after dot?
-				token += this.advanceWhile(char, BasicLexer.isDigit);
+			if (BasicLexer.isDigitOrSpace(char)) { // digits after dot?
+				token += this.advanceWhile(char, BasicLexer.isDigitOrSpace);
 				char = this.getChar();
 			}
 		}
@@ -280,6 +284,14 @@ export class BasicLexer {
 				Utils.console.warn(this.composeError({} as Error, "Whitespace in exponential number", token, startPos).message);
 				// do we really want to allow this?
 			}
+		}
+
+		const match = BasicLexer.reSpacesAtEnd.exec(token),
+			endingSpacesLen = (match && match[0].length) || 0;
+
+		if (endingSpacesLen) {
+			token = token.substring(0, token.length - endingSpacesLen);
+			this.index -= endingSpacesLen;
 		}
 
 		const orig = token;
