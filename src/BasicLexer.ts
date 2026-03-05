@@ -286,9 +286,12 @@ export class BasicLexer {
 			}
 		}
 
-		while (token.endsWith(" ")) {
-			token = token.substring(0, token.length - 1);
-			this.index -= 1;
+		const match = BasicLexer.reSpacesAtEnd.exec(token),
+			endingSpacesLen = (match && match[0].length) || 0;
+
+		if (endingSpacesLen) {
+			token = token.substring(0, token.length - endingSpacesLen);
+			this.index -= endingSpacesLen;
 		}
 
 		const orig = token;
