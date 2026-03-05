@@ -42,7 +42,7 @@ const allTests: AllTestsType = {
 		"a=&x2": '{"message":"Expected binary number at pos 2-4: &x","name":"BasicLexer","pos":2,"shortMessage":"Expected binary number at pos 2-4: &x","value":"&x"}',
 		"a": '[{"type":"identifier","value":"a","pos":0},{"type":"(end)","value":"","pos":1}]',
 		"1 a=": '[{"type":"number","value":"1","pos":0},{"type":"identifier","value":"a","pos":2},{"type":"=","value":"=","pos":3},{"type":"(end)","value":"","pos":4}]',
-		"1 5=7": '[{"type":"number","value":"1","pos":0},{"type":"number","value":"5","pos":2},{"type":"=","value":"=","pos":3},{"type":"number","value":"7","pos":4},{"type":"(end)","value":"","pos":5}]',
+		"1 5=7": '[{"type":"number","value":"15","pos":0,"orig":"1 5"},{"type":"=","value":"=","pos":3},{"type":"number","value":"7","pos":4},{"type":"(end)","value":"","pos":5}]',
 		"1 let 5=7": '[{"type":"number","value":"1","pos":0},{"type":"let","value":"let","pos":2},{"type":"number","value":"5","pos":6},{"type":"=","value":"=","pos":7},{"type":"number","value":"7","pos":8},{"type":"(end)","value":"","pos":9}]'
 	},
 	strings: {
@@ -856,6 +856,8 @@ describe("BasicLexer: keepWhiteSpace", () => {
 					result += '"' + token.value + '"';
 				} else if (token.type === "ustring") {
 					result += '"' + token.value;
+				} else if (token.orig !== undefined) {
+					result += token.orig;
 				} else {
 					result += token.value;
 				}
