@@ -291,7 +291,7 @@ export class CodeGeneratorJs {
 	private fnParseArgsIgnoringCommaSemi(args: ParserNode[]) { // for using, write
 		const nodeArgs: string[] = [];
 
-		for (let i = 0; i < args.length; i += 1) {
+		for (let i = 0, len = args.length; i < len; i += 1) {
 			if (args[i].type !== "," && args[i].type !== ";") { // ignore separators
 				nodeArgs.push(this.fnParseOneArg(args[i]));
 			}
@@ -557,7 +557,7 @@ export class CodeGeneratorJs {
 	private fnParseDefIntRealStr(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			const arg = nodeArgs[i];
 
 			nodeArgs[i] = "o." + node.type + '("' + arg + '")';
@@ -680,7 +680,7 @@ export class CodeGeneratorJs {
 			name = this.fnAdaptVariableName(node, node.value, nodeArgs.length); // here we use node.value;
 		let indices = "";
 
-		for (let i = 0; i < nodeArgs.length; i += 1) { // array indices
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) { // array indices
 			const arg = node.args[i + 1], // +1 because of opening braket
 				index = arg.pt !== "I" ? ("o.vmRound(" + nodeArgs[i] + ")") : nodeArgs[i];
 				// can we use fnGetRoundString()?
@@ -826,7 +826,7 @@ export class CodeGeneratorJs {
 
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			let value2 = nodeArgs[i];
 
 			if (value2 !== "") {
@@ -877,7 +877,7 @@ export class CodeGeneratorJs {
 	private data(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < node.args.length; i += 1) {
+		for (let i = 0, len = node.args.length; i < len; i += 1) {
 			if (node.args[i].type === "unquoted") {
 				nodeArgs[i] = '"' + nodeArgs[i].replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"'; // escape backslashes and quotes, put in quotes
 			}
@@ -942,7 +942,7 @@ export class CodeGeneratorJs {
 			throw this.composeError(Error(), "Programming error: Undefined args", node.type, node.pos); // should not occur
 		}
 
-		for (let i = 0; i < node.args.length; i += 1) {
+		for (let i = 0, len = node.args.length; i < len; i += 1) {
 			const nodeArg = node.args[i];
 
 			if (nodeArg.type !== "identifier") {
@@ -984,7 +984,7 @@ export class CodeGeneratorJs {
 		}
 		let	value = "else"; // not: node.type;
 
-		for (let i = 0; i < node.args.length; i += 1) {
+		for (let i = 0, len = node.args.length; i < len; i += 1) {
 			const token = node.args[i];
 
 			if (token.value) {
@@ -1000,7 +1000,7 @@ export class CodeGeneratorJs {
 
 		this.defScopeArgs = undefined;
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			nodeArgs[i] = '"' + nodeArgs[i] + '"'; // put in quotes
 		}
 		node.pv = "o." + node.type + "(" + nodeArgs.join(", ") + ")";
@@ -1146,7 +1146,7 @@ export class CodeGeneratorJs {
 		const nodeArgs = this.fnParseArgs(node.args),
 			label = this.fnGetGosubLabel();
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 		}
 		node.pv = "o." + node.type + '("' + label + '", ' + nodeArgs.join(", ") + '); break;\ncase "' + label + '":';
@@ -1155,7 +1155,7 @@ export class CodeGeneratorJs {
 	private gotoOrResume(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 		}
 		node.pv = "o." + node.type + "(" + nodeArgs.join(", ") + "); break"; // with break
@@ -1175,7 +1175,7 @@ export class CodeGeneratorJs {
 		}
 
 		if (isTraceActive || isResumeNext || isResumeNoArgs) {
-			for (let i = 0; i < nodeArgs.length; i += 1) {
+			for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 				const traceLabel = this.generateTraceLabel(args[i], tracePrefix, i);
 				let value = "";
 
@@ -1264,7 +1264,7 @@ export class CodeGeneratorJs {
 			msg = msg.substring(0, msg.length - 1) + "? " + msg.substr(-1, 1);
 		}
 
-		for (let i = 4; i < nodeArgs.length; i += 1) {
+		for (let i = 4, len = nodeArgs.length; i < len; i += 1) {
 			varTypes[i - 4] = this.fnDetermineStaticVarType(nodeArgs[i]);
 		}
 
@@ -1273,7 +1273,7 @@ export class CodeGeneratorJs {
 		const label2 = this.fnGetStopLabel();
 
 		value += "o." + node.type + "(" + stream + ", " + noCRLF + ", " + msg + ", \"" + varTypes.join('", "') + "\"); o.vmGoto(\"" + label2 + "\"); break;\ncase \"" + label2 + "\":";
-		for (let i = 4; i < nodeArgs.length; i += 1) {
+		for (let i = 4, len = nodeArgs.length; i < len; i += 1) {
 			value += "; " + nodeArgs[i] + " = o.vmGetNextInput()";
 		}
 		node.pv = value;
@@ -1325,7 +1325,7 @@ export class CodeGeneratorJs {
 		if (!nodeArgs.length) {
 			nodeArgs.push(""); // we have no variable, so use empty argument
 		}
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			const label = this.stack.forLabel.pop(),
 				varName = this.stack.forVarName.pop();
 
@@ -1350,7 +1350,7 @@ export class CodeGeneratorJs {
 	private onBreakGosubOrRestore(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 		}
 		node.pv = "o." + node.type + "(" + nodeArgs.join(", ") + ")";
@@ -1358,7 +1358,7 @@ export class CodeGeneratorJs {
 	private onErrorGoto(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			if (Number(nodeArgs[i])) { // only for lines > 0
 				this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 			}
@@ -1369,7 +1369,7 @@ export class CodeGeneratorJs {
 		const nodeArgs = this.fnParseArgs(node.args),
 			label = node.type === "onGosub" ? this.fnGetGosubLabel() : this.fnGetStopLabel();
 
-		for (let i = 1; i < nodeArgs.length; i += 1) { // starting with 1
+		for (let i = 1, len = nodeArgs.length; i < len; i += 1) { // starting with 1
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 		}
 		nodeArgs.unshift('"' + label + '"');
@@ -1379,7 +1379,7 @@ export class CodeGeneratorJs {
 	private onSqGosub(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			this.fnAddReferenceLabel(nodeArgs[i], node.args[i]);
 		}
 
@@ -1396,7 +1396,7 @@ export class CodeGeneratorJs {
 			nodeArgs = [];
 		let	newLine = true;
 
-		for (let i = 0; i < args.length; i += 1) {
+		for (let i = 0, len = args.length; i < len; i += 1) {
 			const arg = args[i];
 			let argString = this.fnParseOneArg(arg);
 
@@ -1441,7 +1441,7 @@ export class CodeGeneratorJs {
 	private read(node: CodeNode) {
 		const nodeArgs = this.fnParseArgs(node.args);
 
-		for (let i = 0; i < nodeArgs.length; i += 1) {
+		for (let i = 0, len = nodeArgs.length; i < len; i += 1) {
 			const name = nodeArgs[i],
 				varType = this.fnDetermineStaticVarType(name);
 
@@ -1719,7 +1719,7 @@ export class CodeGeneratorJs {
 	private fnCreateLabelMap(nodes: ParserNode[], labels: LabelsType) { // create line numbers map
 		let lastLine = 0;
 
-		for (let i = 0; i < nodes.length; i += 1) {
+		for (let i = 0, len = nodes.length; i < len; i += 1) {
 			const node = nodes[i];
 
 			if (node.type === "label" && node.value !== "direct") {
@@ -1756,7 +1756,7 @@ export class CodeGeneratorJs {
 		if (node.args) {
 			const type = node.type === "defint" ? "I" : "$";
 
-			for (let i = 0; i < node.args.length; i += 1) {
+			for (let i = 0, len = node.args.length; i < len; i += 1) {
 				const arg = node.args[i];
 
 				if (arg.type === "letter") {
@@ -1772,7 +1772,7 @@ export class CodeGeneratorJs {
 	}
 
 	private fnPrecheckTree(nodes: ParserNode[], countMap: Record<string, number>) {
-		for (let i = 0; i < nodes.length; i += 1) {
+		for (let i = 0, len = nodes.length; i < len; i += 1) {
 			const node = nodes[i];
 
 			countMap[node.type] = (countMap[node.type] || 0) + 1;
@@ -1812,7 +1812,7 @@ export class CodeGeneratorJs {
 		let output = "";
 		const outputLines: string[] = [];
 
-		for (let i = 0; i < parseTree.length; i += 1) {
+		for (let i = 0, len = parseTree.length; i < len; i += 1) {
 			if (Utils.debug > 2) {
 				Utils.console.debug("evaluate: parseTree i=%d, node=%o", i, parseTree[i]);
 			}
