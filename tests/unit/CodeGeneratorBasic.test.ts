@@ -262,7 +262,7 @@ const allTests: AllTestsType = {
 		"ei": "EI",
 		"else": "ELSE",
 		"else 10": "ELSE 10",
-		"else a=7": "ELSE a = 7",
+		"else a=7": "ELSE a=7",
 		"end": "END",
 		"ent 1": "ENT 1",
 		"ent 1,2,a,4": "ENT 1,2,a,4",
@@ -754,7 +754,7 @@ const allTests: AllTestsType = {
 //
 // "a=(1=0)": "a=(1=0)", // optimal: a=1=0
 // "data &a3,4,abc,": "DATA &a3,4,abc,", // &a3 is not converted
-// "else a=7": "ELSE a = 7", // TODO: whitespace
+// "else a=7": "ELSE a=7",
 // "a=1 else a=2": "a=1:ELSE a = 2",
 
 
@@ -854,8 +854,6 @@ describe("CodeGeneratorBasic: keepWhiteSpace", () => {
 
 					if (keyWithSpaces.startsWith("chain")) {
 						keyWithSpaces = keyWithSpaces.replace(/\s+,/g, ",").replace(/,\s+/g, ",");
-					} else if (keyWithSpaces.startsWith("else")) {
-						keyWithSpaces = keyWithSpaces.replace(/(=)/g, " $1 ");
 					}
 
 					keyWithSpaces = keyWithSpaces.replace(/(\d+)e(\d+)/, "$1e+$2");
