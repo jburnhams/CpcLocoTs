@@ -278,14 +278,23 @@ export class CodeGeneratorBasic {
 		const args = node.args;
 		let value = "";
 
-		for (let i = 0; i < args.length; i += 1) {
+		for (let i = 0, len = args.length; i < len; i += 1) {
 			const token = args[i];
 
 			if (token.value) {
 				if (this.keepWhiteSpace) {
 					value += CodeGeneratorBasic.fnWs(token) + token.value;
 				} else {
-					value += CodeGeneratorBasic.fnSpace1(CodeGeneratorBasic.fnWs(token) + token.value);
+					const tokenValue = CodeGeneratorBasic.fnWs(token) + token.value,
+						type = token.type,
+						isWord = (/^[a-z0-9]/i).test(type),
+						prevIsWord = i > 0 && (/^[a-z0-9]/i).test(args[i - 1].type);
+
+					if (i === 0 || (isWord && prevIsWord)) {
+						value += CodeGeneratorBasic.fnSpace1(tokenValue);
+					} else {
+						value += tokenValue;
+					}
 				}
 			}
 		}
