@@ -81,7 +81,7 @@ export class FileSelect {
 		} else if (typeof data === "string") {
 			if (type === "text/plain") { // "text/plain"
 				type = "A";
-			} else if (data.indexOf("data:") === 0) {
+			} else if (data.startsWith("data:")) {
 				// check for meta info in data: data:application/octet-stream;base64, or: data:text/javascript;base64,
 				const index = data.indexOf(",");
 
