@@ -73,7 +73,7 @@
     "@vitest/coverage-v8": "^4.0.16",
     "cross-env": "^10.1.0",
     "gh-pages": "^4.0.0",
-    "jsdom": "^24.0.0",
+    "jsdom": "^31.0.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
